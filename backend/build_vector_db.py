@@ -75,7 +75,10 @@ def load_all_faqs() -> list:
     # 1. Manually curated GNDEC facts (highest quality — load first)
     all_faqs += load_flat_json("gndec_facts.json")
 
-    # 2. Scraped GNDEC website data
+    # 2. Gemini+SERP collected data (high quality, real-time sourced)
+    all_faqs += load_flat_json("gndec_gemini.json")
+
+    # 3. Scraped GNDEC website data
     all_faqs += load_flat_json("gndec_data.json")
 
     print(f"\nTOTAL LOADED = {len(all_faqs)} Q&A pairs")

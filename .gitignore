@@ -1,0 +1,46 @@
+# ── External projects ────────────────────────────────────────
+gndec-chatbot/
+
+# ── Python ───────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+.venv/
+venv/
+env/
+
+# ── Environment ───────────────────────────────────────────────
+.env
+.env.bak
+
+# ── Data / Models (large files) ───────────────────────────────
+backend/faiss_store/faq.index
+backend/faiss_store/meta.json
+data/gndec_data.json
+data/gndec_gemini.json
+dump.rdb
+
+# ── Frontend ──────────────────────────────────────────────────
+support_ui/node_modules/
+support_ui/dist/
+support_ui/.env
+
+# ── macOS ─────────────────────────────────────────────────────
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# ── Logs ──────────────────────────────────────────────────────
+*.log
+/tmp/
+
+# ── IDE ───────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
