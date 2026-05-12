@@ -147,6 +147,6 @@ EOF
     echo -e "${G}Done. Local .env restored.${NC}"
     exit 0
 }
-trap cleanup INT TERM
+trap cleanup INT TERM EXIT
 
 wait
