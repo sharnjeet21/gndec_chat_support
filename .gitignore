@@ -44,3 +44,9 @@ support_ui/.env
 .idea/
 *.swp
 *.swo
+
+# ── Documentation (exclude README.md) ─────────────────────────
+*.md
+!README.md
+
+TECH_STACK.Models

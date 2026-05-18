@@ -4,6 +4,12 @@ An AI-powered RAG (Retrieval-Augmented Generation) chatbot for **Guru Nanak Dev 
 
 ---
 
+## UI Showcase
+
+![GNDEC AI Assistant](./img.png)
+
+---
+
 ## What It Does
 
 Students and visitors can chat with the bot to get instant, accurate answers about GNDEC without navigating the website. The bot retrieves relevant knowledge from a vector database built from scraped GNDEC web pages and curated facts, then generates a natural language response using a local LLM (Llama 3.2 via Ollama).
