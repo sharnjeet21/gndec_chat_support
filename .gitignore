@@ -21,8 +21,6 @@ env/
 # ── Data / Models (large files) ───────────────────────────────
 backend/faiss_store/faq.index
 backend/faiss_store/meta.json
-data/gndec_data.json
-data/gndec_gemini.json
 dump.rdb
 
 # ── Frontend ──────────────────────────────────────────────────
