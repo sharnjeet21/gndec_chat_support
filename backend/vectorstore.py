@@ -28,14 +28,14 @@ if not os.path.exists(INDEX_PATH) or not os.path.exists(META_PATH):
 logging.info("🔄 Loading FAISS index & metadata...")
 faiss_index = faiss.read_index(INDEX_PATH)
 
-with open(META_PATH, "r") as f:
+with open(META_PATH, "r", encoding="utf-8") as f:
     META: List[Dict[str, Any]] = json.load(f)
 
 # Embeddings
 MODEL_NAME = "all-MiniLM-L6-v2"
-logging.info(f"Loading embedding model: {MODEL_NAME}")
-embed_model = SentenceTransformer(MODEL_NAME)
-lc_embeddings = HuggingFaceEmbeddings(model_name=MODEL_NAME)
+logging.info(f"Loading embedding model: {MODEL_NAME} on CPU to avoid MPS crash")
+embed_model = SentenceTransformer(MODEL_NAME, device="cpu")
+lc_embeddings = HuggingFaceEmbeddings(model_name=MODEL_NAME, model_kwargs={"device": "cpu"})
 
 index_to_docstore_id = {i: str(i) for i in range(faiss_index.ntotal)}
 
@@ -67,7 +67,9 @@ def get_retriever(k: int = 3):
 
         docs = []
         for rank, (idx, score) in enumerate(zip(ids[0], scores[0])):
-            if idx < 0:
+            if idx < 0 or score > 1.4:
+                if idx >= 0:
+                    logging.info(f"   #{rank+1} Score={score:.4f} (SKIPPED > 1.4) | Q={META[int(idx)]['question']!r}")
                 continue
             item = META[int(idx)]
             logging.info(

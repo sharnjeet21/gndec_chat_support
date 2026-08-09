@@ -16,7 +16,11 @@ env/
 
 # ── Environment ───────────────────────────────────────────────
 .env
+.env.*
 .env.bak
+.codex-run/
+.venv-win/
+data ex/
 
 # ── Data / Models (large files) ───────────────────────────────
 backend/faiss_store/faq.index

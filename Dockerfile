@@ -1,42 +1,44 @@
-FROM python:3.13.5-slim
+# -------------------------------
+# Stage 1: Build React Frontend
+# -------------------------------
+FROM node:20-slim AS frontend-builder
+WORKDIR /app/support_ui
+COPY support_ui/package*.json ./
+RUN npm install
+COPY support_ui/ ./
+RUN npm run build
 
 # -------------------------------
-# System setup
+# Stage 2: Python Backend Runtime
 # -------------------------------
+FROM python:3.11-slim
+
 ENV PYTHONDONTWRITEBYTECODE=1
 ENV PYTHONUNBUFFERED=1
 
 WORKDIR /app
 
-# Install minimal build dependencies
+# System dependencies
 RUN apt-get update && apt-get install -y \
     build-essential \
     git \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# -------------------------------
-# Python dependencies
-# -------------------------------
+# Copy requirements and install dependencies
 COPY requirements.txt .
 RUN pip install --upgrade pip \
-    && pip install -r requirements.txt
+    && pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
-# -------------------------------
-# Application code
-# -------------------------------
+# Copy application code
 COPY backend ./backend
 COPY data ./data
 
-# -------------------------------
-# Pre-build vector store
-# -------------------------------
-RUN python3 backend/build_vector_db.py
+# Copy pre-built React frontend static assets from Stage 1
+COPY --from=frontend-builder /app/support_ui/dist ./support_ui/dist
 
-# -------------------------------
-# Runtime
-# -------------------------------
-EXPOSE 8080
+# Expose backend server port
+EXPOSE 8000
 
-CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8080"]
-
+# Start FastAPI server
+CMD ["uvicorn", "backend.app:app", "--host", "0.0.0.0", "--port", "8000"]

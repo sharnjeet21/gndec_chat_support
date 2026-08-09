@@ -17,6 +17,7 @@ from .agent import answer_sync, answer_stream, clear_redis_session
 from .chat_store import (
     get_session_history,
     list_sessions,
+    register_session,
     get_or_create_session_id,
     close_session_for_phone,
 )
@@ -67,10 +68,11 @@ async def health():
 
 @app.get("/api/start_session")
 async def start_session(phone: str = Query(...), session_id: str = Query(...)):
-    """Initialise a session — Redis manages conversation memory."""
+    """Initialise a phone-linked chat session."""
     if not phone or not session_id:
         raise HTTPException(status_code=400, detail="phone and session_id required")
 
+    await register_session(phone.strip(), session_id.strip())
     logging.info(f"Session started: phone={phone}, session_id={session_id}")
     return {"ok": True}
 

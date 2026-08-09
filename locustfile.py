@@ -1,34 +1,29 @@
-"""
-GNDEC Chatbot — Load Test
-Run: locust -f locustfile.py --host=http://localhost:8080
-"""
+import csv
 import random
 from locust import HttpUser, task, between
 
 PHONE = "9877803978"
 SESSIONS = ["test1", "test2", "test3"]
 
-QUESTIONS = [
-    "What B.Tech programs does GNDEC offer?",
-    "How do I apply for admission at GNDEC?",
-    "What is the fee structure for B.Tech?",
-    "Tell me about the CSE department",
-    "What are the hostel facilities at GNDEC?",
-    "What scholarships are available at GNDEC?",
-    "What is the placement record of GNDEC?",
-    "Tell me about the ECE department",
-    "What is the admission process for MBA?",
-    "What are the NCC activities at GNDEC?",
-    "Who are the notable alumni of GNDEC?",
-    "What is the rural area quota at GNDEC?",
-    "What is the NAAC accreditation status of GNDEC?",
-    "What are the library facilities at GNDEC?",
-    "How to check results at GNDEC?",
-]
+# Load Customer Questions once
+CSV_PATH = "./data/nebero_data.csv"
+QUESTIONS = []
+
+with open(CSV_PATH, "r", encoding="utf-8") as f:
+    reader = csv.DictReader(f)
+    for row in reader:
+        q = row.get("Customer Question", "").strip()
+        if q:
+            QUESTIONS.append(q)
+
+if not QUESTIONS:
+    raise ValueError("No customer questions found in nebero_data.csv!")
+
+print(f"Loaded {len(QUESTIONS)} questions from CSV.")
 
 
-class GNDECUser(HttpUser):
-    wait_time = between(1, 2)
+class SupportUser(HttpUser):
+    wait_time = between(1, 2)  # wait 1–2 seconds between hits
 
     @task
     def ask_question(self):
@@ -38,6 +33,5 @@ class GNDECUser(HttpUser):
         self.client.get(
             "/api/ask",
             params={"phone": PHONE, "session_id": session_id, "q": q},
-            headers={"X-API-KEY": "naman@1234"},
             name="ASK Sync",
         )

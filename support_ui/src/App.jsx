@@ -7,7 +7,12 @@ export default function App() {
   const [phone, setPhone] = useState("");
   const [sessionId, setSessionId] = useState("");
 
-  if (!phone) return <Login onLogin={setPhone} />;
+  function handleLogin(nextPhone) {
+    setPhone(nextPhone.trim());
+    setSessionId("");
+  }
+
+  if (!phone) return <Login onLogin={handleLogin} />;
 
   if (!sessionId)
     return (
@@ -26,4 +31,3 @@ export default function App() {
     />
   );
 }
-

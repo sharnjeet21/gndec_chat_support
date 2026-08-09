@@ -3,14 +3,16 @@ import os
 import asyncio
 import logging
 
+from dotenv import load_dotenv
 from langchain_ollama import ChatOllama
 from langchain_openai import ChatOpenAI
 
+load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "OLLAMA").upper()
 MODEL_API_URL  = os.getenv("MODEL_API_URL", "http://localhost:11434")
-LLM_MODEL      = os.getenv("LLM_MODEL", "gemma4:e4b")
+LLM_MODEL      = os.getenv("LLM_MODEL", "llama3.1")
 
 logging.info(f"LLM Provider : {MODEL_PROVIDER}")
 logging.info(f"API URL      : {MODEL_API_URL}")
@@ -23,7 +25,7 @@ if MODEL_PROVIDER == "OLLAMA":
     llm = ChatOllama(
         model=LLM_MODEL,
         base_url=MODEL_API_URL,
-        temperature=0.15,
+        temperature=0.0,
     )
 else:
     # vLLM / OpenAI-compatible endpoint
@@ -31,7 +33,7 @@ else:
         model=LLM_MODEL,
         api_key=os.getenv("OPENAI_API_KEY", "EMPTY"),
         base_url=f"{MODEL_API_URL}/v1",
-        temperature=0.15,
+        temperature=0.0,
         max_tokens=None,
     )
 

@@ -1,4 +1,4 @@
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const BASE_URL = import.meta.env.VITE_API_URL ?? "";
 const API_KEY = import.meta.env.VITE_API_KEY || "naman@1234";
 
 /**
@@ -17,7 +17,7 @@ function authHeaders(extra = {}) {
 -------------------------- */
 export async function startSession(phone, sessionId) {
   return fetch(
-    `${BASE_URL}/api/start_session?phone=${phone}&session_id=${sessionId}`,
+    `${BASE_URL}/api/start_session?phone=${encodeURIComponent(phone)}&session_id=${encodeURIComponent(sessionId)}`,
     {
       headers: authHeaders(),
     },
@@ -29,7 +29,7 @@ export async function startSession(phone, sessionId) {
 -------------------------- */
 export async function askSync(phone, sessionId, q) {
   const res = await fetch(
-    `${BASE_URL}/api/ask?phone=${phone}&session_id=${sessionId}&q=${encodeURIComponent(q)}`,
+    `${BASE_URL}/api/ask?phone=${encodeURIComponent(phone)}&session_id=${encodeURIComponent(sessionId)}&q=${encodeURIComponent(q)}`,
     {
       headers: authHeaders(),
     },
@@ -47,7 +47,7 @@ export async function askSync(phone, sessionId, q) {
 -------------------------- */
 export async function askStream(phone, sessionId, q, onChunk) {
   const res = await fetch(
-    `${BASE_URL}/api/ask_stream?phone=${phone}&session_id=${sessionId}&q=${encodeURIComponent(q)}`,
+    `${BASE_URL}/api/ask_stream?phone=${encodeURIComponent(phone)}&session_id=${encodeURIComponent(sessionId)}&q=${encodeURIComponent(q)}`,
     {
       headers: authHeaders(),
     },
@@ -95,7 +95,7 @@ export async function askStream(phone, sessionId, q, onChunk) {
    HISTORY & SESSIONS
 -------------------------- */
 export async function fetchSessions(phone) {
-  const res = await fetch(`${BASE_URL}/api/sessions?phone=${phone}`, {
+  const res = await fetch(`${BASE_URL}/api/sessions?phone=${encodeURIComponent(phone)}`, {
     headers: authHeaders(),
   });
   return res.json();
@@ -103,7 +103,7 @@ export async function fetchSessions(phone) {
 
 export async function getHistory(phone, sessionId) {
   const res = await fetch(
-    `${BASE_URL}/api/history?phone=${phone}&session_id=${sessionId}`,
+    `${BASE_URL}/api/history?phone=${encodeURIComponent(phone)}&session_id=${encodeURIComponent(sessionId)}`,
     { headers: authHeaders() },
   );
   return res.json();

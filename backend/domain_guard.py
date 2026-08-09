@@ -21,61 +21,14 @@ logger = logging.getLogger(__name__)
 
 # FAISS IndexFlatL2: lower score = more similar
 # Tuned for GNDEC dataset — adjust if needed
-# Lowered from 1.6 to 1.3 to be stricter about out-of-domain queries
-OUT_OF_DOMAIN_THRESHOLD = 1.3
-
-# Keywords that indicate a question is definitely out of scope
-OUT_OF_SCOPE_KEYWORDS = {
-    # Weather & Environment
-    "weather", "temperature", "rain", "forecast", "climate", "wind", "humidity",
-    "atmospheric", "precipitation", "monsoon", "season",
-    
-    # Entertainment & Lifestyle
-    "sports", "movie", "music", "game", "recipe", "cooking", "food",
-    "entertainment", "film", "song", "play", "watch",
-    
-    # Politics & News
-    "politics", "news", "current events", "stock", "crypto", "bitcoin",
-    "election", "government", "minister", "parliament",
-    
-    # Health & Medical
-    "medical", "doctor", "disease", "health", "medicine", "hospital",
-    "treatment", "symptom", "diagnosis", "vaccine", "covid",
-    
-    # Legal & Finance
-    "legal", "law", "court", "lawyer", "attorney", "lawsuit",
-    "finance", "investment", "loan", "mortgage", "tax",
-    
-    # General Non-College
-    "joke", "funny", "meme", "how to make", "how to build", "diy",
-    "best ai model", "best tool", "best software", "recommendation",
-}
-
-
-def _contains_out_of_scope_keywords(query: str) -> bool:
-    """
-    Quick keyword check to catch obvious out-of-scope questions
-    before doing expensive FAISS search.
-    """
-    query_lower = query.lower()
-    for keyword in OUT_OF_SCOPE_KEYWORDS:
-        if keyword in query_lower:
-            return True
-    return False
+OUT_OF_DOMAIN_THRESHOLD = 1.4
 
 
 def is_out_of_domain(query: str) -> bool:
     """
     Returns True if the query is too dissimilar to anything
     in the GNDEC knowledge base.
-    
-    First checks for obvious out-of-scope keywords, then uses FAISS similarity.
     """
-    # Quick keyword check first
-    if _contains_out_of_scope_keywords(query):
-        logger.info(f"[DOMAIN GUARD] query={query!r} | blocked=True (keyword match)")
-        return True
-    
     vec = embed_model.encode([query], convert_to_numpy=True).astype("float32")
     scores, ids = faiss_index.search(vec, 1)
 

@@ -2,11 +2,30 @@
 import asyncio
 from .db import pg_execute
 import uuid
-from typing import List
+from typing import Any, List, Mapping
 import logging
 
 
+async def register_session(phone: str, session_id: str):
+    query = """
+    INSERT INTO chat_sessions (phone, session_id, is_active, closed_at)
+    VALUES (%s, %s, TRUE, NULL)
+    ON CONFLICT (phone)
+    DO UPDATE
+    SET session_id = EXCLUDED.session_id,
+        is_active = TRUE,
+        closed_at = NULL
+    """
+    await asyncio.to_thread(
+        pg_execute,
+        query,
+        (phone, session_id),
+    )
+
+
 async def save_message(phone: str, session_id: str, role: str, message: str):
+    await register_session(phone, session_id)
+
     query = """
     INSERT INTO chat_history (phone, session_id, role, message)
     VALUES (%s, %s, %s, %s)
@@ -37,15 +56,31 @@ async def get_session_history(phone: str, session_id: str, limit: int = 50):
 
 async def list_sessions(phone: str):
     query = """
-    SELECT DISTINCT session_id
-    FROM chat_history
-    WHERE phone = %s
-    ORDER BY session_id ASC
+    WITH saved_sessions AS (
+        SELECT session_id, MAX(created_at) AS last_activity
+        FROM chat_history
+        WHERE phone = %s
+        GROUP BY session_id
+    ),
+    active_session AS (
+        SELECT session_id, created_at AS last_activity
+        FROM chat_sessions
+        WHERE phone = %s
+    ),
+    combined_sessions AS (
+        SELECT * FROM saved_sessions
+        UNION ALL
+        SELECT * FROM active_session
+    )
+    SELECT session_id
+    FROM combined_sessions
+    GROUP BY session_id
+    ORDER BY MAX(last_activity) DESC NULLS LAST
     """
     rows = await asyncio.to_thread(
         pg_execute,
         query,
-        (phone,),
+        (phone, phone),
         True,  # fetch
     )
     return [r["session_id"] for r in rows] if rows else []

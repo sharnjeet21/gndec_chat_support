@@ -1,3 +1,5 @@
+import { AlertTriangle, Bot, UserRound } from "lucide-react";
+
 // Strip markdown formatting from text so responses render as plain text
 function stripMarkdown(text) {
   if (!text) return "";
@@ -16,7 +18,7 @@ function stripMarkdown(text) {
     // Remove horizontal rules
     .replace(/^[-*_]{3,}\s*$/gm, "")
     // Convert markdown bullet points (* item, - item) to plain dashes
-    .replace(/^[\*\-]\s+/gm, "- ")
+    .replace(/^[-*]\s+/gm, "- ")
     // Clean up extra blank lines
     .replace(/\n{3,}/g, "\n\n")
     .trim();
@@ -25,6 +27,7 @@ function stripMarkdown(text) {
 export default function MessageBubble({ role, text }) {
   const isUser = role === "user";
   const cleanText = stripMarkdown(text);
+  const lines = cleanText?.split("\n") || [];
 
   const isWarning =
     text?.includes("not related to GNDEC") ||
@@ -34,40 +37,33 @@ export default function MessageBubble({ role, text }) {
 
   let bubbleClass = "";
   if (isUser) {
-    bubbleClass = "bg-[#121212] border border-[#e11d48]/20 text-[#f8fafc] rounded-2xl rounded-tr-none";
+    bubbleClass = "bg-rose-600 border border-rose-200/20 text-white rounded-[1.35rem] rounded-tr-md shadow-lg shadow-rose-950/20";
   } else if (isWarning) {
-    bubbleClass = "bg-yellow-900/20 border border-yellow-700/30 text-yellow-200 rounded-2xl rounded-tl-none";
+    bubbleClass = "bg-amber-500/12 border border-amber-300/25 text-amber-100 rounded-[1.35rem] rounded-tl-md";
   } else {
-    bubbleClass = "bg-[#0e0e0f] border border-[#2d2d2d]/30 text-[#f8fafc] rounded-2xl rounded-tl-none";
+    bubbleClass = "glass-card text-slate-100 rounded-[1.35rem] rounded-tl-md";
   }
 
   return (
-    <div className={`flex my-2 ${isUser ? "justify-end" : "justify-start"} items-end gap-2`}>
-
-      {/* Assistant avatar */}
+    <div className={`flex my-2.5 items-end gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
       {!isUser && (
-        <div className="w-7 h-7 rounded-full bg-[#121212] border border-[#2d2d2d]
-                        flex items-center justify-center text-[10px] font-black text-[#e11d48]
-                        flex-shrink-0 mb-0.5">
-          GN
+        <div className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-rose-200">
+          {isWarning ? <AlertTriangle className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
         </div>
       )}
 
-      <div className={`max-w-[78%] px-4 py-2.5 text-sm shadow-md leading-relaxed ${bubbleClass}`}>
-        {cleanText?.split("\n").map((line, i) => (
+      <div className={`max-w-[84%] px-4 py-3 text-sm leading-relaxed sm:max-w-[76%] ${bubbleClass}`}>
+        {lines.map((line, i) => (
           <span key={i}>
             {line}
-            {i < cleanText.split("\n").length - 1 && <br />}
+            {i < lines.length - 1 && <br />}
           </span>
         ))}
       </div>
 
-      {/* User avatar */}
       {isUser && (
-        <div className="w-7 h-7 rounded-full bg-[#e11d48]
-                        flex items-center justify-center text-[10px] font-bold text-white
-                        flex-shrink-0 mb-0.5">
-          U
+        <div className="brand-mark mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl text-white">
+          <UserRound className="h-4 w-4" />
         </div>
       )}
     </div>

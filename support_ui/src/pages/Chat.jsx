@@ -1,52 +1,45 @@
-import { useEffect, useState, useRef } from "react";
+import { createElement, useEffect, useState, useRef } from "react";
+import {
+  BookOpen,
+  Bot,
+  Briefcase,
+  Building2,
+  ChevronLeft,
+  CircleDollarSign,
+  FileText,
+  GraduationCap,
+  Home,
+  LoaderCircle,
+  Menu,
+  MessageCircle,
+  Plus,
+  Send,
+  Sparkles,
+} from "lucide-react";
 import { startSession, askStream, getHistory, fetchSessions } from "../api";
 import MessageBubble from "../components/MessageBubble";
 import SourceCard from "../components/SourceCard";
 import TypingIndicator from "../components/TypingIndicator";
 
 const SUGGESTIONS = [
-  { icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-      </svg>
-    ), text: "What B.Tech programs does GNDEC offer?" },
-  { icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-      </svg>
-    ), text: "How do I apply for admission?" },
-  { icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-      </svg>
-    ), text: "Tell me about the CSE department" },
-  { icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
-      </svg>
-    ), text: "What are the hostel facilities?" },
-  { icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-      </svg>
-    ), text: "What is the fee structure?" },
-  { icon: (
-      <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-      </svg>
-    ), text: "Tell me about placements at GNDEC" },
+  { icon: GraduationCap, text: "What B.Tech programs does GNDEC offer?" },
+  { icon: FileText, text: "How do I apply for admission?" },
+  { icon: Building2, text: "Tell me about the CSE department" },
+  { icon: Home, text: "What are the hostel facilities?" },
+  { icon: CircleDollarSign, text: "What is the fee structure?" },
+  { icon: Briefcase, text: "Tell me about placements at GNDEC" },
 ];
 
 export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
-  const [sessions, setSessions]       = useState([]);
-  const [messages, setMessages]       = useState([]);
-  const [sources, setSources]         = useState([]);
-  const [query, setQuery]             = useState("");
-  const [loading, setLoading]         = useState(false);
+  const [sessions, setSessions] = useState([]);
+  const [messages, setMessages] = useState([]);
+  const [sources, setSources] = useState([]);
+  const [query, setQuery] = useState("");
+  const [loading, setLoading] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   const messagesEndRef = useRef(null);
-  const inputRef       = useRef(null);
+  const inputRef = useRef(null);
 
   useEffect(() => {
     fetchSessions(phone).then((d) => setSessions(d.sessions || []));
@@ -62,41 +55,29 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
     if (!query.trim() || loading) return;
     const q = query.trim();
     setQuery("");
+    if (inputRef.current) inputRef.current.style.height = "48px";
     setMessages((m) => [...m, { role: "user", message: q }]);
     setSources([]);
     setLoading(true);
 
-    // Don't add empty bubble yet — TypingIndicator shows while waiting
-    // Only add the assistant bubble once first content token arrives
+    let firstToken = true;
 
     try {
-      let bubbleAdded = false;
-
       await askStream(phone, sessionId, q, (chunk) => {
-
         if (chunk.type === "sources") {
           setSources(chunk.data || []);
           return;
         }
 
         if (chunk.type === "blocked") {
-          if (!bubbleAdded) {
-            setMessages((m) => [...m, { role: "assistant", message: chunk.message }]);
-          } else {
-            setMessages((m) => {
-              const copy = [...m];
-              copy[copy.length - 1] = { role: "assistant", message: chunk.message };
-              return copy;
-            });
-          }
+          setMessages((m) => [...m, { role: "assistant", message: chunk.message }]);
           setLoading(false);
           return;
         }
 
         if (chunk.type === "content") {
-          if (!bubbleAdded) {
-            // First token — add the bubble now (replaces TypingIndicator)
-            bubbleAdded = true;
+          if (firstToken) {
+            firstToken = false;
             setMessages((m) => [...m, { role: "assistant", message: chunk.data || "" }]);
           } else {
             setMessages((m) => {
@@ -110,16 +91,11 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
           }
         }
       });
-
-      // If stream ended with no content (edge case), add empty bubble
-      if (!bubbleAdded) {
-        setMessages((m) => [...m, { role: "assistant", message: "I couldn't generate a response. Please try again." }]);
-      }
     } catch {
-      setMessages((m) => [...m, {
-        role: "assistant",
-        message: "Sorry, something went wrong. Please try again.",
-      }]);
+      setMessages((m) => [
+        ...m,
+        { role: "assistant", message: "Sorry, something went wrong. Please try again." },
+      ]);
     } finally {
       setLoading(false);
       inputRef.current?.focus();
@@ -127,249 +103,246 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
   }
 
   function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  }
+
+  function switchSession(sid) {
+    onSelectSession(sid);
+    setSidebarOpen(false);
+  }
+
+  function startNewSession() {
+    onSelectSession(Date.now().toString());
+    setSidebarOpen(false);
   }
 
   return (
-    <div className="flex h-screen bg-[#080808] overflow-hidden">
-
-      {/* ── Background glows ── */}
-      <div className="fixed top-0 right-0 w-[500px] h-[500px] bg-[#e11d48]/5 blur-[120px] rounded-full pointer-events-none" />
-      <div className="fixed bottom-0 left-0 w-[400px] h-[400px] bg-[#e11d48]/3 blur-[100px] rounded-full pointer-events-none" />
-
-      {/* ══════════════ SIDEBAR ══════════════ */}
-      {/* Mobile overlay */}
+    <div className="screen-bg flex h-screen overflow-hidden text-slate-100">
       {sidebarOpen && (
-        <div
-          className="fixed inset-0 bg-black/60 z-20 md:hidden"
+        <button
+          type="button"
+          aria-label="Close conversations"
+          className="fixed inset-0 z-20 bg-black/55 backdrop-blur-sm md:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
-      <aside className={`
-        ${sidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}
-        fixed md:relative z-30 md:z-auto
-        ${sidebarOpen ? "md:w-[280px]" : "md:w-0"}
-        w-[280px] h-full flex-shrink-0 transition-all duration-300
-        bg-[#0e0e0f] border-r border-[#2d2d2d]/30 flex flex-col overflow-hidden
-      `}>
-
-        {/* Sidebar header */}
-        <div className="px-4 py-4 flex items-center gap-2.5 flex-shrink-0 border-b border-[#2d2d2d]/30">
-          <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-[#e11d48] to-[#9f1239]
-                          flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
-            GN
-          </div>
-          <div className="min-w-0">
-            <p className="text-[#e11d48] text-xs font-bold truncate">GNDEC AI</p>
-            <p className="text-[#71717a] text-[10px] truncate">{phone}</p>
+      <aside
+        className={`
+          ${sidebarOpen ? "translate-x-0 md:w-[300px]" : "-translate-x-full md:translate-x-0 md:w-0"}
+          fixed inset-y-0 left-0 z-30 flex h-full w-[300px] shrink-0 flex-col overflow-hidden
+          border-r border-white/10 bg-black/25 backdrop-blur-2xl transition-all duration-300
+          md:relative md:z-auto
+        `}
+      >
+        <div className="border-b border-white/10 px-4 py-4">
+          <div className="flex items-center gap-3">
+            <div className="brand-mark flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xs font-black text-white">
+              GN
+            </div>
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-sm font-black text-white">GNDEC AI</p>
+              <p className="truncate text-[11px] text-slate-400">{phone}</p>
+            </div>
           </div>
         </div>
 
-        {/* Back button */}
-        <div className="px-3 py-2 border-b border-[#2d2d2d]/30 flex-shrink-0">
+        <div className="border-b border-white/10 px-3 py-3">
           <button
             onClick={onBack}
-            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg
-                       text-[#94a3b8] hover:text-[#f8fafc] hover:bg-[#121212] transition text-xs"
+            className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-300 hover:bg-white/[0.06] hover:text-white"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
+            <ChevronLeft className="h-4 w-4" />
             All Conversations
           </button>
         </div>
 
-        {/* Sessions list */}
-        <div className="flex-1 overflow-y-auto px-3 py-3 space-y-1.5">
-          <p className="text-[10px] text-[#71717a] uppercase tracking-widest px-1 mb-2 font-medium">
-            Past Sessions
-          </p>
-          {sessions.map((sid, i) => (
-            <button
-              key={i}
-              onClick={() => onSelectSession(sid)}
-              className={`w-full px-3 py-2.5 rounded-xl text-left text-xs transition group
-                ${sid === sessionId
-                  ? "bg-[#e11d48]/10 border border-[#e11d48]/20 text-[#e11d48] glow-primary"
-                  : "text-[#94a3b8] hover:bg-[#121212] hover:text-[#f8fafc] border border-transparent"
-                }`}
-            >
-              <span className="font-medium block">Chat {i + 1}</span>
-              <span className="text-[9px] opacity-50 truncate block mt-0.5">{sid.slice(0, 14)}…</span>
-            </button>
-          ))}
+        <div className="flex-1 overflow-y-auto px-3 py-4">
+          <div className="mb-3 flex items-center justify-between px-1">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
+              Sessions
+            </p>
+            <span className="rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[10px] text-slate-400">
+              {sessions.length}
+            </span>
+          </div>
+
+          <div className="space-y-2">
+            {sessions.length === 0 ? (
+              <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-5 text-center">
+                <MessageCircle className="mx-auto h-5 w-5 text-slate-500" />
+                <p className="mt-2 text-xs text-slate-500">No saved chats</p>
+              </div>
+            ) : (
+              sessions.map((sid, i) => (
+                <button
+                  key={sid || i}
+                  onClick={() => switchSession(sid)}
+                  className={`w-full rounded-2xl border px-3 py-3 text-left text-xs transition group
+                    ${sid === sessionId
+                      ? "border-rose-300/25 bg-rose-500/[0.12] text-rose-100 soft-ring"
+                      : "border-white/[0.08] bg-white/[0.035] text-slate-300 hover:border-white/15 hover:bg-white/[0.07] hover:text-white"
+                    }`}
+                >
+                  <span className="block font-bold">Chat {i + 1}</span>
+                  <span className="mt-1 block truncate font-mono text-[10px] opacity-50">
+                    {sid.slice(0, 18)}
+                  </span>
+                </button>
+              ))
+            )}
+          </div>
         </div>
 
-        {/* New discussion */}
-        <div className="px-3 py-3 border-t border-[#2d2d2d]/30 flex-shrink-0">
+        <div className="border-t border-white/10 p-3">
           <button
-            onClick={() => onSelectSession(Date.now().toString())}
-            className="w-full py-2 rounded-xl bg-[#e11d48] hover:bg-[#be123c]
-                       text-white text-xs font-semibold transition-all active:scale-95
-                       flex items-center justify-center gap-1.5 shadow-lg shadow-[#e11d48]/20"
+            onClick={startNewSession}
+            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 px-4 py-3 text-xs font-bold text-white shadow-lg shadow-rose-500/25 hover:bg-rose-500 active:scale-[0.98]"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
+            <Plus className="h-4 w-4" />
             New Discussion
           </button>
         </div>
       </aside>
 
-      {/* ══════════════ MAIN AREA ══════════════ */}
-      <div className="flex flex-col flex-1 min-w-0 relative">
-
-        {/* Top header bar */}
-        <header className="flex items-center gap-3 px-4 py-3 bg-[#080808]/80 backdrop-blur-xl
-                           border-b border-[#2d2d2d]/30 flex-shrink-0 z-10">
-          {/* Hamburger toggle */}
+      <div className="relative flex min-w-0 flex-1 flex-col">
+        <header className="z-10 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/20 px-3 py-3 backdrop-blur-2xl sm:px-5">
           <button
             onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="p-1.5 rounded-lg text-[#71717a] hover:text-[#f8fafc] hover:bg-[#121212] transition"
+            aria-label="Toggle conversations"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-slate-300 hover:bg-white/[0.09] hover:text-white"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-            </svg>
+            <Menu className="h-5 w-5" />
           </button>
 
-          {/* Title */}
-          <div className="flex items-center gap-2.5 flex-1 min-w-0">
-            <div className="w-7 h-7 rounded-lg bg-[#e11d48] flex items-center justify-center text-[10px] font-black text-white flex-shrink-0">
+          <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="brand-mark flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-xs font-black text-white">
               GN
             </div>
             <div className="min-w-0">
-              <p className="text-sm font-bold text-[#e11d48] truncate">GNDEC College Assistant</p>
-              <p className="text-[10px] text-[#71717a] truncate hidden sm:block">
+              <p className="truncate text-sm font-black text-white sm:text-base">
+                GNDEC College Assistant
+              </p>
+              <p className="hidden truncate text-[11px] text-slate-400 sm:block">
                 Guru Nanak Dev Engineering College, Ludhiana
               </p>
             </div>
           </div>
 
-          {/* Online indicator */}
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-green-900/20 border border-green-700/20 flex-shrink-0">
-            <span className="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-[10px] text-green-400 font-medium">Online</span>
+          <div className="hidden items-center gap-2 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 py-2 sm:flex">
+            <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.8)]" />
+            <span className="text-[11px] font-bold text-emerald-200">Online</span>
           </div>
         </header>
 
-        {/* Messages area */}
-        <div className="flex-1 overflow-y-auto px-4 py-4 bg-[#080808]">
+        <main className="flex-1 overflow-y-auto px-3 py-5 sm:px-6">
+          <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col">
+            {messages.length === 0 && !loading && (
+              <div className="flex flex-1 items-center justify-center py-8">
+                <div className="w-full max-w-3xl">
+                  <div className="glass-panel rounded-[2rem] p-6 text-center sm:p-8">
+                    <div className="brand-mark mx-auto flex h-16 w-16 items-center justify-center rounded-[1.4rem] text-sm font-black text-white">
+                      <Bot className="h-8 w-8" />
+                    </div>
+                    <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-teal-200/75">
+                      Campus Knowledge Desk
+                    </p>
+                    <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
+                      How can I help you?
+                    </h2>
+                    <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">
+                      Ask about GNDEC admissions, departments, hostel, placements, fees, events, or campus services.
+                    </p>
 
-          {/* Empty state */}
-          {messages.length === 0 && !loading && (
-            <div className="flex flex-col items-center justify-center h-full gap-6 max-w-lg mx-auto">
-              <div className="text-center">
-                <div className="w-20 h-20 rounded-3xl bg-[#121212] border border-[#e11d48]/20
-                                flex items-center justify-center mx-auto mb-4">
-                  <svg xmlns="http://www.w3.org/2000/svg" className="w-9 h-9 text-[#e11d48]/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5}
-                      d="M12 14l9-5-9-5-9 5 9 5zm0 0l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" />
-                  </svg>
+                    <div className="mt-7 grid gap-2 sm:grid-cols-2">
+                      {SUGGESTIONS.map((suggestion) => (
+                        <button
+                          key={suggestion.text}
+                          onClick={() => {
+                            setQuery(suggestion.text);
+                            inputRef.current?.focus();
+                          }}
+                          className="glass-card lift-hover flex items-start gap-3 rounded-2xl px-4 py-3 text-left text-xs font-semibold text-slate-200"
+                        >
+                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-200 ring-1 ring-rose-300/20">
+                            {createElement(suggestion.icon, { className: "h-4 w-4" })}
+                          </span>
+                          <span className="pt-1 leading-5">{suggestion.text}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
-                <h3 className="text-[#f8fafc] font-bold text-lg">How can I help you?</h3>
-                <p className="text-[#71717a] text-sm mt-1.5">
-                  Ask me anything about GNDEC — admissions, departments, facilities, and more.
-                </p>
               </div>
+            )}
 
-              {/* Suggestion chips grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
-                {SUGGESTIONS.map((s) => (
-                  <button
-                    key={s.text}
-                    onClick={() => { setQuery(s.text); inputRef.current?.focus(); }}
-                    className="text-left px-3.5 py-2.5 rounded-xl bg-[#0e0e0f] border border-[#2d2d2d]/40
-                               hover:border-[#e11d48]/30 hover:bg-[#121212] transition text-xs text-[#94a3b8]
-                               hover:text-[#f8fafc] group flex items-start gap-2"
-                  >
-                    <span className="text-[#e11d48]/50 group-hover:text-[#e11d48]/80 mt-0.5 flex-shrink-0 transition">
-                      {s.icon}
-                    </span>
-                    {s.text}
-                  </button>
+            <div className="space-y-3">
+              {messages.map((m, i) => (
+                <MessageBubble key={i} role={m.role} text={m.message} />
+              ))}
+              {loading && messages[messages.length - 1]?.role !== "assistant" && <TypingIndicator />}
+              <div ref={messagesEndRef} />
+            </div>
+          </div>
+        </main>
+
+        {sources.length > 0 && (
+          <section className="shrink-0 border-t border-white/10 bg-black/20 px-3 py-3 backdrop-blur-2xl sm:px-5">
+            <div className="mx-auto max-w-5xl">
+              <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200/80">
+                <BookOpen className="h-3.5 w-3.5" />
+                Knowledge Sources
+              </p>
+              <div className="flex gap-2 overflow-x-auto pb-1">
+                {sources.slice(0, 4).map((s, i) => (
+                  <SourceCard key={i} s={s} />
                 ))}
               </div>
             </div>
-          )}
-
-          {/* Message list */}
-          {messages.map((m, i) => (
-            <MessageBubble key={i} role={m.role} text={m.message} />
-          ))}
-          {/* TypingIndicator shows while waiting for first token */}
-          {loading && <TypingIndicator />}
-          <div ref={messagesEndRef} />
-        </div>
-
-        {/* Sources panel */}
-        {sources.length > 0 && (
-          <div className="px-4 py-2.5 border-t border-[#2d2d2d]/30 bg-[#080808]">
-            <p className="text-[11px] text-[#e11d48] font-semibold mb-2 flex items-center gap-1.5">
-              <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
-              </svg>
-              Knowledge Sources
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {sources.slice(0, 4).map((s, i) => (
-                <SourceCard key={i} s={s} />
-              ))}
-            </div>
-          </div>
+          </section>
         )}
 
-        {/* Input bar */}
-        <div className="px-4 py-3 flex-shrink-0 bg-gradient-to-t from-[#080808] via-[#080808]/90 to-transparent">
-          <div className="flex gap-2 items-end max-w-4xl mx-auto">
-            <div className="flex-1 relative">
-              <textarea
-                ref={inputRef}
-                rows={1}
-                value={query}
-                onChange={(e) => {
-                  setQuery(e.target.value);
-                  // Auto-resize
-                  e.target.style.height = "auto";
-                  e.target.style.height = Math.min(e.target.scrollHeight, 120) + "px";
-                }}
-                onKeyDown={handleKeyDown}
-                placeholder="Ask about GNDEC admissions, departments, facilities…"
-                className="w-full bg-[#121212]/90 border border-[#2d2d2d]/40 text-[#f8fafc] text-sm
-                           px-4 py-3 rounded-3xl resize-none outline-none leading-relaxed glass-effect
-                           placeholder-[#52525b] focus:border-[#e11d48]/50 focus:ring-2 focus:ring-[#e11d48]/10"
-                style={{ minHeight: "46px", maxHeight: "120px" }}
-              />
-            </div>
+        <div className="shrink-0 px-3 pb-4 pt-2 sm:px-5">
+          <div className="mx-auto flex max-w-5xl items-end gap-2 rounded-[1.6rem] border border-white/10 bg-black/25 p-2 shadow-2xl shadow-black/30 backdrop-blur-2xl">
+            <textarea
+              ref={inputRef}
+              rows={1}
+              value={query}
+              onChange={(e) => {
+                setQuery(e.target.value);
+                e.target.style.height = "auto";
+                e.target.style.height = Math.min(e.target.scrollHeight, 130) + "px";
+              }}
+              onKeyDown={handleKeyDown}
+              placeholder="Ask about GNDEC admissions, departments, facilities..."
+              className="min-h-12 flex-1 resize-none rounded-[1.25rem] border border-transparent bg-transparent px-4 py-3 text-sm leading-relaxed text-white outline-none placeholder:text-slate-500 focus:border-white/10 focus:bg-white/[0.04]"
+              style={{ maxHeight: "130px" }}
+            />
 
             <button
               onClick={sendMessage}
               disabled={loading || !query.trim()}
-              className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center transition-all active:scale-95
+              aria-label="Send message"
+              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.25rem] active:scale-[0.96]
                 ${loading || !query.trim()
-                  ? "bg-[#1c1c1d] text-[#52525b] cursor-not-allowed"
-                  : "bg-[#e11d48] hover:bg-[#be123c] text-white shadow-lg shadow-[#e11d48]/25"
+                  ? "cursor-not-allowed bg-white/[0.06] text-slate-600"
+                  : "bg-rose-600 text-white shadow-lg shadow-rose-500/25 hover:bg-rose-500"
                 }`}
             >
               {loading ? (
-                <svg className="w-4 h-4 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
+                <LoaderCircle className="h-5 w-5 animate-spin" />
               ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                </svg>
+                <Send className="h-5 w-5" />
               )}
             </button>
           </div>
-          <p className="text-[10px] text-[#3f3f46] text-center mt-1.5">
-            Press{" "}
-            <kbd className="px-1 py-0.5 rounded bg-[#1c1c1d] border border-[#2d2d2d] text-[#71717a] font-mono text-[9px]">Enter</kbd>
-            {" "}to send ·{" "}
-            <kbd className="px-1 py-0.5 rounded bg-[#1c1c1d] border border-[#2d2d2d] text-[#71717a] font-mono text-[9px]">Shift+Enter</kbd>
-            {" "}for new line
-          </p>
+          <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] font-medium text-slate-600">
+            <Sparkles className="h-3 w-3 text-teal-300/60" />
+            GNDEC AI
+          </div>
         </div>
       </div>
     </div>

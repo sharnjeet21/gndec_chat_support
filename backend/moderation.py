@@ -15,10 +15,17 @@ THRESHOLDS = {
 }
 
 
-@lru_cache(maxsize=1)
+logging.info("Pre-loading Detoxify model on CPU during startup to avoid thread crash...")
+try:
+    _model = Detoxify("original", device="cpu")
+except Exception as e:
+    logging.error(f"Failed to load Detoxify: {e}")
+    _model = None
+
 def _get_model() -> Detoxify:
-    logging.info("Loading Detoxify model (cached)")
-    return Detoxify("original")
+    if _model is None:
+        raise RuntimeError("Detoxify failed to initialize")
+    return _model
 
 
 def check_toxicity(text: str) -> Tuple[bool, Dict[str, Any]]:
