@@ -57,8 +57,8 @@ CRITICAL RULES:
 Tone: Warm, highly detailed, exhaustive, and helpful. Plain text only.
 """
 
-# FAISS retriever (sync function) — fetch top 5
-retriever = get_retriever(5)
+# FAISS retriever (sync function) — fetch top 8 for broad coverage
+retriever = get_retriever(8)
 
 WARNING_TEXT = (
     "I'm sorry, I cannot answer that. "
@@ -138,8 +138,11 @@ User question:
 {query}
 
 Instructions:
-- Answer the user's question using ONLY the provided knowledge. Be BRIEF and FOCUSED — highlight the most important and relevant information only.
-- For fee structures or tabular data: provide a concise SUMMARY with key numbers (e.g. 1st semester totals, hostel fees). Do NOT copy entire semester-by-semester tables verbatim. Mention all available programs briefly.
+- Answer the user's question using ONLY the provided knowledge. Be BRIEF and FOCUSED.
+- CRITICAL: For fee structures, provide a UNIFORM SUMMARY for ALL available programs. Do NOT list every semester. For EVERY program, provide ONLY:
+  - 1st Semester Total Fee
+  - Hostel Fee
+- Do NOT copy entire semester-by-semester tables verbatim for any program. Treat all programs equally.
 - Check conversation history for context on follow-up questions.
 - STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the provided knowledge, say "I do not have information about that." and suggest visiting gndec.ac.in.
 - Do NOT use irrelevant knowledge.
