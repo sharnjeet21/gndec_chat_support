@@ -163,8 +163,9 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
     <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-[#000] relative bg-[#fff8c6]">
       {/* Sidebar */}
       <aside className="w-[280px] flex flex-col shrink-0 hidden md:flex pt-2 z-10">
-        <div className="px-4 pb-4 flex items-center gap-3 border-b border-[#ccc]">
-           <div className="pl-2">
+        <div className="px-4 pb-4 flex items-center gap-2 border-b border-[#ccc]">
+           <img src="https://erp.gndec.ac.in/files/gnelogo.png" alt="GNE Logo" className="w-10 h-10 ml-1 opacity-90" />
+           <div className="pl-1">
              <p className="font-bold text-sm text-[#000]">GNDEC Chat</p>
              <p className="text-[10px] text-[#666]">Guest Mode</p>
            </div>
