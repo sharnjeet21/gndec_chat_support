@@ -18,28 +18,18 @@ logging.info(f"LLM Provider : {MODEL_PROVIDER}")
 logging.info(f"API URL      : {MODEL_API_URL}")
 logging.info(f"Model        : {LLM_MODEL}")
 
+from openai import AsyncOpenAI
+
 # -----------------------------------------------
-# LangChain LLM Wrapper
+# Native OpenAI Client
 # -----------------------------------------------
+api_key = os.getenv("OPENAI_API_KEY", "EMPTY")
 if MODEL_PROVIDER == "OLLAMA":
-    llm = ChatOllama(
-        model=LLM_MODEL,
-        base_url=MODEL_API_URL,
-        temperature=0.0,
-    )
+    client = AsyncOpenAI(api_key="ollama", base_url=MODEL_API_URL)
 else:
-    # vLLM / OpenAI-compatible endpoint
-    llm = ChatOpenAI(
-        model=LLM_MODEL,
-        api_key=os.getenv("OPENAI_API_KEY", "EMPTY"),
-        base_url=f"{MODEL_API_URL}/v1",
-        temperature=0.0,
-        max_tokens=1500,
-        model_kwargs={
-            "presence_penalty": 0.5,
-            "frequency_penalty": 0.5
-        }
-    )
+    client = AsyncOpenAI(api_key=api_key, base_url=f"{MODEL_API_URL}/v1")
+
+# We no longer export llm, we export client and LLM_MODEL
 
 
 # -----------------------------------------------
@@ -47,12 +37,21 @@ else:
 # -----------------------------------------------
 def call_model_sync(prompt: str) -> str:
     logging.info("[LLM] Sync inference")
-    res = llm.invoke(prompt)
-    return res.content
+    res = asyncio.run(client.chat.completions.create(
+        model=LLM_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0
+    ))
+    return res.choices[0].message.content
 
 
 # -----------------------------------------------
 # ASYNC Call
 # -----------------------------------------------
 async def call_model_async(prompt: str) -> str:
-    return await asyncio.to_thread(call_model_sync, prompt)
+    res = await client.chat.completions.create(
+        model=LLM_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0
+    )
+    return res.choices[0].message.content

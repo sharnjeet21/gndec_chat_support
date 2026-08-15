@@ -9,7 +9,7 @@ from langchain.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 
 from .vectorstore import get_retriever
-from .llm.llm import llm
+from .llm.llm import client, LLM_MODEL
 from .chat_store import save_message
 from .db import REDIS_URL, SESSION_TTL
 from .vectorstore import get_retriever
@@ -183,8 +183,12 @@ async def answer_sync(query: str, phone: str, session_id: str):
     # ---------------- LLM CALL ----------------
     logging.info(f"🟢🟢🟢 GNDEC PROMPT 🟢🟢🟢\n\n{prompt}\n\n🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢")
 
-    msg = await llm.ainvoke(prompt)
-    ans = msg.content.strip()
+    response = await client.chat.completions.create(
+        model=LLM_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0
+    )
+    ans = response.choices[0].message.content.strip()
 
     # Toxicity check on output
     ai_toxic, _ = await asyncio.to_thread(check_toxicity, ans)
@@ -221,10 +225,17 @@ async def answer_stream(query: str, phone: str, session_id: str):
     # Send sources first
     yield json.dumps({"type": "sources", "sources": sources}) + "\n"
 
+    response = await client.chat.completions.create(
+        model=LLM_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0,
+        stream=True
+    )
+
     acc = ""
-    
-    async for chunk in llm.astream(prompt):
-        delta = chunk.content
+    async for chunk in response:
+        # Important: only read content, ignore reasoning_content!
+        delta = chunk.choices[0].delta.content
         if not delta:
             continue
             
