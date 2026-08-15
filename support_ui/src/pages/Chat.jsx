@@ -164,10 +164,9 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
       {/* Sidebar */}
       <aside className="w-[280px] flex flex-col shrink-0 hidden md:flex pt-2 z-10">
         <div className="px-4 pb-4 flex items-center gap-3 border-b border-[#DCE5E4]">
-           <button onClick={onBack} className="p-2 hover:bg-[#DCE5E4] rounded-xl text-[#012529]/70"><ChevronLeft className="w-5 h-5"/></button>
-           <div>
+           <div className="pl-2">
              <p className="font-bold text-sm text-[#012529]">GNDEC Chat</p>
-             <p className="text-[10px] text-[#012529]/50">{phone}</p>
+             <p className="text-[10px] text-[#012529]/50">Guest Mode</p>
            </div>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
@@ -189,8 +188,6 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
         {/* Header */}
         <header className="flex justify-center items-center h-16 shrink-0 bg-[#F3EBD7] border-b border-[#DCE5E4] z-10 sticky top-0 shadow-sm">
            <h2 className="font-bold text-[#012529]">GNDEC Support</h2>
-           {/* Mobile back button */}
-           <button onClick={onBack} className="absolute left-4 p-2 text-[#012529]/70 md:hidden"><ChevronLeft className="w-5 h-5"/></button>
         </header>
 
         {/* Messages */}

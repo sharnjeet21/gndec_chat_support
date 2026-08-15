@@ -1,24 +1,31 @@
-import { useState } from "react";
-import Login from "./pages/Login";
+import { useState, useEffect } from "react";
 import Chat from "./pages/Chat";
 
-export default function App() {
-  const [phone, setPhone] = useState("");
-  const [sessionId, setSessionId] = useState("");
-
-  function handleLogin(nextPhone) {
-    setPhone(nextPhone.trim());
-    setSessionId(Date.now().toString());
+function getGuestId() {
+  let guestId = localStorage.getItem("gndec_guest_id");
+  if (!guestId) {
+    guestId = "guest_" + Math.random().toString(36).substring(2, 10);
+    localStorage.setItem("gndec_guest_id", guestId);
   }
+  return guestId;
+}
 
-  if (!phone) return <Login onLogin={handleLogin} />;
+export default function App() {
+  const [sessionId, setSessionId] = useState("");
+  const guestId = getGuestId();
 
+  useEffect(() => {
+    // Generate initial session id
+    setSessionId(Date.now().toString());
+  }, []);
+
+  if (!sessionId) return null;
 
   return (
     <Chat
-      phone={phone}
+      phone={guestId}
       sessionId={sessionId}
-      onBack={() => setPhone("")}
+      onBack={() => {}}
       onSelectSession={setSessionId} 
     />
   );
