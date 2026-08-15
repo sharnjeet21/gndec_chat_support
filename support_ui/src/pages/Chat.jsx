@@ -23,9 +23,9 @@ function TypingIndicator() {
       <div className="flex flex-col flex-1">
         <span className="text-[10px] font-bold text-[#666] mb-1">Ai-Assistant</span>
         <div className="flex gap-1.5 px-1 py-2">
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#999]" />
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#999]" />
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#999]" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#0066b3]" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#0066b3]" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#0066b3]" />
         </div>
       </div>
     </div>
@@ -52,13 +52,13 @@ function SourceCard({ s, index }) {
 
   const isDoc = s.doc_url && (s.doc_url.endsWith(".pdf") || s.doc_url.endsWith(".docx") || s.doc_url.endsWith(".doc"));
   return (
-    <div className="bg-[#f6f9fb] border border-[#ccc] min-w-[200px] max-w-[240px] rounded-xl px-3 py-2.5 text-xs flex-shrink-0 shadow-sm">
-      <p className="truncate font-bold text-[#333]" title={s.question}>
-        <span className="mr-1.5 inline-flex bg-[#ddd] px-1 py-0.5 text-[9px] text-[#333] rounded">[{index}]</span>
+    <div className="bg-[#ebf3f9] border border-[#0066b3] min-w-[200px] max-w-[240px] rounded-xl px-3 py-2.5 text-xs flex-shrink-0 shadow-sm">
+      <p className="truncate font-bold text-[#000]" title={s.question}>
+        <span className="mr-1.5 inline-flex bg-[#0066b3] px-1 py-0.5 text-[9px] text-[#fff] rounded">[{index}]</span>
         {s.question?.slice(0, 40)}{s.question?.length > 40 ? "…" : ""}
       </p>
       {s.section && <p className="mt-1 flex items-center gap-1.5 truncate text-[10px] text-[#555]"><Folder className="h-3 w-3" />{s.section}</p>}
-      <a href={link} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#8a1f11] hover:text-[#900]">
+      <a href={link} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#f00] hover:text-[#900]">
         {isDoc ? <FileText className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
         {link.replace("https://", "").replace("http://", "").split("/")[0]}
       </a>
@@ -160,34 +160,34 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
   }
 
   return (
-    <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-[#333] relative bg-[#f1f5f7]">
+    <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-[#000] relative bg-[#fff8c6]">
       {/* Sidebar */}
       <aside className="w-[280px] flex flex-col shrink-0 hidden md:flex pt-2 z-10">
-        <div className="px-4 pb-4 flex items-center gap-3 border-b border-[#ddd]">
+        <div className="px-4 pb-4 flex items-center gap-3 border-b border-[#ccc]">
            <div className="pl-2">
-             <p className="font-bold text-sm text-[#890000]">GNDEC Chat</p>
+             <p className="font-bold text-sm text-[#000]">GNDEC Chat</p>
              <p className="text-[10px] text-[#666]">Guest Mode</p>
            </div>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
           {sessions.map((sid, i) => (
-            <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors ${sid === sessionId ? "bg-[#890000] text-[#fff] font-semibold shadow-md" : "text-[#555] hover:bg-[#ddd]"}`}>
+            <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors ${sid === sessionId ? "bg-[#0066b3] text-[#fff] font-semibold shadow-md" : "text-[#555] hover:bg-[#eaefcb]"}`}>
               Chat {i + 1}
             </button>
           ))}
         </div>
-        <div className="p-4 border-t border-[#ddd]">
-           <button onClick={() => onSelectSession(Date.now().toString())} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] bg-[#f9cf00] text-[#000] text-sm font-bold hover:bg-[#eed300] hover:shadow-lg transition-all">
+        <div className="p-4 border-t border-[#ccc]">
+           <button onClick={() => onSelectSession(Date.now().toString())} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] bg-[#008000] text-[#fff] text-sm font-bold hover:bg-[#00aa00] hover:shadow-lg transition-all">
              <Plus className="w-4 h-4"/> New Chat
            </button>
         </div>
       </aside>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative overflow-hidden bg-[#fff] md:border md:border-[#ddd] md:rounded-[2.5rem] md:shadow-sm z-10">
+      <div className="flex-1 flex flex-col relative overflow-hidden bg-[#fffff0] md:border md:border-[#ccc] md:rounded-[2.5rem] md:shadow-sm z-10">
         {/* Header */}
-        <header className="flex justify-center items-center h-16 shrink-0 bg-[#fff] border-b border-[#ddd] z-10 sticky top-0 shadow-sm">
-           <h2 className="font-bold text-[#890000]">GNDEC Support</h2>
+        <header className="flex justify-center items-center h-16 shrink-0 bg-[#fffff0] border-b border-[#ccc] z-10 sticky top-0 shadow-sm">
+           <h2 className="font-bold text-[#0066b3]">GNDEC Support</h2>
         </header>
 
         {/* Messages */}
@@ -202,7 +202,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
                     <button
                       key={idx}
                       onClick={() => submitQuery(q)}
-                      className="px-4 py-2.5 rounded-xl bg-[#f1f5f7] hover:bg-[#ddd] text-[#333] text-xs border border-[#ccc] transition-colors shadow-sm"
+                      className="px-4 py-2.5 rounded-xl bg-[#fff] hover:bg-[#ebf3f9] text-[#000] text-xs border border-[#0066b3] transition-colors shadow-sm"
                     >
                       {q}
                     </button>
@@ -217,7 +217,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
         </main>
 
         {/* Input Bar */}
-        <div className="shrink-0 p-4 sm:p-6 w-full z-20 bg-[#fff]">
+        <div className="shrink-0 p-4 sm:p-6 w-full z-20 bg-[#fffff0]">
           <div className="max-w-3xl mx-auto flex flex-col gap-3">
             
             {/* Sources Row */}
@@ -227,9 +227,9 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               </div>
             )}
 
-            <div className="flex items-center gap-2 bg-[#f1f5f7] border border-[#ccc] shadow-sm rounded-[2rem] p-2 pl-6">
+            <div className="flex items-center gap-2 bg-[#fff] border border-[#ccc] shadow-sm rounded-[2rem] p-2 pl-6">
               <input 
-                className="flex-1 bg-transparent border-none outline-none text-[15px] text-[#333] placeholder:text-[#999]"
+                className="flex-1 bg-transparent border-none outline-none text-[15px] text-[#000] placeholder:text-[#888]"
                 placeholder="Message GNDEC Agent..."
                 value={query}
                 onChange={e => setQuery(e.target.value)}
@@ -238,7 +238,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               <select 
                 value={speechLang} 
                 onChange={(e) => setSpeechLang(e.target.value)}
-                className="bg-transparent border-none outline-none text-[13px] text-[#666] cursor-pointer hover:text-[#333] transition-colors"
+                className="bg-transparent border-none outline-none text-[13px] text-[#666] cursor-pointer hover:text-[#000] transition-colors"
                 title="Select Speech Language"
               >
                 <option value="en-IN">English</option>
@@ -247,14 +247,14 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               </select>
               <button 
                 onClick={toggleSpeech}
-                className={`p-3 rounded-full transition-colors ${isListening ? "bg-[#bc091a] text-[#fff] animate-pulse shadow-md" : "bg-[#ddd] text-[#555] hover:bg-[#ccc]"}`}
+                className={`p-3 rounded-full transition-colors ${isListening ? "bg-[#f00] text-[#fff] animate-pulse shadow-md" : "bg-[#ddd] text-[#555] hover:bg-[#ccc]"}`}
               >
                 <Mic className="w-4 h-4"/>
               </button>
               <button 
                 onClick={sendMessage}
                 disabled={loading || !query.trim()}
-                className={`p-3 rounded-full transition-colors ${loading || !query.trim() ? "bg-[#ddd] text-[#999] cursor-not-allowed" : "bg-[#890000] text-[#fff] shadow-md hover:bg-[#900] hover:scale-105"}`}
+                className={`p-3 rounded-full transition-colors ${loading || !query.trim() ? "bg-[#ddd] text-[#999] cursor-not-allowed" : "bg-[#0066b3] text-[#fff] shadow-md hover:bg-[#0072b9] hover:scale-105"}`}
               >
                 {loading ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4 ml-[-2px]"/>}
               </button>
