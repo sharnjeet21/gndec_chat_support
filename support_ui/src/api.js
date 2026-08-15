@@ -27,9 +27,9 @@ export async function startSession(phone, sessionId) {
 /* -------------------------
    ASK (SYNC)
 -------------------------- */
-export async function askSync(phone, sessionId, q) {
+export async function askSync(phone, sessionId, q, lang="auto") {
   const res = await fetch(
-    `${BASE_URL}/api/ask?phone=${encodeURIComponent(phone)}&session_id=${encodeURIComponent(sessionId)}&q=${encodeURIComponent(q)}`,
+    `${BASE_URL}/api/ask?phone=${encodeURIComponent(phone)}&session_id=${encodeURIComponent(sessionId)}&q=${encodeURIComponent(q)}&lang=${encodeURIComponent(lang)}`,
     {
       headers: authHeaders(),
     },
@@ -45,9 +45,9 @@ export async function askSync(phone, sessionId, q) {
 /* -------------------------
    ASK (STREAM)
 -------------------------- */
-export async function askStream(phone, sessionId, q, onChunk) {
+export async function askStream(phone, sessionId, q, lang, onChunk) {
   const res = await fetch(
-    `${BASE_URL}/api/ask_stream?phone=${encodeURIComponent(phone)}&session_id=${encodeURIComponent(sessionId)}&q=${encodeURIComponent(q)}`,
+    `${BASE_URL}/api/ask_stream?phone=${encodeURIComponent(phone)}&session_id=${encodeURIComponent(sessionId)}&q=${encodeURIComponent(q)}&lang=${encodeURIComponent(lang)}`,
     {
       headers: authHeaders(),
     },

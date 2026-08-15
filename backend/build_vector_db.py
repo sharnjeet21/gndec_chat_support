@@ -165,6 +165,12 @@ def load_all_faqs() -> list:
     # 6. External Web Search Facts
     all_faqs += load_flat_json("external_facts.json")
 
+    # 7. Complete Fee Structures
+    all_faqs += load_flat_json("fee_structures.json")
+    
+    # 8. Courses Offered
+    all_faqs += load_flat_json("courses_offered.json")
+
     print(f"\nTOTAL LOADED = {len(all_faqs)} Q&A pairs")
     return all_faqs
 

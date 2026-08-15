@@ -52,4 +52,4 @@ support_ui/.env
 *.md
 !README.md
 
-TECH_STACK.Models
+TECH_STACK.Modelsdata.db

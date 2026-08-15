@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import { Volume2, VolumeX } from "lucide-react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // The Avatar Orb mini version
 function OrbAvatar() {
@@ -84,7 +86,11 @@ export default function MessageBubble({ role, text }) {
                   </div>
                 );
               }
-              return <span key={i}>{part}</span>;
+              return (
+                <div key={i} className="markdown-content">
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{part}</ReactMarkdown>
+                </div>
+              );
             })}
           </div>
         </div>

@@ -15,9 +15,21 @@ export default function App() {
   const guestId = getGuestId();
 
   useEffect(() => {
-    // Generate initial session id
-    setSessionId(Date.now().toString());
+    // Generate initial session id or load from sessionStorage
+    const stored = sessionStorage.getItem("gndec_session_id");
+    if (stored) {
+      setSessionId(stored);
+    } else {
+      const newSession = Date.now().toString();
+      sessionStorage.setItem("gndec_session_id", newSession);
+      setSessionId(newSession);
+    }
   }, []);
+
+  const handleSelectSession = (id) => {
+    sessionStorage.setItem("gndec_session_id", id);
+    setSessionId(id);
+  };
 
   if (!sessionId) return null;
 
@@ -26,7 +38,7 @@ export default function App() {
       phone={guestId}
       sessionId={sessionId}
       onBack={() => {}}
-      onSelectSession={setSessionId} 
+      onSelectSession={handleSelectSession} 
     />
   );
 }

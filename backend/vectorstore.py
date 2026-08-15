@@ -42,7 +42,9 @@ def metadata_to_doc(item: Dict[str, Any]) -> Document:
 
 
 logging.info("🔄 Building BM25 keyword index...")
-all_docs = [metadata_to_doc(item) for item in META]
+# Only build BM25 for non-fee documents, as fee docs (26k+) make startup take 10+ minutes
+bm25_meta = [item for item in META if item.get('source_file') != 'fee_structures.json']
+all_docs = [metadata_to_doc(item) for item in bm25_meta]
 bm25_retriever = BM25Retriever.from_documents(all_docs)
 
 
@@ -76,24 +78,24 @@ def get_retriever(k: int = 3):
             logging.info(f"   [BM25]  #{rank+1} | Q={doc.metadata.get('question', '')!r}")
 
         # 3. Reciprocal Rank Fusion (RRF)
-        # Weights: FAISS 0.6, BM25 0.4
+        # Equal weights for better coverage of keyword-matched fee docs
         rrf_scores = {}
         doc_map = {}
         
         for rank, doc in enumerate(docs_faiss):
             key = doc.page_content
-            rrf_scores[key] = rrf_scores.get(key, 0) + (1.0 / (rank + 60)) * 0.6
+            rrf_scores[key] = rrf_scores.get(key, 0) + (1.0 / (rank + 60)) * 0.5
             doc_map[key] = doc
             
         for rank, doc in enumerate(docs_bm25):
             key = doc.page_content
-            rrf_scores[key] = rrf_scores.get(key, 0) + (1.0 / (rank + 60)) * 0.4
+            rrf_scores[key] = rrf_scores.get(key, 0) + (1.0 / (rank + 60)) * 0.5
             doc_map[key] = doc
             
         sorted_docs = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
         final_docs = [doc_map[key] for key, _ in sorted_docs[:k]]
         
-        logging.info(f"   [HYBRID] Returned top {len(final_docs)} merged documents.")
+        logging.info(f"   [HYBRID] {len(rrf_scores)} unique docs after RRF, returning top {len(final_docs)}.")
         return final_docs
 
     return retrieve
