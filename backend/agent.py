@@ -138,16 +138,16 @@ User question:
 {query}
 
 Instructions:
-- Use the provided knowledge (RAG or Web Search) to answer the user's question.
-- Check the conversation history to understand the context of the user's question. Use the older question and response context if the new question is related to it.
-- STRICTLY DO NOT GUESS OR HALLUCINATE. If the provided knowledge does not contain the answer, you must say "I do not have information about that." and suggest visiting gndec.ac.in.
+- Answer the user's question using ONLY the provided knowledge. Be BRIEF and FOCUSED — highlight the most important and relevant information only.
+- For fee structures or tabular data: provide a concise SUMMARY with key numbers (e.g. 1st semester totals, hostel fees). Do NOT copy entire semester-by-semester tables verbatim. Mention all available programs briefly.
+- Check conversation history for context on follow-up questions.
+- STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the provided knowledge, say "I do not have information about that." and suggest visiting gndec.ac.in.
 - Do NOT use irrelevant knowledge.
 - Write in plain text only. No markdown, no asterisks, no bold, no bullet points with *, no # headers.
 - Use numbered lists (1. 2. 3.) or plain line breaks if listing items.
-- If the knowledge covers the topic well, give a thorough answer.
-- CRITICAL: When extracting numbers or tabular data like fee structures, ENSURE you add clear spaces between words and numbers. Do NOT output giant unbroken strings of numbers (e.g. format as "Rs. 50,000" rather than "Rs50000").
-- STRICT SINGLE-LANGUAGE RULE: Answer entirely in ONE language (the exact language the user typed). NEVER mix multiple languages. NEVER blend Hindi and English words.
-- Give your answer directly without any chain of thought, <think> tags, or conversational filler.
+- Format numbers clearly with spaces (e.g. "Rs. 50,000" not "Rs50000").
+- STRICT SINGLE-LANGUAGE RULE: Answer entirely in ONE language (the exact language the user typed). NEVER mix languages.
+- Give your answer directly. No chain of thought, no thinking process, no <think> tags, no preamble.
 
 Answer:
 """
@@ -187,7 +187,7 @@ async def answer_sync(query: str, phone: str, session_id: str):
         model=LLM_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
-        max_tokens=4096
+        max_tokens=2048
     )
     ans = response.choices[0].message.content.strip()
 
