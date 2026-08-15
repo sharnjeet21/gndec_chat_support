@@ -71,11 +71,19 @@ async def list_sessions(phone: str):
         SELECT * FROM saved_sessions
         UNION ALL
         SELECT * FROM active_session
+    ),
+    unique_sessions AS (
+        SELECT session_id, MAX(last_activity) as last_activity
+        FROM combined_sessions
+        GROUP BY session_id
     )
-    SELECT session_id
-    FROM combined_sessions
-    GROUP BY session_id
-    ORDER BY MAX(last_activity) DESC NULLS LAST
+    SELECT u.session_id, 
+           (SELECT message 
+            FROM chat_history h 
+            WHERE h.session_id = u.session_id AND h.role = 'user' 
+            ORDER BY created_at DESC LIMIT 1) as last_question
+    FROM unique_sessions u
+    ORDER BY u.last_activity DESC NULLS LAST
     """
     rows = await asyncio.to_thread(
         pg_execute,
@@ -83,7 +91,14 @@ async def list_sessions(phone: str):
         (phone, phone),
         True,  # fetch
     )
-    return [r["session_id"] for r in rows] if rows else []
+    
+    res = []
+    if rows:
+        for r in rows:
+            q = r["last_question"]
+            title = q[:30] + "..." if q and len(q) > 30 else (q or "New Chat")
+            res.append({"id": r["session_id"], "title": title})
+    return res
 
 
 async def get_or_create_session_id(phone: str) -> str | None:
