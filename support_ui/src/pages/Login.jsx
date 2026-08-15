@@ -22,7 +22,7 @@ export default function Login({ onLogin }) {
 
         {/* The GNDEC Logo */}
         <div className="relative mb-6 shrink-0 flex justify-center items-center">
-          <img src="https://upload.wikimedia.org/wikipedia/en/3/30/Guru_Nanak_Dev_Engineering_College_logo.png" alt="GNDEC Logo" className="w-32 h-32" />
+          <img src="https://erp.gndec.ac.in/files/gnelogo.png" alt="GNDEC Logo" className="w-32 h-32" />
         </div>
 
         {/* Headings */}

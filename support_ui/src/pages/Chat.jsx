@@ -198,7 +198,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
           <div className="max-w-2xl mx-auto flex flex-col justify-end min-h-full">
             {messages.length === 0 && !loading && (
               <div className="flex flex-col items-center justify-center py-10 space-y-6 mt-10">
-                <img src="https://upload.wikimedia.org/wikipedia/en/3/30/Guru_Nanak_Dev_Engineering_College_logo.png" alt="GNDEC Logo" className="w-24 h-24 mb-2 opacity-80" />
+                <img src="https://erp.gndec.ac.in/files/gnelogo.png" alt="GNDEC Logo" className="w-24 h-24 mb-2 opacity-80" />
                 <div className="text-center text-[#012529]/60 text-sm font-medium">How can I help you today?</div>
                 <div className="flex flex-wrap justify-center gap-3 max-w-lg">
                   {SUGGESTED_QUESTIONS.map((q, idx) => (
