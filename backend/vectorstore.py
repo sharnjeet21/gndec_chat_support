@@ -52,9 +52,12 @@ def get_retriever(k: int = 3):
     def retrieve(query: str) -> List[Document]:
         logging.info(f"[RAG] Searching FAISS+BM25 Hybrid for query={query!r}")
 
+        # Search wider than k for better RRF fusion candidates
+        search_k = max(k * 2, 10)
+
         # 1. FAISS Search
         query_vec = embed_model.encode([query], convert_to_numpy=True).astype("float32")
-        scores, ids = faiss_index.search(query_vec, k)
+        scores, ids = faiss_index.search(query_vec, search_k)
         
         docs_faiss = []
         for rank, (idx, score) in enumerate(zip(ids[0], scores[0])):
@@ -67,7 +70,7 @@ def get_retriever(k: int = 3):
             docs_faiss.append(metadata_to_doc(item))
 
         # 2. BM25 Search
-        bm25_retriever.k = k
+        bm25_retriever.k = search_k
         docs_bm25 = bm25_retriever.invoke(query)
         for rank, doc in enumerate(docs_bm25):
             logging.info(f"   [BM25]  #{rank+1} | Q={doc.metadata.get('question', '')!r}")
