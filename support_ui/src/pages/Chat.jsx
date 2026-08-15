@@ -21,11 +21,11 @@ function TypingIndicator() {
     <div className="flex items-start mb-6">
       <OrbAvatar />
       <div className="flex flex-col flex-1">
-        <span className="text-[10px] font-bold text-slate-400 mb-1">Ai-Assistant</span>
+        <span className="text-[10px] font-bold text-[#012529]/70 mb-1">Ai-Assistant</span>
         <div className="flex gap-1.5 px-1 py-2">
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-slate-400" />
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-slate-400" />
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-slate-400" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#012529]/50" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#012529]/50" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#012529]/50" />
         </div>
       </div>
     </div>
@@ -52,13 +52,13 @@ function SourceCard({ s, index }) {
 
   const isDoc = s.doc_url && (s.doc_url.endsWith(".pdf") || s.doc_url.endsWith(".docx") || s.doc_url.endsWith(".doc"));
   return (
-    <div className="glass-panel min-w-[200px] max-w-[240px] rounded-xl px-3 py-2.5 text-xs flex-shrink-0">
-      <p className="truncate font-bold text-white" title={s.question}>
-        <span className="mr-1.5 inline-flex bg-white/10 px-1 py-0.5 text-[9px] text-teal-300 rounded">[{index}]</span>
+    <div className="bg-[#F8F8F8] border border-[#BFBACE] min-w-[200px] max-w-[240px] rounded-xl px-3 py-2.5 text-xs flex-shrink-0 shadow-sm">
+      <p className="truncate font-bold text-[#012529]" title={s.question}>
+        <span className="mr-1.5 inline-flex bg-[#DCE5E4] px-1 py-0.5 text-[9px] text-[#012529] rounded">[{index}]</span>
         {s.question?.slice(0, 40)}{s.question?.length > 40 ? "…" : ""}
       </p>
-      {s.section && <p className="mt-1 flex items-center gap-1.5 truncate text-[10px] text-white/50"><Folder className="h-3 w-3" />{s.section}</p>}
-      <a href={link} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex items-center gap-1.5 truncate text-[10px] font-semibold text-teal-400 hover:text-teal-300">
+      {s.section && <p className="mt-1 flex items-center gap-1.5 truncate text-[10px] text-[#012529]/70"><Folder className="h-3 w-3" />{s.section}</p>}
+      <a href={link} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#8B7A30] hover:text-[#8B7A30]/80">
         {isDoc ? <FileText className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
         {link.replace("https://", "").replace("http://", "").split("/")[0]}
       </a>
@@ -160,37 +160,37 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
   }
 
   return (
-    <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-white relative">
+    <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-[#012529] relative bg-[#F8F8F8]">
       {/* Sidebar */}
       <aside className="w-[280px] flex flex-col shrink-0 hidden md:flex pt-2 z-10">
-        <div className="px-4 pb-4 flex items-center gap-3">
-           <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-xl text-white/70"><ChevronLeft className="w-5 h-5"/></button>
+        <div className="px-4 pb-4 flex items-center gap-3 border-b border-[#DCE5E4]">
+           <button onClick={onBack} className="p-2 hover:bg-[#DCE5E4] rounded-xl text-[#012529]/70"><ChevronLeft className="w-5 h-5"/></button>
            <div>
-             <p className="font-bold text-sm">GNDEC Chat</p>
-             <p className="text-[10px] text-white/50">{phone}</p>
+             <p className="font-bold text-sm text-[#012529]">GNDEC Chat</p>
+             <p className="text-[10px] text-[#012529]/50">{phone}</p>
            </div>
         </div>
-        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
+        <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
           {sessions.map((sid, i) => (
-            <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors ${sid === sessionId ? "bg-white/20 font-semibold shadow-sm backdrop-blur-md" : "text-white/70 hover:bg-white/10"}`}>
+            <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors ${sid === sessionId ? "bg-[#012529] text-[#F8F8F8] font-semibold shadow-md" : "text-[#012529]/70 hover:bg-[#DCE5E4]"}`}>
               Chat {i + 1}
             </button>
           ))}
         </div>
-        <div className="p-4">
-           <button onClick={() => onSelectSession(Date.now().toString())} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] bg-teal-500/80 text-white text-sm font-bold hover:bg-teal-500 hover:shadow-lg transition-all">
+        <div className="p-4 border-t border-[#DCE5E4]">
+           <button onClick={() => onSelectSession(Date.now().toString())} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] bg-[#F1845E] text-white text-sm font-bold hover:bg-[#F1845E]/90 hover:shadow-lg transition-all">
              <Plus className="w-4 h-4"/> New Chat
            </button>
         </div>
       </aside>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative overflow-hidden glass-panel md:rounded-[2.5rem] z-10">
+      <div className="flex-1 flex flex-col relative overflow-hidden bg-[#F3EBD7] md:border md:border-[#DCE5E4] md:rounded-[2.5rem] md:shadow-sm z-10">
         {/* Header */}
-        <header className="flex justify-center items-center h-16 shrink-0 bg-transparent z-10 sticky top-0">
-           <h2 className="font-bold text-white">Chat</h2>
+        <header className="flex justify-center items-center h-16 shrink-0 bg-[#F3EBD7] border-b border-[#DCE5E4] z-10 sticky top-0 shadow-sm">
+           <h2 className="font-bold text-[#012529]">GNDEC Support</h2>
            {/* Mobile back button */}
-           <button onClick={onBack} className="absolute left-4 p-2 text-white/70 md:hidden"><ChevronLeft className="w-5 h-5"/></button>
+           <button onClick={onBack} className="absolute left-4 p-2 text-[#012529]/70 md:hidden"><ChevronLeft className="w-5 h-5"/></button>
         </header>
 
         {/* Messages */}
@@ -198,13 +198,14 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
           <div className="max-w-2xl mx-auto flex flex-col justify-end min-h-full">
             {messages.length === 0 && !loading && (
               <div className="flex flex-col items-center justify-center py-10 space-y-6 mt-10">
-                <div className="text-center text-white/50 text-sm">Start by asking a question about GNDEC!</div>
+                <img src="https://upload.wikimedia.org/wikipedia/en/3/30/Guru_Nanak_Dev_Engineering_College_logo.png" alt="GNDEC Logo" className="w-24 h-24 mb-2 opacity-80" />
+                <div className="text-center text-[#012529]/60 text-sm font-medium">How can I help you today?</div>
                 <div className="flex flex-wrap justify-center gap-3 max-w-lg">
                   {SUGGESTED_QUESTIONS.map((q, idx) => (
                     <button
                       key={idx}
                       onClick={() => submitQuery(q)}
-                      className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs border border-white/10 transition-colors"
+                      className="px-4 py-2.5 rounded-xl bg-[#F8F8F8] hover:bg-[#DCE5E4] text-[#012529] text-xs border border-[#BFBACE] transition-colors shadow-sm"
                     >
                       {q}
                     </button>
@@ -219,7 +220,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
         </main>
 
         {/* Input Bar */}
-        <div className="shrink-0 p-4 sm:p-6 w-full z-20">
+        <div className="shrink-0 p-4 sm:p-6 w-full z-20 bg-[#F3EBD7]">
           <div className="max-w-3xl mx-auto flex flex-col gap-3">
             
             {/* Sources Row */}
@@ -229,10 +230,10 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               </div>
             )}
 
-            <div className="flex items-center gap-2 glass-input backdrop-blur-md shadow-[0_10px_40px_rgba(0,0,0,0.2)] rounded-[2rem] p-2 pl-6">
+            <div className="flex items-center gap-2 bg-[#F8F8F8] border border-[#BFBACE] shadow-sm rounded-[2rem] p-2 pl-6">
               <input 
-                className="flex-1 bg-transparent border-none outline-none text-[15px] text-white placeholder:text-white/50"
-                placeholder="Message"
+                className="flex-1 bg-transparent border-none outline-none text-[15px] text-[#012529] placeholder:text-[#C0C0C0]"
+                placeholder="Message GNDEC Agent..."
                 value={query}
                 onChange={e => setQuery(e.target.value)}
                 onKeyDown={e => e.key === 'Enter' && sendMessage()}
@@ -240,23 +241,23 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               <select 
                 value={speechLang} 
                 onChange={(e) => setSpeechLang(e.target.value)}
-                className="bg-transparent border-none outline-none text-[13px] text-white/50 cursor-pointer hover:text-white transition-colors"
+                className="bg-transparent border-none outline-none text-[13px] text-[#012529]/50 cursor-pointer hover:text-[#012529]/80 transition-colors"
                 title="Select Speech Language"
               >
-                <option value="en-IN" className="bg-slate-900 text-white">English</option>
-                <option value="hi-IN" className="bg-slate-900 text-white">Hindi (हिंदी)</option>
-                <option value="pa-IN" className="bg-slate-900 text-white">Punjabi (ਪੰਜਾਬੀ)</option>
+                <option value="en-IN">English</option>
+                <option value="hi-IN">Hindi (हिंदी)</option>
+                <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
               </select>
               <button 
                 onClick={toggleSpeech}
-                className={`p-3 rounded-full transition-colors ${isListening ? "bg-rose-500/80 text-white animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.5)]" : "bg-white/10 text-white/70 hover:bg-white/20"}`}
+                className={`p-3 rounded-full transition-colors ${isListening ? "bg-[#F1845E] text-[#F8F8F8] animate-pulse shadow-md" : "bg-[#DCE5E4] text-[#012529]/70 hover:bg-[#BFBACE]"}`}
               >
                 <Mic className="w-4 h-4"/>
               </button>
               <button 
                 onClick={sendMessage}
                 disabled={loading || !query.trim()}
-                className={`p-3 rounded-full transition-colors ${loading || !query.trim() ? "bg-white/5 text-white/20 cursor-not-allowed" : "bg-teal-500 text-white shadow-[0_4px_20px_rgba(20,184,166,0.4)] hover:bg-teal-400 hover:scale-105"}`}
+                className={`p-3 rounded-full transition-colors ${loading || !query.trim() ? "bg-[#DCE5E4] text-[#C0C0C0] cursor-not-allowed" : "bg-[#012529] text-[#F8F8F8] shadow-md hover:bg-[#012529]/90 hover:scale-105"}`}
               >
                 {loading ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4 ml-[-2px]"/>}
               </button>
