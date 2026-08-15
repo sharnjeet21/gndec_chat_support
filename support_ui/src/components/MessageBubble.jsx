@@ -5,8 +5,8 @@ import { Volume2, VolumeX } from "lucide-react";
 function OrbAvatar() {
   return (
     <div className="relative w-8 h-8 shrink-0 mr-3 mt-1">
-      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-rose-400 via-fuchsia-500 to-indigo-500 blur-sm opacity-90 scale-110" />
-      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-400 via-purple-500 to-orange-400" />
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#0066b3] via-[#008000] to-[#f00] blur-sm opacity-90 scale-110" />
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#0066b3] via-[#f9cf00] to-[#f00]" />
       {/* Mini Eyes */}
       <div className="absolute top-[35%] left-1/2 -translate-x-1/2 flex gap-[2px]">
         <svg width="6" height="8" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -63,9 +63,9 @@ export default function MessageBubble({ role, text }) {
     return (
       <div className="flex items-start mb-6">
         <OrbAvatar />
-        <div className="flex flex-col flex-1 group">
+        <div className="flex flex-col flex-1 min-w-0 group w-full">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-bold text-[#666]">Ai-Assistant</span>
+            <span className="text-[10px] font-bold text-[#666]">AI - Assistant</span>
             <button 
               onClick={handleSpeak}
               className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-[#ddd] text-[#888] hover:text-[#000]"
@@ -74,7 +74,7 @@ export default function MessageBubble({ role, text }) {
               {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
             </button>
           </div>
-          <div className="bg-[#fff] border border-[#0066b3] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#000] text-sm leading-relaxed bubble-text whitespace-pre-wrap shadow-sm">
+          <div className="bg-[#fff] border border-[#0066b3] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#000] text-sm leading-relaxed bubble-text whitespace-pre-wrap shadow-sm w-full break-words overflow-hidden">
             {text}
           </div>
         </div>
@@ -83,8 +83,8 @@ export default function MessageBubble({ role, text }) {
   }
 
   return (
-    <div className="flex justify-end mb-6">
-      <div className="bg-[#0066b3] rounded-2xl rounded-tr-sm px-5 py-3.5 max-w-[85%] text-[#fff] text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
+    <div className="flex justify-end mb-6 w-full">
+      <div className="bg-[#0066b3] rounded-2xl rounded-tr-sm px-5 py-3.5 w-[85%] text-[#fff] text-sm leading-relaxed whitespace-pre-wrap shadow-sm break-words overflow-hidden">
          {text}
       </div>
     </div>

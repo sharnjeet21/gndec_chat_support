@@ -144,6 +144,7 @@ Instructions:
 - Write in plain text only. No markdown, no asterisks, no bold, no bullet points with *, no # headers.
 - Use numbered lists (1. 2. 3.) or plain line breaks if listing items.
 - If the knowledge covers the topic well, give a thorough answer.
+- CRITICAL: When extracting numbers or tabular data like fee structures, ENSURE you add clear spaces between words and numbers. Do NOT output giant unbroken strings of numbers (e.g. format as "Rs. 50,000" rather than "Rs50000").
 - STRICT SINGLE-LANGUAGE RULE: Answer entirely in ONE language (the exact language the user typed). NEVER mix multiple languages. NEVER blend Hindi and English words.
 
 Answer:
