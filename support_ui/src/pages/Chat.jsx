@@ -21,11 +21,11 @@ function TypingIndicator() {
     <div className="flex items-start mb-6">
       <OrbAvatar />
       <div className="flex flex-col flex-1">
-        <span className="text-[10px] font-bold text-[#012529]/70 mb-1">Ai-Assistant</span>
+        <span className="text-[10px] font-bold text-[#666] mb-1">Ai-Assistant</span>
         <div className="flex gap-1.5 px-1 py-2">
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#012529]/50" />
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#012529]/50" />
-          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#012529]/50" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#999]" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#999]" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#999]" />
         </div>
       </div>
     </div>
@@ -52,13 +52,13 @@ function SourceCard({ s, index }) {
 
   const isDoc = s.doc_url && (s.doc_url.endsWith(".pdf") || s.doc_url.endsWith(".docx") || s.doc_url.endsWith(".doc"));
   return (
-    <div className="bg-[#F8F8F8] border border-[#BFBACE] min-w-[200px] max-w-[240px] rounded-xl px-3 py-2.5 text-xs flex-shrink-0 shadow-sm">
-      <p className="truncate font-bold text-[#012529]" title={s.question}>
-        <span className="mr-1.5 inline-flex bg-[#DCE5E4] px-1 py-0.5 text-[9px] text-[#012529] rounded">[{index}]</span>
+    <div className="bg-[#f6f9fb] border border-[#ccc] min-w-[200px] max-w-[240px] rounded-xl px-3 py-2.5 text-xs flex-shrink-0 shadow-sm">
+      <p className="truncate font-bold text-[#333]" title={s.question}>
+        <span className="mr-1.5 inline-flex bg-[#ddd] px-1 py-0.5 text-[9px] text-[#333] rounded">[{index}]</span>
         {s.question?.slice(0, 40)}{s.question?.length > 40 ? "…" : ""}
       </p>
-      {s.section && <p className="mt-1 flex items-center gap-1.5 truncate text-[10px] text-[#012529]/70"><Folder className="h-3 w-3" />{s.section}</p>}
-      <a href={link} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#8B7A30] hover:text-[#8B7A30]/80">
+      {s.section && <p className="mt-1 flex items-center gap-1.5 truncate text-[10px] text-[#555]"><Folder className="h-3 w-3" />{s.section}</p>}
+      <a href={link} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#8a1f11] hover:text-[#900]">
         {isDoc ? <FileText className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
         {link.replace("https://", "").replace("http://", "").split("/")[0]}
       </a>
@@ -160,34 +160,34 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
   }
 
   return (
-    <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-[#012529] relative bg-[#F8F8F8]">
+    <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-[#333] relative bg-[#f1f5f7]">
       {/* Sidebar */}
       <aside className="w-[280px] flex flex-col shrink-0 hidden md:flex pt-2 z-10">
-        <div className="px-4 pb-4 flex items-center gap-3 border-b border-[#DCE5E4]">
+        <div className="px-4 pb-4 flex items-center gap-3 border-b border-[#ddd]">
            <div className="pl-2">
-             <p className="font-bold text-sm text-[#012529]">GNDEC Chat</p>
-             <p className="text-[10px] text-[#012529]/50">Guest Mode</p>
+             <p className="font-bold text-sm text-[#890000]">GNDEC Chat</p>
+             <p className="text-[10px] text-[#666]">Guest Mode</p>
            </div>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
           {sessions.map((sid, i) => (
-            <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors ${sid === sessionId ? "bg-[#012529] text-[#F8F8F8] font-semibold shadow-md" : "text-[#012529]/70 hover:bg-[#DCE5E4]"}`}>
+            <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors ${sid === sessionId ? "bg-[#890000] text-[#fff] font-semibold shadow-md" : "text-[#555] hover:bg-[#ddd]"}`}>
               Chat {i + 1}
             </button>
           ))}
         </div>
-        <div className="p-4 border-t border-[#DCE5E4]">
-           <button onClick={() => onSelectSession(Date.now().toString())} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] bg-[#F1845E] text-white text-sm font-bold hover:bg-[#F1845E]/90 hover:shadow-lg transition-all">
+        <div className="p-4 border-t border-[#ddd]">
+           <button onClick={() => onSelectSession(Date.now().toString())} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] bg-[#f9cf00] text-[#000] text-sm font-bold hover:bg-[#eed300] hover:shadow-lg transition-all">
              <Plus className="w-4 h-4"/> New Chat
            </button>
         </div>
       </aside>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative overflow-hidden bg-[#F3EBD7] md:border md:border-[#DCE5E4] md:rounded-[2.5rem] md:shadow-sm z-10">
+      <div className="flex-1 flex flex-col relative overflow-hidden bg-[#fff] md:border md:border-[#ddd] md:rounded-[2.5rem] md:shadow-sm z-10">
         {/* Header */}
-        <header className="flex justify-center items-center h-16 shrink-0 bg-[#F3EBD7] border-b border-[#DCE5E4] z-10 sticky top-0 shadow-sm">
-           <h2 className="font-bold text-[#012529]">GNDEC Support</h2>
+        <header className="flex justify-center items-center h-16 shrink-0 bg-[#fff] border-b border-[#ddd] z-10 sticky top-0 shadow-sm">
+           <h2 className="font-bold text-[#890000]">GNDEC Support</h2>
         </header>
 
         {/* Messages */}
@@ -196,13 +196,13 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
             {messages.length === 0 && !loading && (
               <div className="flex flex-col items-center justify-center py-10 space-y-6 mt-10">
                 <img src="https://erp.gndec.ac.in/files/gnelogo.png" alt="GNDEC Logo" className="w-24 h-24 mb-2 opacity-80" />
-                <div className="text-center text-[#012529]/60 text-sm font-medium">How can I help you today?</div>
+                <div className="text-center text-[#555] text-sm font-medium">How can I help you today?</div>
                 <div className="flex flex-wrap justify-center gap-3 max-w-lg">
                   {SUGGESTED_QUESTIONS.map((q, idx) => (
                     <button
                       key={idx}
                       onClick={() => submitQuery(q)}
-                      className="px-4 py-2.5 rounded-xl bg-[#F8F8F8] hover:bg-[#DCE5E4] text-[#012529] text-xs border border-[#BFBACE] transition-colors shadow-sm"
+                      className="px-4 py-2.5 rounded-xl bg-[#f1f5f7] hover:bg-[#ddd] text-[#333] text-xs border border-[#ccc] transition-colors shadow-sm"
                     >
                       {q}
                     </button>
@@ -217,7 +217,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
         </main>
 
         {/* Input Bar */}
-        <div className="shrink-0 p-4 sm:p-6 w-full z-20 bg-[#F3EBD7]">
+        <div className="shrink-0 p-4 sm:p-6 w-full z-20 bg-[#fff]">
           <div className="max-w-3xl mx-auto flex flex-col gap-3">
             
             {/* Sources Row */}
@@ -227,9 +227,9 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               </div>
             )}
 
-            <div className="flex items-center gap-2 bg-[#F8F8F8] border border-[#BFBACE] shadow-sm rounded-[2rem] p-2 pl-6">
+            <div className="flex items-center gap-2 bg-[#f1f5f7] border border-[#ccc] shadow-sm rounded-[2rem] p-2 pl-6">
               <input 
-                className="flex-1 bg-transparent border-none outline-none text-[15px] text-[#012529] placeholder:text-[#C0C0C0]"
+                className="flex-1 bg-transparent border-none outline-none text-[15px] text-[#333] placeholder:text-[#999]"
                 placeholder="Message GNDEC Agent..."
                 value={query}
                 onChange={e => setQuery(e.target.value)}
@@ -238,7 +238,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               <select 
                 value={speechLang} 
                 onChange={(e) => setSpeechLang(e.target.value)}
-                className="bg-transparent border-none outline-none text-[13px] text-[#012529]/50 cursor-pointer hover:text-[#012529]/80 transition-colors"
+                className="bg-transparent border-none outline-none text-[13px] text-[#666] cursor-pointer hover:text-[#333] transition-colors"
                 title="Select Speech Language"
               >
                 <option value="en-IN">English</option>
@@ -247,14 +247,14 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               </select>
               <button 
                 onClick={toggleSpeech}
-                className={`p-3 rounded-full transition-colors ${isListening ? "bg-[#F1845E] text-[#F8F8F8] animate-pulse shadow-md" : "bg-[#DCE5E4] text-[#012529]/70 hover:bg-[#BFBACE]"}`}
+                className={`p-3 rounded-full transition-colors ${isListening ? "bg-[#bc091a] text-[#fff] animate-pulse shadow-md" : "bg-[#ddd] text-[#555] hover:bg-[#ccc]"}`}
               >
                 <Mic className="w-4 h-4"/>
               </button>
               <button 
                 onClick={sendMessage}
                 disabled={loading || !query.trim()}
-                className={`p-3 rounded-full transition-colors ${loading || !query.trim() ? "bg-[#DCE5E4] text-[#C0C0C0] cursor-not-allowed" : "bg-[#012529] text-[#F8F8F8] shadow-md hover:bg-[#012529]/90 hover:scale-105"}`}
+                className={`p-3 rounded-full transition-colors ${loading || !query.trim() ? "bg-[#ddd] text-[#999] cursor-not-allowed" : "bg-[#890000] text-[#fff] shadow-md hover:bg-[#900] hover:scale-105"}`}
               >
                 {loading ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4 ml-[-2px]"/>}
               </button>

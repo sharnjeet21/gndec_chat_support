@@ -65,16 +65,16 @@ export default function MessageBubble({ role, text }) {
         <OrbAvatar />
         <div className="flex flex-col flex-1 group">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-[10px] font-bold text-[#012529]/70">Ai-Assistant</span>
+            <span className="text-[10px] font-bold text-[#666]">Ai-Assistant</span>
             <button 
               onClick={handleSpeak}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-[#DCE5E4] text-[#012529]/50 hover:text-[#012529]"
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-[#ddd] text-[#999] hover:text-[#555]"
               title={isSpeaking ? "Stop speaking" : "Read aloud"}
             >
               {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
             </button>
           </div>
-          <div className="bg-[#F8F8F8] border border-[#BFBACE] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#012529] text-sm leading-relaxed bubble-text whitespace-pre-wrap shadow-sm">
+          <div className="bg-[#f1f5f7] border border-[#ddd] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#333] text-sm leading-relaxed bubble-text whitespace-pre-wrap shadow-sm">
             {text}
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function MessageBubble({ role, text }) {
 
   return (
     <div className="flex justify-end mb-6">
-      <div className="bg-[#012529] rounded-2xl rounded-tr-sm px-5 py-3.5 max-w-[85%] text-[#F8F8F8] text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
+      <div className="bg-[#890000] rounded-2xl rounded-tr-sm px-5 py-3.5 max-w-[85%] text-[#fff] text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
          {text}
       </div>
     </div>
