@@ -40,6 +40,13 @@ except ImportError:
     HAS_PDFPLUMBER = False
 
 try:
+    import pytesseract
+    from PIL import Image
+    HAS_OCR = True
+except ImportError:
+    HAS_OCR = False
+
+try:
     from docx import Document as DocxDocument
     HAS_DOCX = True
 except ImportError:
@@ -59,9 +66,9 @@ logger = logging.getLogger(__name__)
 # ─────────────────────────────────────────────────────────────────────────────
 ROOT_URL             = "https://gndec.ac.in"
 ALLOWED_DOMAIN_SUFFIX = "gndec.ac.in"
-MAX_DEPTH            = 2          # crawl depth per site
-MAX_PAGES_PER_SITE   = 120        # safety cap per subdomain
-MAX_DOCS_PER_SITE    = 30         # max PDF/DOCX files per subdomain
+MAX_DEPTH            = 10          # very deep crawl
+MAX_PAGES_PER_SITE   = 2000        # huge safety cap
+MAX_DOCS_PER_SITE    = 500         # max PDF/DOCX/IMG files per subdomain
 REQUEST_TIMEOUT      = 20         # seconds
 DELAY_HTML           = 0.6        # seconds between HTML requests
 DELAY_DOC            = 1.2        # seconds between document downloads
@@ -92,11 +99,11 @@ HEADERS = {
 }
 
 # Extensions to download and parse as documents
-DOC_EXTENSIONS = {".pdf", ".doc", ".docx"}
+DOC_EXTENSIONS = {".pdf", ".doc", ".docx", ".jpg", ".jpeg", ".png"}
 
-# Extensions to completely skip (images, archives, media)
+# Extensions to completely skip (archives, media, scripts)
 SKIP_EXTENSIONS = {
-    ".jpg", ".jpeg", ".png", ".gif", ".svg", ".ico", ".webp", ".bmp",
+    ".gif", ".svg", ".ico", ".webp", ".bmp",
     ".mp4", ".mp3", ".avi", ".mov", ".wmv",
     ".zip", ".rar", ".tar", ".gz", ".7z",
     ".exe", ".dmg", ".apk",
@@ -209,7 +216,7 @@ def fetch_bytes(url: str) -> Optional[bytes]:
 # ─────────────────────────────────────────────────────────────────────────────
 
 def parse_pdf(data: bytes, url: str) -> str:
-    """Extract text from PDF bytes. Tries PyMuPDF first, falls back to pdfplumber."""
+    """Extract text from PDF bytes. Tries PyMuPDF first, uses OCR if page has no text."""
     text = ""
 
     if HAS_PYMUPDF:
@@ -217,11 +224,19 @@ def parse_pdf(data: bytes, url: str) -> str:
             doc = fitz.open(stream=data, filetype="pdf")
             pages = []
             for page in doc:
-                pages.append(page.get_text("text"))
+                page_text = page.get_text("text").strip()
+                if not page_text and HAS_OCR:
+                    # Page is likely an image, run OCR!
+                    pix = page.get_pixmap(dpi=150)
+                    img_data = pix.tobytes("png")
+                    img = Image.open(io.BytesIO(img_data))
+                    page_text = pytesseract.image_to_string(img).strip()
+                if page_text:
+                    pages.append(page_text)
             text = "\n\n".join(pages)
             doc.close()
             if text.strip():
-                logger.info(f"  PDF parsed via PyMuPDF: {len(text)} chars")
+                logger.info(f"  PDF parsed via PyMuPDF/OCR: {len(text)} chars")
                 return clean_text(text)
         except Exception as e:
             logger.debug(f"PyMuPDF failed for {url}: {e}")
@@ -287,6 +302,20 @@ def parse_doc_legacy(data: bytes, url: str) -> str:
     return ""
 
 
+def parse_image(data: bytes, url: str) -> str:
+    """Extract text from images using Tesseract OCR."""
+    if not HAS_OCR:
+        return ""
+    try:
+        img = Image.open(io.BytesIO(data))
+        text = pytesseract.image_to_string(img)
+        if text.strip():
+            logger.info(f"  Image OCR parsed: {len(text)} chars")
+            return clean_text(text)
+    except Exception as e:
+        logger.debug(f"Image OCR failed for {url}: {e}")
+    return ""
+
 def parse_document(data: bytes, url: str) -> str:
     """Route to the correct parser based on file extension."""
     ext = url_extension(url)
@@ -296,6 +325,8 @@ def parse_document(data: bytes, url: str) -> str:
         return parse_docx(data, url)
     elif ext == ".doc":
         return parse_doc_legacy(data, url)
+    elif ext in (".jpg", ".jpeg", ".png"):
+        return parse_image(data, url)
     return ""
 
 
