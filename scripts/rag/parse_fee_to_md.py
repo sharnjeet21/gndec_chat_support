@@ -64,7 +64,8 @@ for prog in programs:
             'doc_url': 'https://admission.gndec.ac.in/Fee_Structure.php'
         })
 
-path = 'data/fee_structures.json'
+HERE = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+path = os.path.join(HERE, 'data', 'fee_structures.json')
 with open(path, 'w') as f:
     json.dump(results, f, indent=2)
 print(f'Saved perfectly formatted Markdown tables to {path}')
