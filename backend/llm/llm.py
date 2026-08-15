@@ -37,8 +37,7 @@ else:
         max_tokens=1500,
         model_kwargs={
             "presence_penalty": 0.5,
-            "frequency_penalty": 0.5,
-            "extra_body": {"chat_template_kwargs": {"enable_thinking": False}}
+            "frequency_penalty": 0.5
         }
     )
 
