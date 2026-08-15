@@ -186,7 +186,8 @@ async def answer_sync(query: str, phone: str, session_id: str):
     response = await client.chat.completions.create(
         model=LLM_MODEL,
         messages=[{"role": "user", "content": prompt}],
-        temperature=0.0
+        temperature=0.0,
+        max_tokens=4096
     )
     ans = response.choices[0].message.content.strip()
 
@@ -229,6 +230,7 @@ async def answer_stream(query: str, phone: str, session_id: str):
         model=LLM_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
+        max_tokens=4096,
         stream=True
     )
 

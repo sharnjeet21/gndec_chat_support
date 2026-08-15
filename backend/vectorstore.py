@@ -102,4 +102,4 @@ def similarity_search(query: str, k: int = 3) -> List[Document]:
     return docs
 
 
-retriever = get_retriever(k=3)
+retriever = get_retriever(k=8)
