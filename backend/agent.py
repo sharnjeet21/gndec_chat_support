@@ -146,6 +146,8 @@ Instructions:
 - If the knowledge covers the topic well, give a thorough answer.
 - CRITICAL: When extracting numbers or tabular data like fee structures, ENSURE you add clear spaces between words and numbers. Do NOT output giant unbroken strings of numbers (e.g. format as "Rs. 50,000" rather than "Rs50000").
 - STRICT SINGLE-LANGUAGE RULE: Answer entirely in ONE language (the exact language the user typed). NEVER mix multiple languages. NEVER blend Hindi and English words.
+- First, provide a detailed step-by-step chain of thought analyzing the documents and formatting rules, enclosed in <think>...</think> tags. 
+- Then provide the final, highly accurate, and extremely detailed answer.
 
 Answer:
 """
