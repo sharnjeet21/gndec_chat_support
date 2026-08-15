@@ -171,11 +171,15 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
            </div>
         </div>
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-2">
-          {sessions.map((sid, i) => (
-            <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors ${sid === sessionId ? "bg-[#0066b3] text-[#fff] font-semibold shadow-md" : "text-[#555] hover:bg-[#eaefcb]"}`}>
-              Chat {i + 1}
-            </button>
-          ))}
+          {sessions.map((s, i) => {
+            const sid = s.id || s;
+            const title = s.title || `Chat ${i + 1}`;
+            return (
+              <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors truncate ${sid === sessionId ? "bg-[#0066b3] text-[#fff] font-semibold shadow-md" : "text-[#555] hover:bg-[#eaefcb]"}`} title={title}>
+                {title}
+              </button>
+            );
+          })}
         </div>
         <div className="p-4 border-t border-[#ccc]">
            <button onClick={() => onSelectSession(Date.now().toString())} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] bg-[#008000] text-[#fff] text-sm font-bold hover:bg-[#00aa00] hover:shadow-lg transition-all">
