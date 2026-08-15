@@ -112,7 +112,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
 
     let firstToken = true;
     try {
-      await askStream(phone, sessionId, q, (chunk) => {
+      await askStream(phone, sessionId, q, speechLang, (chunk) => {
         if (chunk.type === "sources") { setSources(chunk.data || []); return; }
         if (chunk.type === "blocked") { setMessages((m) => [...m, { role: "assistant", message: chunk.message }]); setLoading(false); return; }
         if (chunk.type === "content") {
@@ -135,7 +135,7 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
     }
   }
 
-  const [speechLang, setSpeechLang] = useState('en-IN');
+  const [speechLang, setSpeechLang] = useState('auto');
 
   useEffect(() => {
     // Stop any ongoing speech when switching chats
@@ -155,7 +155,9 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
       return;
     }
     const recognition = new SpeechRecognition();
-    recognition.lang = speechLang;
+    if (speechLang !== 'auto') {
+      recognition.lang = speechLang;
+    }
     recognition.continuous = false;
     recognitionRef.current = recognition;
     recognition.onstart = () => setIsListening(true);
@@ -166,9 +168,9 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
   }
 
   return (
-    <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-[#000] relative bg-[#fff8c6]">
+    <div className="flex h-[100dvh] font-sans md:p-4 lg:p-6 md:gap-4 lg:gap-6 overflow-hidden text-[#000] relative bg-[#fff8c6] w-full max-w-[1600px] mx-auto">
       {/* Sidebar */}
-      <aside className="w-[280px] flex flex-col shrink-0 hidden md:flex pt-2 z-10">
+      <aside className="w-[260px] lg:w-[300px] flex flex-col shrink-0 hidden md:flex pt-2 z-10">
         <div className="px-4 pb-4 flex items-center gap-2 border-b border-[#ccc]">
            <img src="https://erp.gndec.ac.in/files/gnelogo.png" alt="GNE Logo" className="w-10 h-10 ml-1 opacity-90" />
            <div className="pl-1">
@@ -238,9 +240,9 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               </div>
             )}
 
-            <div className="flex items-center gap-2 bg-[#fff] border border-[#ccc] shadow-sm rounded-[2rem] p-2 pl-6">
+            <div className="flex items-center gap-1.5 sm:gap-2 bg-[#fff] border border-[#ccc] shadow-sm rounded-[2rem] p-1.5 sm:p-2 pl-4 sm:pl-6">
               <input 
-                className="flex-1 bg-transparent border-none outline-none text-[15px] text-[#000] placeholder:text-[#888]"
+                className="flex-1 min-w-0 bg-transparent border-none outline-none text-[14px] sm:text-[15px] text-[#000] placeholder:text-[#888]"
                 placeholder="Message GNDEC Agent..."
                 value={query}
                 onChange={e => setQuery(e.target.value)}
@@ -249,25 +251,26 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
               <select 
                 value={speechLang} 
                 onChange={(e) => setSpeechLang(e.target.value)}
-                className="bg-transparent border-none outline-none text-[13px] text-[#666] cursor-pointer hover:text-[#000] transition-colors"
-                title="Select Speech Language"
+                className="bg-transparent border-none outline-none text-[11px] sm:text-[13px] text-[#666] cursor-pointer hover:text-[#000] transition-colors w-[65px] sm:w-auto shrink-0"
+                title="Select Language"
               >
+                <option value="auto">Auto-Detect</option>
                 <option value="en-IN">English</option>
-                <option value="hi-IN">Hindi (हिंदी)</option>
-                <option value="pa-IN">Punjabi (ਪੰਜਾਬੀ)</option>
+                <option value="hi-IN">Hindi</option>
+                <option value="pa-IN">Punjabi</option>
               </select>
               <button 
                 onClick={toggleSpeech}
-                className={`p-3 rounded-full transition-colors ${isListening ? "bg-[#f00] text-[#fff] animate-pulse shadow-md" : "bg-[#ddd] text-[#555] hover:bg-[#ccc]"}`}
+                className={`p-2 sm:p-3 shrink-0 rounded-full transition-colors ${isListening ? "bg-[#f00] text-[#fff] animate-pulse shadow-md" : "bg-[#ddd] text-[#555] hover:bg-[#ccc]"}`}
               >
-                <Mic className="w-4 h-4"/>
+                <Mic className="w-4 h-4 sm:w-4 sm:h-4"/>
               </button>
               <button 
                 onClick={sendMessage}
                 disabled={loading || !query.trim()}
-                className={`p-3 rounded-full transition-colors ${loading || !query.trim() ? "bg-[#ddd] text-[#999] cursor-not-allowed" : "bg-[#0066b3] text-[#fff] shadow-md hover:bg-[#0072b9] hover:scale-105"}`}
+                className={`p-2 sm:p-3 shrink-0 rounded-full transition-colors ${loading || !query.trim() ? "bg-[#ddd] text-[#999] cursor-not-allowed" : "bg-[#0066b3] text-[#fff] shadow-md hover:bg-[#0072b9] hover:scale-105"}`}
               >
-                {loading ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4 ml-[-2px]"/>}
+                {loading ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4 ml-[-1px] sm:ml-[-2px]"/>}
               </button>
             </div>
           </div>

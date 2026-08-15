@@ -84,13 +84,14 @@ async def ask(
     phone: str = Query(...),
     session_id: str = Query(...),
     q: str = Query(...),
+    lang: str = Query("auto"),
 ):
     """Synchronous (non-streaming) answer endpoint."""
     if not phone or not session_id:
         raise HTTPException(status_code=400, detail="phone and session_id required")
 
-    logging.info(f"SYNC request: {q!r}")
-    res = await answer_sync(q, phone, session_id)
+    logging.info(f"SYNC request: {q!r} (lang: {lang})")
+    res = await answer_sync(q, phone, session_id, lang)
     return JSONResponse(res)
 
 
@@ -99,13 +100,14 @@ async def ask_stream_route(
     phone: str = Query(...),
     session_id: str = Query(...),
     q: str = Query(...),
+    lang: str = Query("auto"),
 ):
     """Streaming answer endpoint — returns JSON chunks via SSE."""
     if not phone or not session_id:
         raise HTTPException(status_code=400, detail="phone and session_id required")
 
-    logging.info(f"STREAM request: {q!r}")
-    gen = answer_stream(q, phone, session_id)
+    logging.info(f"STREAM request: {q!r} (lang: {lang})")
+    gen = answer_stream(q, phone, session_id, lang)
     return StreamingResponse(gen, media_type="text/event-stream")
 
 

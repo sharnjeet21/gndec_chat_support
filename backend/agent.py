@@ -38,8 +38,8 @@ Your primary goal is to provide EXTREMELY detailed, highly comprehensive, and ex
 CRITICAL RULES:
 1. Greet the user naturally only if they greet you.
 2. YOU MUST BE EXHAUSTIVE. Extract and present EVERY SINGLE RELEVANT DETAIL from the provided context. If the user asks for a fee structure, list the EXACT fees for EVERY SINGLE program, category (Boys/Girls, SC/ST, Hosteller, etc.), and breakdown mentioned in the context. DO NOT summarize or cut it short.
-3. Do NOT use markdown formatting — no asterisks, no bold, no bullet points with *, no headers with #, no backticks.
-4. Write in plain natural language. Use numbered lists (1. 2. 3.) or simple line breaks to organize information clearly.
+3. Use Markdown formatting to make the response highly readable. Use bold text, bullet points, headers, and lists where appropriate.
+4. Dynamically choose the best method to represent data: use detailed Markdown tables for multi-variable data (like fee structures, varying criteria, or semester breakdowns), bulleted lists for features, and numbered lists for steps.
 5. STRICTLY NO GENERAL KNOWLEDGE OR CODING: If the user asks you to write code (like C++, Python) or solve homework/math, YOU MUST REFUSE. Even if C++ or Math is mentioned in the college syllabus context, you are a college support bot, not a coding assistant. Say exactly: "I can't answer this, I only have knowledge about GNDEC college."
 6. You must cite your sources inline using brackets based on the Document number provided in the context (e.g., "GNDEC offers 7 B.Tech programs [1].").
 7. End your response with a polite follow-up question related to the user's inquiry (e.g., "Which specific program are you interested in?").
@@ -47,14 +47,10 @@ CRITICAL RULES:
 9. If a question is completely unrelated to GNDEC or college matters, politely redirect the user by saying "I can't answer this, I only have knowledge about GNDEC college."
 10. NEVER generate any inappropriate, discriminatory, racial, or offensive language.
 11. ALWAYS provide the maximum amount of detail possible. Act like an expert counselor giving a complete breakdown.
-12. STRICT SINGLE-LANGUAGE RULE: You must detect the primary language of the user's question (English, Hindi, or Punjabi) and reply ENTIRELY in that exact same language. 
 - DO NOT mix multiple languages within a single response.
 - NEVER use Hinglish or blend Hindi and English words together.
-- If the user writes in Roman Punjabi (e.g. "ki haal hai"), reply in pure Punjabi.
-- If the user writes in English, reply ONLY in English.
-- If the user writes in Hindi, reply ONLY in Hindi.
 
-Tone: Warm, highly detailed, exhaustive, and helpful. Plain text only.
+Tone: Warm, highly detailed, exhaustive, and helpful. Use Markdown for clarity.
 """
 
 # FAISS retriever (sync function) — fetch top 8 for broad coverage
@@ -104,7 +100,7 @@ def _normalize_docs(docs_raw: List[Any]) -> Tuple[str, List[Dict[str, Any]]]:
 
 # ---------------- BUILD PROMPT -----------------
 async def build_prompt(
-    query: str, phone: str, session_id: str, history_limit: int = 10
+    query: str, phone: str, session_id: str, lang: str = "auto", history_limit: int = 10
 ):
     memory = _get_memory(phone, session_id)
     hist_vars = memory.load_memory_variables({})
@@ -126,6 +122,14 @@ async def build_prompt(
     
     # Proactive web search removed to improve latency.
 
+    lang_rule = "Answer entirely in ONE language (the exact language the user typed). NEVER mix languages."
+    if lang == "en-IN":
+        lang_rule = "Answer entirely in English."
+    elif lang == "hi-IN":
+        lang_rule = "Answer entirely in Hindi."
+    elif lang == "pa-IN":
+        lang_rule = "Answer entirely in Punjabi."
+
     prompt = f"""{SYSTEM_PROMPT}
 
 Conversation history (last {history_limit} messages):
@@ -139,17 +143,18 @@ User question:
 
 Instructions:
 - Answer the user's question using ONLY the provided knowledge. Be BRIEF and FOCUSED.
-- CRITICAL: For fee structures, provide a UNIFORM SUMMARY for ALL available programs. Do NOT list every semester. For EVERY program, provide ONLY:
-  - 1st Semester Total Fee
-  - Hostel Fee
-- Do NOT copy entire semester-by-semester tables verbatim for any program. Treat all programs equally.
+- CRITICAL: ONLY generate fee tables if the user EXPLICITLY asks for 'fees' or 'fee structure'. If they only ask for 'courses' or 'programs', DO NOT output any fee tables.
+- WHEN explicitly asked for fee structures, YOU MUST generate a SEPARATE Markdown table for EACH individual course/program (e.g., one table for B.Tech, one for M.Tech, etc.). Each table MUST use the EXACT following 14-column format to match the official admission website:
+| Sr No. | Program | Semester | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+Fill the rows with data from the knowledge context. Leave cells blank if data is missing. Do not summarize fee data.
+- Dynamically choose the best Markdown formatting for other data: bulleted lists for criteria/features, numbered lists for steps.
 - Check conversation history for context on follow-up questions.
 - STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the provided knowledge, say "I do not have information about that." and suggest visiting gndec.ac.in.
 - Do NOT use irrelevant knowledge.
-- Write in plain text only. No markdown, no asterisks, no bold, no bullet points with *, no # headers.
-- Use numbered lists (1. 2. 3.) or plain line breaks if listing items.
+- Use standard Markdown format for tables, bold text, bullet points, etc. to organize information clearly.
 - Format numbers clearly with spaces (e.g. "Rs. 50,000" not "Rs50000").
-- STRICT SINGLE-LANGUAGE RULE: Answer entirely in ONE language (the exact language the user typed). NEVER mix languages.
+- STRICT SINGLE-LANGUAGE RULE: {lang_rule}
 - Give your answer directly. No chain of thought, no thinking process, no <think> tags, no preamble.
 
 Answer:
@@ -160,7 +165,7 @@ Answer:
 # ============================
 # SYNC RESPONSE (NON-STREAM)
 # ============================
-async def answer_sync(query: str, phone: str, session_id: str):
+async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto"):
     logging.info(f"[SYNC] User({phone}:{session_id}) → {query!r}")
     memory = _get_memory(phone, session_id)
 
@@ -177,7 +182,7 @@ async def answer_sync(query: str, phone: str, session_id: str):
         return {"answer": OOD_TEXT, "sources": []}
 
     # Build prompt with RAG context
-    prompt, sources, memory = await build_prompt(query, phone, session_id)
+    prompt, sources, memory = await build_prompt(query, phone, session_id, lang)
 
     # Save user message
     memory.chat_memory.add_user_message(query)
@@ -190,7 +195,9 @@ async def answer_sync(query: str, phone: str, session_id: str):
         model=LLM_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
-        max_tokens=2048
+        max_tokens=2048,
+        frequency_penalty=0.5,
+        presence_penalty=0.5
     )
     ans = response.choices[0].message.content.strip()
 
@@ -207,7 +214,7 @@ async def answer_sync(query: str, phone: str, session_id: str):
 # ============================
 # STREAMING RESPONSE
 # ============================
-async def answer_stream(query: str, phone: str, session_id: str):
+async def answer_stream(query: str, phone: str, session_id: str, lang: str = "auto"):
     logging.info(f"[STREAM] User({phone}:{session_id}) → {query!r}")
     memory = _get_memory(phone, session_id)
 
@@ -221,7 +228,7 @@ async def answer_stream(query: str, phone: str, session_id: str):
         yield json.dumps({"type": "blocked", "message": OOD_TEXT}) + "\n"
         return
 
-    prompt, sources, memory = await build_prompt(query, phone, session_id)
+    prompt, sources, memory = await build_prompt(query, phone, session_id, lang)
 
     memory.chat_memory.add_user_message(query)
     await save_message(phone, session_id, "user", query)
@@ -234,6 +241,8 @@ async def answer_stream(query: str, phone: str, session_id: str):
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
         max_tokens=4096,
+        frequency_penalty=0.5,
+        presence_penalty=0.5,
         stream=True
     )
 
@@ -246,8 +255,8 @@ async def answer_stream(query: str, phone: str, session_id: str):
         if not delta:
             continue
             
-        # Strip Markdown as requested
-        delta = re.sub(r'[*_#`]', '', delta)
+        # Kept Markdown formatting as requested by user
+        # delta = re.sub(r'[*_#`]', '', delta)
             
         acc += delta
         
