@@ -1,121 +1,80 @@
-import { createElement, useState } from "react";
-import { ArrowRight, BadgeCheck, Bot, Building2, Phone, ShieldCheck, Sparkles } from "lucide-react";
-
-const TOPICS = ["Admissions", "Departments", "Hostel", "Placements", "Fees", "Events"];
-const FEATURES = [
-  { icon: ShieldCheck, label: "Verified" },
-  { icon: Building2, label: "Campus" },
-  { icon: Sparkles, label: "Instant" },
-];
+import { useState } from "react";
+import { ArrowRight, Phone } from "lucide-react";
 
 export default function Login({ onLogin }) {
   const [phone, setPhone] = useState("");
 
   return (
-    <div className="screen-bg flex min-h-screen items-center justify-center px-4 py-8 text-slate-100">
-      <div className="relative z-10 grid w-full max-w-5xl items-stretch gap-5 lg:grid-cols-[1.05fr_0.95fr]">
-        <section className="glass-panel relative overflow-hidden rounded-[2rem] p-6 sm:p-8">
-          <div className="flex items-center gap-3">
-            <div className="brand-mark flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl text-base font-black text-white">
-              GN
-            </div>
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-teal-200/75">
-                Support Console
-              </p>
-              <h1 className="mt-1 text-2xl font-black tracking-tight text-shine sm:text-3xl">
-                GNDEC Assistant
-              </h1>
+    <div className="min-h-screen flex items-center justify-center p-4 font-sans text-white">
+      <main className="w-full max-w-sm glass-panel rounded-[2.5rem] p-8 flex flex-col items-center relative overflow-hidden">
+        
+        {/* Top Status Bar (fake) */}
+        <div className="w-full flex justify-between items-center text-xs font-semibold text-white/50 mb-8">
+          <span>9:41</span>
+          <div className="flex gap-1.5 items-center">
+            <div className="w-4 h-3 bg-white/80 rounded-sm" />
+            <div className="w-3 h-3 rounded-full bg-white/80" />
+            <div className="w-6 h-3 border-2 border-white/60 rounded-sm relative">
+               <div className="absolute left-0 top-0 bottom-0 w-3/4 bg-white/80" />
             </div>
           </div>
+        </div>
 
-          <div className="mt-8 grid gap-3 sm:grid-cols-3">
-            {FEATURES.map((feature) => (
-              <div key={feature.label} className="glass-card rounded-2xl px-4 py-3">
-                {createElement(feature.icon, { className: "h-4 w-4 text-teal-200" })}
-                <p className="mt-2 text-sm font-semibold text-white">{feature.label}</p>
-              </div>
-            ))}
-          </div>
+        {/* Headings */}
+        <h1 className="text-3xl font-extrabold tracking-tight text-center leading-tight mb-8">
+          Your <span className="text-teal-400">Smart</span><br/>
+          <span className="text-teal-400">Assistant</span> for<br/>
+          Any Tasks
+        </h1>
 
-          <div className="mt-8 rounded-[1.75rem] border border-white/10 bg-white/[0.04] p-5">
-            <div className="flex items-center gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-rose-500/15 text-rose-200 ring-1 ring-rose-300/20">
-                <Bot className="h-5 w-5" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-white">Guru Nanak Dev Engineering College</p>
-                <p className="text-xs text-slate-400">Ludhiana, Punjab</p>
-              </div>
+        {/* Hello badge */}
+        <div className="relative w-full flex justify-center mb-2 z-10">
+            <div className="bg-white/10 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.2)] border border-white/20 rounded-2xl px-4 py-2 text-sm font-bold text-white absolute -left-2 top-2 rotate-[-5deg]">
+                Hello!
             </div>
-            <p className="mt-5 text-sm leading-6 text-slate-300">
-              Get answers for admissions, departments, facilities, fees, placements, events, and campus services.
-            </p>
+        </div>
+
+        {/* The Avatar Orb */}
+        <div className="relative w-40 h-40 mb-10 shrink-0">
+          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-rose-400 via-fuchsia-500 to-indigo-500 blur-md opacity-90 scale-105" />
+          <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-400 via-purple-500 to-orange-400 shadow-[inset_0_-10px_20px_rgba(255,255,255,0.4)]" />
+          {/* Eyes */}
+          <div className="absolute top-[40%] left-1/2 -translate-x-1/2 flex gap-4">
+             <svg width="14" height="20" viewBox="0 0 14 20" fill="none"><path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/></svg>
+             <svg width="14" height="20" viewBox="0 0 14 20" fill="none" style={{transform: 'scaleX(-1)'}}><path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/></svg>
           </div>
-        </section>
+        </div>
 
-        <section className="glass-panel rounded-[2rem] p-6 shadow-2xl sm:p-8">
-          <div className="mb-7 flex items-center justify-between gap-4">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.24em] text-rose-200/80">
-                Login
-              </p>
-              <h2 className="mt-2 text-2xl font-black tracking-tight text-white">
-                Start a conversation
-              </h2>
+        <p className="text-[13px] text-white/70 text-center mb-8 px-4 leading-relaxed font-medium">
+          Get instant help and support<br/>with any task or problem
+        </p>
+
+        {/* Input & CTA */}
+        <div className="w-full flex flex-col gap-3">
+          <div className="relative w-full">
+            <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                <Phone className="w-4 h-4 text-white/50" />
             </div>
-            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/[0.08] ring-1 ring-white/10">
-              <BadgeCheck className="h-5 w-5 text-teal-200" />
-            </div>
+            <input 
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && phone && onLogin(phone)}
+              placeholder="Your Phone Number"
+              className="w-full glass-input rounded-[1.2rem] pl-11 pr-4 py-4 text-sm font-semibold outline-none focus:ring-2 focus:ring-teal-400/50"
+            />
           </div>
+          <button 
+            onClick={() => phone && onLogin(phone)}
+            disabled={!phone}
+            className={`w-full rounded-[1.2rem] py-4 text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+              phone ? "bg-white text-slate-900 shadow-[0_10px_20px_rgba(255,255,255,0.15)] hover:scale-[1.02]" : "bg-white/10 text-white/30 cursor-not-allowed"
+            }`}
+          >
+            Get started <ArrowRight className="w-4 h-4" />
+          </button>
+        </div>
 
-          <div className="space-y-5">
-            <label className="block">
-              <span className="mb-2 flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
-                <Phone className="h-3.5 w-3.5" />
-                Phone Number
-              </span>
-              <input
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && phone && onLogin(phone)}
-                placeholder="e.g. 9876543210"
-                className="glass-input w-full rounded-2xl px-4 py-3.5 text-sm text-white outline-none placeholder:text-slate-500 focus:border-rose-300/50 focus:ring-4 focus:ring-rose-500/10"
-              />
-            </label>
-
-            <button
-              onClick={() => phone && onLogin(phone)}
-              disabled={!phone}
-                className={`flex w-full items-center justify-center gap-2 rounded-2xl px-4 py-3.5 text-sm font-bold active:scale-[0.98]
-                ${phone
-                  ? "bg-rose-600 text-white shadow-lg shadow-rose-500/25 hover:bg-rose-500"
-                  : "cursor-not-allowed bg-white/[0.06] text-slate-600"
-                }`}
-            >
-              Continue
-              <ArrowRight className="h-4 w-4" />
-            </button>
-
-            <div className="border-t border-white/10 pt-5">
-              <div className="flex flex-wrap gap-2">
-                {TOPICS.map((t) => (
-                  <span
-                    key={t}
-                    className="rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-[11px] font-medium text-slate-300"
-                  >
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <p className="mt-5 text-center text-[11px] text-slate-500">
-            Powered by GNDEC AI | gndec.ac.in
-          </p>
-        </section>
-      </div>
+      </main>
     </div>
   );
 }

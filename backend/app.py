@@ -7,7 +7,7 @@ Provides REST endpoints for the GNDEC RAG chatbot.
 
 import logging
 import os
-from fastapi import FastAPI, Query, HTTPException, Request
+from fastapi import FastAPI, Query, HTTPException, Request, UploadFile, File
 from fastapi.responses import JSONResponse, StreamingResponse, FileResponse
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -52,9 +52,11 @@ async def verify_api_key(request: Request, call_next):
 
 # ============================================================================
 
+FRONTEND_URLS = os.getenv("FRONTEND_URLS", "http://localhost:5173,http://localhost:3010").split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # TODO: lock down to your frontend domain in production
+    allow_origins=FRONTEND_URLS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -105,6 +107,50 @@ async def ask_stream_route(
     logging.info(f"STREAM request: {q!r}")
     gen = answer_stream(q, phone, session_id)
     return StreamingResponse(gen, media_type="text/event-stream")
+
+
+@app.get("/api/search")
+async def search_rag(q: str = Query(...)):
+    """Fast FAISS search endpoint that skips LLM generation. Ideal for Voice Agents."""
+    from .agent import retriever, _normalize_docs
+    import asyncio
+    logging.info(f"SEARCH request: {q!r}")
+    docs_raw = await asyncio.to_thread(retriever, q)
+    docs_text, _ = _normalize_docs(docs_raw)
+    return {"context": docs_text}
+
+
+@app.post("/api/transcribe")
+async def transcribe_audio(file: UploadFile = File(...)):
+    """Transcribes an uploaded audio file using Groq Whisper model."""
+    import tempfile
+    from groq import Groq
+    
+    groq_api_key = os.getenv("GROQ_API_KEY")
+    if not groq_api_key:
+        raise HTTPException(status_code=500, detail="GROQ_API_KEY not configured")
+        
+    client = Groq(api_key=groq_api_key)
+    
+    # Save uploaded file to temp file
+    try:
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_audio:
+            temp_audio.write(await file.read())
+            temp_path = temp_audio.name
+            
+        with open(temp_path, "rb") as f:
+            transcription = client.audio.transcriptions.create(
+                file=(file.filename, f.read()),
+                model="whisper-large-v3",
+                response_format="json"
+            )
+        
+        os.remove(temp_path)
+        return {"text": transcription.text}
+    except Exception as e:
+        logging.exception("Transcription failed")
+        raise HTTPException(status_code=500, detail=str(e))
+
 
 
 @app.get("/api/history")

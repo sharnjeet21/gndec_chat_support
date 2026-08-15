@@ -1,28 +1,8 @@
-# backend/domain_guard.py
-"""
-Domain Guard — GNDEC Edition
-=============================
-Rejects questions that are too far from the GNDEC knowledge base
-using FAISS L2 distance on the embedded query.
-
-Threshold tuning:
-  - Lower value  → stricter (more questions rejected)
-  - Higher value → looser  (more questions allowed through)
-
-With the GNDEC dataset (465 Q&A pairs), 1.6 is a good starting point.
-Raise to 1.9 if too many valid questions are being blocked.
-"""
-
 import logging
-
 from .vectorstore import embed_model, faiss_index, META
 
 logger = logging.getLogger(__name__)
-
-# FAISS IndexFlatL2: lower score = more similar
-# Tuned for GNDEC dataset — adjust if needed
-OUT_OF_DOMAIN_THRESHOLD = 1.4
-
+OUT_OF_DOMAIN_THRESHOLD = 1.2
 
 def is_out_of_domain(query: str) -> bool:
     """

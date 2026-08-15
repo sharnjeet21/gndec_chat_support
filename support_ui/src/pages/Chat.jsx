@@ -1,45 +1,90 @@
 import { createElement, useEffect, useState, useRef } from "react";
-import {
-  BookOpen,
-  Bot,
-  Briefcase,
-  Building2,
-  ChevronLeft,
-  CircleDollarSign,
-  FileText,
-  GraduationCap,
-  Home,
-  LoaderCircle,
-  Menu,
-  MessageCircle,
-  Plus,
-  Send,
-  Sparkles,
-} from "lucide-react";
+import { ChevronLeft, LoaderCircle, Mic, Plus, Send, ExternalLink, FileText, Folder } from "lucide-react";
 import { startSession, askStream, getHistory, fetchSessions } from "../api";
 import MessageBubble from "../components/MessageBubble";
-import SourceCard from "../components/SourceCard";
-import TypingIndicator from "../components/TypingIndicator";
 
-const SUGGESTIONS = [
-  { icon: GraduationCap, text: "What B.Tech programs does GNDEC offer?" },
-  { icon: FileText, text: "How do I apply for admission?" },
-  { icon: Building2, text: "Tell me about the CSE department" },
-  { icon: Home, text: "What are the hostel facilities?" },
-  { icon: CircleDollarSign, text: "What is the fee structure?" },
-  { icon: Briefcase, text: "Tell me about placements at GNDEC" },
+function OrbAvatar() {
+  return (
+    <div className="relative w-8 h-8 shrink-0">
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-rose-400 via-fuchsia-500 to-indigo-500 blur-sm opacity-90 scale-110" />
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-400 via-purple-500 to-orange-400" />
+      <div className="absolute top-[35%] left-1/2 -translate-x-1/2 flex gap-[2px]">
+        <svg width="6" height="8" viewBox="0 0 14 20" fill="none"><path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/></svg>
+        <svg width="6" height="8" viewBox="0 0 14 20" fill="none" style={{transform: 'scaleX(-1)'}}><path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/></svg>
+      </div>
+    </div>
+  );
+}
+
+function TypingIndicator() {
+  return (
+    <div className="flex items-start mb-6">
+      <OrbAvatar />
+      <div className="flex flex-col flex-1">
+        <span className="text-[10px] font-bold text-slate-400 mb-1">Ai-Assistant</span>
+        <div className="flex gap-1.5 px-1 py-2">
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-slate-400" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-slate-400" />
+          <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-slate-400" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function SourceCard({ s, index }) {
+  let link = "https://gndec.ac.in";
+  if (s.doc_url && s.doc_url.startsWith("http")) {
+    link = s.doc_url;
+  } else if (s.source_file === "faculty.json" || s.section?.toLowerCase().includes("faculty")) {
+    link = "https://gndec.ac.in/department";
+  } else if (s.source_file === "tnp_data.json" || s.section?.toLowerCase().includes("placement")) {
+    link = "https://tpo.gndec.ac.in";
+  } else if (s.source_file === "syllabi.json") {
+    link = "https://gndec.ac.in/syllabi";
+  } else if (s.section?.toLowerCase().includes("admission")) {
+    link = "https://admission.gndec.ac.in";
+  } else if (s.section?.toLowerCase().includes("alumni")) {
+    link = "https://alumni.gndec.ac.in";
+  } else if (s.source_file && s.source_file !== "web_search") {
+    link = s.source_file.startsWith("http") ? s.source_file : `https://${s.source_file}`;
+  }
+
+  const isDoc = s.doc_url && (s.doc_url.endsWith(".pdf") || s.doc_url.endsWith(".docx") || s.doc_url.endsWith(".doc"));
+  return (
+    <div className="glass-panel min-w-[200px] max-w-[240px] rounded-xl px-3 py-2.5 text-xs flex-shrink-0">
+      <p className="truncate font-bold text-white" title={s.question}>
+        <span className="mr-1.5 inline-flex bg-white/10 px-1 py-0.5 text-[9px] text-teal-300 rounded">[{index}]</span>
+        {s.question?.slice(0, 40)}{s.question?.length > 40 ? "…" : ""}
+      </p>
+      {s.section && <p className="mt-1 flex items-center gap-1.5 truncate text-[10px] text-white/50"><Folder className="h-3 w-3" />{s.section}</p>}
+      <a href={link} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex items-center gap-1.5 truncate text-[10px] font-semibold text-teal-400 hover:text-teal-300">
+        {isDoc ? <FileText className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
+        {link.replace("https://", "").replace("http://", "").split("/")[0]}
+      </a>
+    </div>
+  );
+}
+
+const SUGGESTED_QUESTIONS = [
+  "What B.Tech courses are offered?",
+  "How can I apply for admission?",
+  "What is the fee structure?",
+  "Are there hostel facilities available?"
 ];
 
 export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
   const [sessions, setSessions] = useState([]);
+  const mediaRecorderRef = useRef(null);
+  const audioChunksRef = useRef([]);
   const [messages, setMessages] = useState([]);
   const [sources, setSources] = useState([]);
   const [query, setQuery] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
-
+  const [isListening, setIsListening] = useState(false);
+  
+  const recognitionRef = useRef(null);
   const messagesEndRef = useRef(null);
-  const inputRef = useRef(null);
 
   useEffect(() => {
     fetchSessions(phone).then((d) => setSessions(d.sessions || []));
@@ -51,30 +96,19 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
-  async function sendMessage() {
-    if (!query.trim() || loading) return;
-    const q = query.trim();
+  async function submitQuery(text) {
+    const q = text.trim();
+    if (!q || loading) return;
     setQuery("");
-    if (inputRef.current) inputRef.current.style.height = "48px";
     setMessages((m) => [...m, { role: "user", message: q }]);
     setSources([]);
     setLoading(true);
 
     let firstToken = true;
-
     try {
       await askStream(phone, sessionId, q, (chunk) => {
-        if (chunk.type === "sources") {
-          setSources(chunk.data || []);
-          return;
-        }
-
-        if (chunk.type === "blocked") {
-          setMessages((m) => [...m, { role: "assistant", message: chunk.message }]);
-          setLoading(false);
-          return;
-        }
-
+        if (chunk.type === "sources") { setSources(chunk.data || []); return; }
+        if (chunk.type === "blocked") { setMessages((m) => [...m, { role: "assistant", message: chunk.message }]); setLoading(false); return; }
         if (chunk.type === "content") {
           if (firstToken) {
             firstToken = false;
@@ -82,268 +116,154 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
           } else {
             setMessages((m) => {
               const copy = [...m];
-              copy[copy.length - 1] = {
-                role: "assistant",
-                message: (copy[copy.length - 1].message || "") + (chunk.data || ""),
-              };
+              copy[copy.length - 1] = { role: "assistant", message: (copy[copy.length - 1].message || "") + (chunk.data || "") };
               return copy;
             });
           }
         }
       });
     } catch {
-      setMessages((m) => [
-        ...m,
-        { role: "assistant", message: "Sorry, something went wrong. Please try again." },
-      ]);
+      setMessages((m) => [...m, { role: "assistant", message: "Sorry, an error occurred." }]);
     } finally {
       setLoading(false);
-      inputRef.current?.focus();
     }
   }
 
-  function handleKeyDown(e) {
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault();
-      sendMessage();
+  const [speechLang, setSpeechLang] = useState('en-IN');
+
+  useEffect(() => {
+    // Stop any ongoing speech when switching chats
+    window.speechSynthesis.cancel();
+  }, [sessionId]);
+
+  async function sendMessage() {
+    submitQuery(query);
+  }
+
+  function toggleSpeech() {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SpeechRecognition) return alert("Browser does not support Speech Recognition.");
+    if (isListening) {
+      if (recognitionRef.current) recognitionRef.current.stop();
+      setIsListening(false);
+      return;
     }
-  }
-
-  function switchSession(sid) {
-    onSelectSession(sid);
-    setSidebarOpen(false);
-  }
-
-  function startNewSession() {
-    onSelectSession(Date.now().toString());
-    setSidebarOpen(false);
+    const recognition = new SpeechRecognition();
+    recognition.lang = speechLang;
+    recognition.continuous = false;
+    recognitionRef.current = recognition;
+    recognition.onstart = () => setIsListening(true);
+    recognition.onresult = (e) => setQuery((p) => (p ? p + " " + e.results[0][0].transcript : e.results[0][0].transcript));
+    recognition.onerror = () => setIsListening(false);
+    recognition.onend = () => setIsListening(false);
+    recognition.start();
   }
 
   return (
-    <div className="screen-bg flex h-screen overflow-hidden text-slate-100">
-      {sidebarOpen && (
-        <button
-          type="button"
-          aria-label="Close conversations"
-          className="fixed inset-0 z-20 bg-black/55 backdrop-blur-sm md:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      <aside
-        className={`
-          ${sidebarOpen ? "translate-x-0 md:w-[300px]" : "-translate-x-full md:translate-x-0 md:w-0"}
-          fixed inset-y-0 left-0 z-30 flex h-full w-[300px] shrink-0 flex-col overflow-hidden
-          border-r border-white/10 bg-black/25 backdrop-blur-2xl transition-all duration-300
-          md:relative md:z-auto
-        `}
-      >
-        <div className="border-b border-white/10 px-4 py-4">
-          <div className="flex items-center gap-3">
-            <div className="brand-mark flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-xs font-black text-white">
-              GN
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-black text-white">GNDEC AI</p>
-              <p className="truncate text-[11px] text-slate-400">{phone}</p>
-            </div>
-          </div>
+    <div className="flex h-screen font-sans md:p-3 md:gap-4 overflow-hidden text-white relative">
+      {/* Sidebar */}
+      <aside className="w-[280px] flex flex-col shrink-0 hidden md:flex pt-2 z-10">
+        <div className="px-4 pb-4 flex items-center gap-3">
+           <button onClick={onBack} className="p-2 hover:bg-white/10 rounded-xl text-white/70"><ChevronLeft className="w-5 h-5"/></button>
+           <div>
+             <p className="font-bold text-sm">GNDEC Chat</p>
+             <p className="text-[10px] text-white/50">{phone}</p>
+           </div>
         </div>
-
-        <div className="border-b border-white/10 px-3 py-3">
-          <button
-            onClick={onBack}
-            className="flex w-full items-center gap-2 rounded-2xl px-3 py-2.5 text-xs font-semibold text-slate-300 hover:bg-white/[0.06] hover:text-white"
-          >
-            <ChevronLeft className="h-4 w-4" />
-            All Conversations
-          </button>
+        <div className="flex-1 overflow-y-auto px-4 py-2 space-y-2">
+          {sessions.map((sid, i) => (
+            <button key={sid||i} onClick={() => onSelectSession(sid)} className={`w-full text-left px-4 py-3 rounded-2xl text-xs transition-colors ${sid === sessionId ? "bg-white/20 font-semibold shadow-sm backdrop-blur-md" : "text-white/70 hover:bg-white/10"}`}>
+              Chat {i + 1}
+            </button>
+          ))}
         </div>
-
-        <div className="flex-1 overflow-y-auto px-3 py-4">
-          <div className="mb-3 flex items-center justify-between px-1">
-            <p className="text-[10px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-              Sessions
-            </p>
-            <span className="rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-[10px] text-slate-400">
-              {sessions.length}
-            </span>
-          </div>
-
-          <div className="space-y-2">
-            {sessions.length === 0 ? (
-              <div className="rounded-2xl border border-white/10 bg-white/[0.04] px-4 py-5 text-center">
-                <MessageCircle className="mx-auto h-5 w-5 text-slate-500" />
-                <p className="mt-2 text-xs text-slate-500">No saved chats</p>
-              </div>
-            ) : (
-              sessions.map((sid, i) => (
-                <button
-                  key={sid || i}
-                  onClick={() => switchSession(sid)}
-                  className={`w-full rounded-2xl border px-3 py-3 text-left text-xs transition group
-                    ${sid === sessionId
-                      ? "border-rose-300/25 bg-rose-500/[0.12] text-rose-100 soft-ring"
-                      : "border-white/[0.08] bg-white/[0.035] text-slate-300 hover:border-white/15 hover:bg-white/[0.07] hover:text-white"
-                    }`}
-                >
-                  <span className="block font-bold">Chat {i + 1}</span>
-                  <span className="mt-1 block truncate font-mono text-[10px] opacity-50">
-                    {sid.slice(0, 18)}
-                  </span>
-                </button>
-              ))
-            )}
-          </div>
-        </div>
-
-        <div className="border-t border-white/10 p-3">
-          <button
-            onClick={startNewSession}
-            className="flex w-full items-center justify-center gap-2 rounded-2xl bg-rose-600 px-4 py-3 text-xs font-bold text-white shadow-lg shadow-rose-500/25 hover:bg-rose-500 active:scale-[0.98]"
-          >
-            <Plus className="h-4 w-4" />
-            New Discussion
-          </button>
+        <div className="p-4">
+           <button onClick={() => onSelectSession(Date.now().toString())} className="w-full flex items-center justify-center gap-2 py-3.5 rounded-[1.25rem] bg-teal-500/80 text-white text-sm font-bold hover:bg-teal-500 hover:shadow-lg transition-all">
+             <Plus className="w-4 h-4"/> New Chat
+           </button>
         </div>
       </aside>
 
-      <div className="relative flex min-w-0 flex-1 flex-col">
-        <header className="z-10 flex shrink-0 items-center gap-3 border-b border-white/10 bg-black/20 px-3 py-3 backdrop-blur-2xl sm:px-5">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            aria-label="Toggle conversations"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.05] text-slate-300 hover:bg-white/[0.09] hover:text-white"
-          >
-            <Menu className="h-5 w-5" />
-          </button>
-
-          <div className="flex min-w-0 flex-1 items-center gap-3">
-            <div className="brand-mark flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl text-xs font-black text-white">
-              GN
-            </div>
-            <div className="min-w-0">
-              <p className="truncate text-sm font-black text-white sm:text-base">
-                GNDEC College Assistant
-              </p>
-              <p className="hidden truncate text-[11px] text-slate-400 sm:block">
-                Guru Nanak Dev Engineering College, Ludhiana
-              </p>
-            </div>
-          </div>
-
-          <div className="hidden items-center gap-2 rounded-full border border-emerald-300/15 bg-emerald-400/10 px-3 py-2 sm:flex">
-            <span className="h-2 w-2 rounded-full bg-emerald-300 shadow-[0_0_18px_rgba(110,231,183,0.8)]" />
-            <span className="text-[11px] font-bold text-emerald-200">Online</span>
-          </div>
+      {/* Main Chat Area */}
+      <div className="flex-1 flex flex-col relative overflow-hidden glass-panel md:rounded-[2.5rem] z-10">
+        {/* Header */}
+        <header className="flex justify-center items-center h-16 shrink-0 bg-transparent z-10 sticky top-0">
+           <h2 className="font-bold text-white">Chat</h2>
+           {/* Mobile back button */}
+           <button onClick={onBack} className="absolute left-4 p-2 text-white/70 md:hidden"><ChevronLeft className="w-5 h-5"/></button>
         </header>
 
-        <main className="flex-1 overflow-y-auto px-3 py-5 sm:px-6">
-          <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col">
+        {/* Messages */}
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 pb-4">
+          <div className="max-w-2xl mx-auto flex flex-col justify-end min-h-full">
             {messages.length === 0 && !loading && (
-              <div className="flex flex-1 items-center justify-center py-8">
-                <div className="w-full max-w-3xl">
-                  <div className="glass-panel rounded-[2rem] p-6 text-center sm:p-8">
-                    <div className="brand-mark mx-auto flex h-16 w-16 items-center justify-center rounded-[1.4rem] text-sm font-black text-white">
-                      <Bot className="h-8 w-8" />
-                    </div>
-                    <p className="mt-5 text-xs font-semibold uppercase tracking-[0.24em] text-teal-200/75">
-                      Campus Knowledge Desk
-                    </p>
-                    <h2 className="mt-2 text-2xl font-black tracking-tight text-white sm:text-3xl">
-                      How can I help you?
-                    </h2>
-                    <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-400">
-                      Ask about GNDEC admissions, departments, hostel, placements, fees, events, or campus services.
-                    </p>
-
-                    <div className="mt-7 grid gap-2 sm:grid-cols-2">
-                      {SUGGESTIONS.map((suggestion) => (
-                        <button
-                          key={suggestion.text}
-                          onClick={() => {
-                            setQuery(suggestion.text);
-                            inputRef.current?.focus();
-                          }}
-                          className="glass-card lift-hover flex items-start gap-3 rounded-2xl px-4 py-3 text-left text-xs font-semibold text-slate-200"
-                        >
-                          <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-rose-500/15 text-rose-200 ring-1 ring-rose-300/20">
-                            {createElement(suggestion.icon, { className: "h-4 w-4" })}
-                          </span>
-                          <span className="pt-1 leading-5">{suggestion.text}</span>
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+              <div className="flex flex-col items-center justify-center py-10 space-y-6 mt-10">
+                <div className="text-center text-white/50 text-sm">Start by asking a question about GNDEC!</div>
+                <div className="flex flex-wrap justify-center gap-3 max-w-lg">
+                  {SUGGESTED_QUESTIONS.map((q, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => submitQuery(q)}
+                      className="px-4 py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-white/70 hover:text-white text-xs border border-white/10 transition-colors"
+                    >
+                      {q}
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
-
-            <div className="space-y-3">
-              {messages.map((m, i) => (
-                <MessageBubble key={i} role={m.role} text={m.message} />
-              ))}
-              {loading && messages[messages.length - 1]?.role !== "assistant" && <TypingIndicator />}
-              <div ref={messagesEndRef} />
-            </div>
+            {messages.map((m, i) => <MessageBubble key={i} role={m.role} text={m.message} />)}
+            {loading && messages[messages.length - 1]?.role !== "assistant" && <TypingIndicator />}
+            <div ref={messagesEndRef} />
           </div>
         </main>
 
-        {sources.length > 0 && (
-          <section className="shrink-0 border-t border-white/10 bg-black/20 px-3 py-3 backdrop-blur-2xl sm:px-5">
-            <div className="mx-auto max-w-5xl">
-              <p className="mb-2 flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.18em] text-teal-200/80">
-                <BookOpen className="h-3.5 w-3.5" />
-                Knowledge Sources
-              </p>
-              <div className="flex gap-2 overflow-x-auto pb-1">
-                {sources.slice(0, 4).map((s, i) => (
-                  <SourceCard key={i} s={s} />
-                ))}
+        {/* Input Bar */}
+        <div className="shrink-0 p-4 sm:p-6 w-full z-20">
+          <div className="max-w-3xl mx-auto flex flex-col gap-3">
+            
+            {/* Sources Row */}
+            {sources.length > 0 && (
+              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+                {sources.map((s, i) => <SourceCard key={i} s={s} index={i+1}/>)}
               </div>
+            )}
+
+            <div className="flex items-center gap-2 glass-input backdrop-blur-md shadow-[0_10px_40px_rgba(0,0,0,0.2)] rounded-[2rem] p-2 pl-6">
+              <input 
+                className="flex-1 bg-transparent border-none outline-none text-[15px] text-white placeholder:text-white/50"
+                placeholder="Message"
+                value={query}
+                onChange={e => setQuery(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && sendMessage()}
+              />
+              <select 
+                value={speechLang} 
+                onChange={(e) => setSpeechLang(e.target.value)}
+                className="bg-transparent border-none outline-none text-[13px] text-white/50 cursor-pointer hover:text-white transition-colors"
+                title="Select Speech Language"
+              >
+                <option value="en-IN" className="bg-slate-900 text-white">English</option>
+                <option value="hi-IN" className="bg-slate-900 text-white">Hindi (हिंदी)</option>
+                <option value="pa-IN" className="bg-slate-900 text-white">Punjabi (ਪੰਜਾਬੀ)</option>
+              </select>
+              <button 
+                onClick={toggleSpeech}
+                className={`p-3 rounded-full transition-colors ${isListening ? "bg-rose-500/80 text-white animate-pulse shadow-[0_0_15px_rgba(244,63,94,0.5)]" : "bg-white/10 text-white/70 hover:bg-white/20"}`}
+              >
+                <Mic className="w-4 h-4"/>
+              </button>
+              <button 
+                onClick={sendMessage}
+                disabled={loading || !query.trim()}
+                className={`p-3 rounded-full transition-colors ${loading || !query.trim() ? "bg-white/5 text-white/20 cursor-not-allowed" : "bg-teal-500 text-white shadow-[0_4px_20px_rgba(20,184,166,0.4)] hover:bg-teal-400 hover:scale-105"}`}
+              >
+                {loading ? <LoaderCircle className="w-4 h-4 animate-spin"/> : <Send className="w-4 h-4 ml-[-2px]"/>}
+              </button>
             </div>
-          </section>
-        )}
-
-        <div className="shrink-0 px-3 pb-4 pt-2 sm:px-5">
-          <div className="mx-auto flex max-w-5xl items-end gap-2 rounded-[1.6rem] border border-white/10 bg-black/25 p-2 shadow-2xl shadow-black/30 backdrop-blur-2xl">
-            <textarea
-              ref={inputRef}
-              rows={1}
-              value={query}
-              onChange={(e) => {
-                setQuery(e.target.value);
-                e.target.style.height = "auto";
-                e.target.style.height = Math.min(e.target.scrollHeight, 130) + "px";
-              }}
-              onKeyDown={handleKeyDown}
-              placeholder="Ask about GNDEC admissions, departments, facilities..."
-              className="min-h-12 flex-1 resize-none rounded-[1.25rem] border border-transparent bg-transparent px-4 py-3 text-sm leading-relaxed text-white outline-none placeholder:text-slate-500 focus:border-white/10 focus:bg-white/[0.04]"
-              style={{ maxHeight: "130px" }}
-            />
-
-            <button
-              onClick={sendMessage}
-              disabled={loading || !query.trim()}
-              aria-label="Send message"
-              className={`flex h-12 w-12 shrink-0 items-center justify-center rounded-[1.25rem] active:scale-[0.96]
-                ${loading || !query.trim()
-                  ? "cursor-not-allowed bg-white/[0.06] text-slate-600"
-                  : "bg-rose-600 text-white shadow-lg shadow-rose-500/25 hover:bg-rose-500"
-                }`}
-            >
-              {loading ? (
-                <LoaderCircle className="h-5 w-5 animate-spin" />
-              ) : (
-                <Send className="h-5 w-5" />
-              )}
-            </button>
-          </div>
-          <div className="mt-2 flex items-center justify-center gap-1.5 text-[10px] font-medium text-slate-600">
-            <Sparkles className="h-3 w-3 text-teal-300/60" />
-            GNDEC AI
           </div>
         </div>
+
       </div>
     </div>
   );

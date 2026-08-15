@@ -67,6 +67,81 @@ def load_flat_json(filename: str) -> list:
 # Load ALL datasets
 # -----------------------------------------------
 
+def load_faculty_json() -> list:
+    path = os.path.join(DATA_DIR, "faculty.json")
+    if not os.path.exists(path):
+        print(f"  ⚠️  Not found, skipping: {path}")
+        return []
+
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    out = []
+    for item in data:
+        name = item.get("name", "").strip()
+        dept = item.get("department", "").strip()
+        desig = item.get("designation", "").strip()
+        email = item.get("email", "").strip()
+        
+        if not name:
+            continue
+            
+        q = f"Who is {name}? What is the contact email and designation for {name} in {dept}?"
+        a = f"{name} is a {desig} in the {dept} department at GNDEC. You can contact them via email at {email}."
+        
+        out.append({
+            "question": q,
+            "answer": a,
+            "section": "Faculty Directory",
+            "source_file": "faculty.json"
+        })
+
+    print(f"  Loaded {len(out):>5} pairs from faculty.json")
+    return out
+
+def load_syllabi_json() -> list:
+    path = os.path.join(DATA_DIR, "syllabi.json")
+    if not os.path.exists(path):
+        print(f"  ⚠️  Not found, skipping: {path}")
+        return []
+
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+
+    out = []
+    for item in data:
+        title = item.get("title", "").strip()
+        url = item.get("url", "").strip()
+        content = item.get("content", "").strip()
+        
+        if not content:
+            continue
+            
+        q = f"What is the syllabus, scheme, or notice for {title}?"
+        a = content[:2500] # Ensure it's not overly large for a single chunk, or rely on FAISS to handle it
+        
+        out.append({
+            "question": q,
+            "answer": a,
+            "section": "Syllabus & Schemes",
+            "source_file": "syllabi.json",
+            "doc_url": url
+        })
+
+    print(f"  Loaded {len(out):>5} pairs from syllabi.json")
+    return out
+
+def load_tnp_json() -> list:
+    path = os.path.join(DATA_DIR, "tnp_data.json")
+    if not os.path.exists(path):
+        print(f"  ⚠️  Not found, skipping: {path}")
+        return []
+
+    with open(path, "r", encoding="utf-8") as f:
+        data = json.load(f)
+    print(f"  Loaded {len(data):>5} pairs from tnp_data.json")
+    return data
+
 def load_all_faqs() -> list:
     all_faqs = []
 
@@ -77,6 +152,18 @@ def load_all_faqs() -> list:
 
     # 2. Scraped GNDEC website data
     all_faqs += load_flat_json("gndec_data.json")
+    
+    # 3. Faculty data
+    all_faqs += load_faculty_json()
+    
+    # 4. Syllabi data
+    all_faqs += load_syllabi_json()
+    
+    # 5. Training & Placement data
+    all_faqs += load_tnp_json()
+
+    # 6. External Web Search Facts
+    all_faqs += load_flat_json("external_facts.json")
 
     print(f"\nTOTAL LOADED = {len(all_faqs)} Q&A pairs")
     return all_faqs

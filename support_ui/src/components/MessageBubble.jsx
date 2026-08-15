@@ -1,71 +1,92 @@
-import { AlertTriangle, Bot, UserRound } from "lucide-react";
+import React, { useState } from "react";
+import { Volume2, VolumeX } from "lucide-react";
 
-// Strip markdown formatting from text so responses render as plain text
-function stripMarkdown(text) {
-  if (!text) return "";
-  return text
-    // Remove bold/italic: **text**, *text*, __text__, _text_
-    .replace(/\*\*(.+?)\*\*/g, "$1")
-    .replace(/\*(.+?)\*/g, "$1")
-    .replace(/__(.+?)__/g, "$1")
-    .replace(/_(.+?)_/g, "$1")
-    // Remove headers: ## Heading
-    .replace(/^#{1,6}\s+/gm, "")
-    // Remove inline code: `code`
-    .replace(/`(.+?)`/g, "$1")
-    // Remove code blocks: ```...```
-    .replace(/```[\s\S]*?```/g, "")
-    // Remove horizontal rules
-    .replace(/^[-*_]{3,}\s*$/gm, "")
-    // Convert markdown bullet points (* item, - item) to plain dashes
-    .replace(/^[-*]\s+/gm, "- ")
-    // Clean up extra blank lines
-    .replace(/\n{3,}/g, "\n\n")
-    .trim();
+// The Avatar Orb mini version
+function OrbAvatar() {
+  return (
+    <div className="relative w-8 h-8 shrink-0 mr-3 mt-1">
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-rose-400 via-fuchsia-500 to-indigo-500 blur-sm opacity-90 scale-110" />
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-400 via-purple-500 to-orange-400" />
+      {/* Mini Eyes */}
+      <div className="absolute top-[35%] left-1/2 -translate-x-1/2 flex gap-[2px]">
+        <svg width="6" height="8" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/>
+        </svg>
+        <svg width="6" height="8" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{transform: 'scaleX(-1)'}}>
+          <path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/>
+        </svg>
+      </div>
+    </div>
+  );
 }
 
 export default function MessageBubble({ role, text }) {
-  const isUser = role === "user";
-  const cleanText = stripMarkdown(text);
-  const lines = cleanText?.split("\n") || [];
+  const isAssistant = role === "assistant";
+  const [isSpeaking, setIsSpeaking] = useState(false);
 
-  const isWarning =
-    text?.includes("not related to GNDEC") ||
-    text?.includes("cannot assist with that request") ||
-    text?.includes("safety guidelines") ||
-    text?.includes("unrelated to GNDEC");
+  const handleSpeak = () => {
+    if (isSpeaking) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    
+    // Attempt to find a high-quality Indian accent voice (en-IN or hi-IN)
+    const voices = window.speechSynthesis.getVoices();
+    const indianVoice = voices.find(v => 
+      v.lang === 'en-IN' || 
+      v.lang === 'hi-IN' ||
+      v.name.includes("Heera") || 
+      v.name.includes("Ravi") || 
+      v.name.includes("Veena") || 
+      v.name.includes("Rishi") ||
+      v.name.includes("Google हिन्दी") ||
+      v.name.includes("India")
+    ) || voices.find(v => v.name.includes("Google UK English Female")); // Fallback if no Indian voice
+    
+    if (indianVoice) {
+      utterance.voice = indianVoice;
+    }
+    // Optimize speech rate and pitch for a more natural conversational tone
+    utterance.rate = 1.0;
+    utterance.pitch = 1.05;
 
-  let bubbleClass = "";
-  if (isUser) {
-    bubbleClass = "bg-rose-600 border border-rose-200/20 text-white rounded-[1.35rem] rounded-tr-md shadow-lg shadow-rose-950/20";
-  } else if (isWarning) {
-    bubbleClass = "bg-amber-500/12 border border-amber-300/25 text-amber-100 rounded-[1.35rem] rounded-tl-md";
-  } else {
-    bubbleClass = "glass-card text-slate-100 rounded-[1.35rem] rounded-tl-md";
+    utterance.onend = () => setIsSpeaking(false);
+    utterance.onerror = () => setIsSpeaking(false);
+    window.speechSynthesis.speak(utterance);
+    setIsSpeaking(true);
+  };
+
+  if (isAssistant) {
+    return (
+      <div className="flex items-start mb-6">
+        <OrbAvatar />
+        <div className="flex flex-col flex-1 group">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold text-slate-400">Ai-Assistant</span>
+            <button 
+              onClick={handleSpeak}
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-white/10 text-slate-400 hover:text-white"
+              title={isSpeaking ? "Stop speaking" : "Read aloud"}
+            >
+              {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+            </button>
+          </div>
+          <div className="text-white text-sm leading-relaxed bubble-text whitespace-pre-wrap">
+            {text}
+          </div>
+        </div>
+      </div>
+    );
   }
 
   return (
-    <div className={`flex my-2.5 items-end gap-2 ${isUser ? "justify-end" : "justify-start"}`}>
-      {!isUser && (
-        <div className="mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-rose-200">
-          {isWarning ? <AlertTriangle className="h-4 w-4" /> : <Bot className="h-4 w-4" />}
-        </div>
-      )}
-
-      <div className={`max-w-[84%] px-4 py-3 text-sm leading-relaxed sm:max-w-[76%] ${bubbleClass}`}>
-        {lines.map((line, i) => (
-          <span key={i}>
-            {line}
-            {i < lines.length - 1 && <br />}
-          </span>
-        ))}
+    <div className="flex justify-end mb-6">
+      <div className="glass-panel rounded-2xl rounded-tr-sm px-5 py-3.5 max-w-[85%] text-white text-sm leading-relaxed whitespace-pre-wrap">
+         {text}
       </div>
-
-      {isUser && (
-        <div className="brand-mark mb-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-2xl text-white">
-          <UserRound className="h-4 w-4" />
-        </div>
-      )}
     </div>
   );
 }

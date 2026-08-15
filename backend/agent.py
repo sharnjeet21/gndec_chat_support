@@ -3,6 +3,7 @@ import json
 import asyncio
 import logging
 from typing import List, Dict, Any, Tuple, Iterable
+import urllib.parse
 
 from langchain.memory import ConversationBufferMemory
 from langchain_community.chat_message_histories import RedisChatMessageHistory
@@ -11,63 +12,57 @@ from .vectorstore import get_retriever
 from .llm.llm import llm
 from .chat_store import save_message
 from .db import REDIS_URL, SESSION_TTL
-from .moderation import check_toxicity
+from .vectorstore import get_retriever
+from .tools import search_web_general
 from .domain_guard import is_out_of_domain
+import re
+
+BANNED_WORDS = [
+    "fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "slut", "whore",
+    # Discriminatory / Racial
+    "nigger", "nigga", "chink", "spic", "faggot", "fag", "dyke", "tranny", "retard"
+]
+BANNED_REGEX = re.compile(rf"\b({'|'.join(BANNED_WORDS)})\b", flags=re.IGNORECASE)
+
+def check_toxicity(text: str) -> Tuple[bool, Dict[str, Any]]:
+    # ponytail: naive regex instead of PyTorch model for toxicity
+    return (True, {"toxicity": 1.0}) if (text and text.strip() and BANNED_REGEX.search(text)) else (False, {})
 
 logging.basicConfig(level=logging.INFO)
 
 SYSTEM_PROMPT = """
-You are a helpful, friendly, and knowledgeable assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana, Punjab, India.
+You are a highly intelligent, comprehensive, and friendly assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana.
 
-Your role is to answer questions about GNDEC — its departments, programs, admissions, faculty, facilities, events, and college life.
+Your primary goal is to provide EXTREMELY detailed, highly comprehensive, and exhaustive answers based on the retrieved knowledge.
 
-Your behavior rules:
-
-1. Greet politely and conversationally.
-2. Provide clear, concise, to-the-point answers based ONLY on the retrieved knowledge.
+CRITICAL RULES:
+1. Greet the user naturally only if they greet you.
+2. YOU MUST BE EXHAUSTIVE. Extract and present EVERY SINGLE RELEVANT DETAIL from the provided context. If the user asks for a fee structure, list the EXACT fees for EVERY SINGLE program, category (Boys/Girls, SC/ST, Hosteller, etc.), and breakdown mentioned in the context. DO NOT summarize or cut it short.
 3. Do NOT use markdown formatting — no asterisks, no bold, no bullet points with *, no headers with #, no backticks.
-4. Write in plain natural language. Use numbered lists (1. 2. 3.) or simple line breaks if listing items.
-5. Do NOT ask the user if they want "more details" or "elaboration" unless they explicitly request it.
-6. Do NOT end responses with questions like "Would you like more details?" or "Should I elaborate?"
-7. Keep answers short unless the user asks for a detailed or full explanation.
-8. If the retrieved knowledge does not contain the answer, say "I do not have information about that." DO NOT guess or hallucinate any lists, departments, or details not found in the context.
-9. If a question is completely unrelated to GNDEC or college matters, politely redirect the user.
+4. Write in plain natural language. Use numbered lists (1. 2. 3.) or simple line breaks to organize information clearly.
+5. STRICTLY NO GENERAL KNOWLEDGE OR CODING: If the user asks you to write code (like C++, Python) or solve homework/math, YOU MUST REFUSE. Even if C++ or Math is mentioned in the college syllabus context, you are a college support bot, not a coding assistant. Say exactly: "I can't answer this, I only have knowledge about GNDEC college."
+6. You must cite your sources inline using brackets based on the Document number provided in the context (e.g., "GNDEC offers 7 B.Tech programs [1].").
+7. End your response with a polite follow-up question related to the user's inquiry (e.g., "Which specific program are you interested in?").
+8. If the retrieved knowledge does not contain the answer, explicitly state "I do not have information about that." DO NOT guess or hallucinate any facts not present in the context.
+9. If a question is completely unrelated to GNDEC or college matters, politely redirect the user by saying "I can't answer this, I only have knowledge about GNDEC college."
+10. NEVER generate any inappropriate, discriminatory, racial, or offensive language.
+11. ALWAYS provide the maximum amount of detail possible. Act like an expert counselor giving a complete breakdown.
+12. MULTILINGUAL SUPPORT: You must fully understand and fluently reply in English, Hindi, Punjabi, and Hinglish. **CRITICAL: You must match the EXACT language the user speaks.** If the user asks a question in Punjabi (either Gurmukhi or Roman script), you MUST reply in pure Punjabi. DO NOT reply in Hindi if the user speaks Punjabi.
 
-Topics you can help with:
-- Departments: CSE, IT, ECE, EE, ME, CE, MBA, MCA, Architecture, and more
-- Admissions, fee structure, eligibility criteria
-- Academic programs (B.Tech, M.Tech, MBA, MCA, Ph.D.)
-- Faculty, labs, and facilities
-- Hostel, library, sports, NCC, cultural activities
-- Exam schedules, results, holidays
-- Placements and alumni
-- College events and notices
-
-College details:
-- Full name: Guru Nanak Dev Engineering College (GNDEC)
-- Location: Gill Road, Ludhiana, Punjab - 141006, India
-- Website: https://gndec.ac.in
-- Affiliated to: IKG Punjab Technical University (PTU)
-- NAAC Accredited Grade A
-
-Tone:
-- Warm, calm, and helpful
-- Plain conversational text only — no markdown
-- No lecturing or unnecessary repetition
+Tone: Warm, highly detailed, exhaustive, and helpful. Plain text only.
 """
 
-# FAISS retriever (sync function) — fetch top 6 for richer context
-retriever = get_retriever(6)
+# FAISS retriever (sync function) — fetch top 5
+retriever = get_retriever(5)
 
 WARNING_TEXT = (
-    "I'm sorry, I cannot assist with that request. "
-    "Please ask me something about GNDEC — admissions, departments, facilities, or college life."
+    "I'm sorry, I cannot answer that. "
+    "Please refrain from using inappropriate, discriminatory, or offensive language. "
+    "Ask me something about GNDEC — admissions, departments, facilities, or college life."
 )
 
 OOD_TEXT = (
-    "That question doesn't seem to be related to GNDEC or college matters. "
-    "I'm here to help with questions about Guru Nanak Dev Engineering College, Ludhiana. "
-    "Feel free to ask about admissions, departments, facilities, events, or anything else about GNDEC!"
+    "I can't answer this, I only have knowledge about GNDEC college."
 )
 
 
@@ -88,7 +83,7 @@ def _normalize_docs(docs_raw: List[Any]) -> Tuple[str, List[Dict[str, Any]]]:
     parts: List[str] = []
     sources: List[Dict[str, Any]] = []
 
-    for d in docs_raw:
+    for idx, d in enumerate(docs_raw):
         meta = d if isinstance(d, dict) else getattr(d, "metadata", {})
 
         q   = meta.get("question", "")
@@ -96,7 +91,7 @@ def _normalize_docs(docs_raw: List[Any]) -> Tuple[str, List[Dict[str, Any]]]:
         src = meta.get("source_file", "")
 
         sources.append(meta)
-        parts.append(f"Q: {q}\nA: {a}\nSource: {src}")
+        parts.append(f"--- Document {idx+1} ---\nSource: {src}\nQuestion: {q}\nInformation:\n{a}\n-------------------")
 
     docs_text = "\n\n".join(parts)
     return docs_text, sources
@@ -117,9 +112,14 @@ async def build_prompt(
         f"Using last {len(limited_history)} messages out of {len(hist_msgs)} in memory"
     )
 
+    standalone_query = query
+    # Skipped LLM rewrite step for much lower latency
+
     # RAG — retrieve relevant GNDEC knowledge
-    docs_raw = await asyncio.to_thread(retriever, query)
+    docs_raw = await asyncio.to_thread(retriever, standalone_query)
     docs_text, sources = _normalize_docs(docs_raw)
+    
+    # Proactive web search removed to improve latency.
 
     prompt = f"""{SYSTEM_PROMPT}
 
@@ -133,12 +133,13 @@ User question:
 {query}
 
 Instructions:
-- Use ONLY the retrieved knowledge that directly answers the user's question.
+- Use the provided knowledge (RAG or Web Search) to answer the user's question.
 - Do NOT use irrelevant knowledge.
 - Write in plain text only. No markdown, no asterisks, no bold, no bullet points with *, no # headers.
 - Use numbered lists (1. 2. 3.) or plain line breaks if listing items.
 - If the knowledge covers the topic well, give a thorough answer.
-- If information is missing or not provided in the knowledge above, say "I do not have information about that." and suggest visiting gndec.ac.in. DO NOT hallucinate.
+- If information is completely missing from all provided context, say "I do not have information about that." and suggest visiting gndec.ac.in. DO NOT hallucinate.
+- If the user asks in a non-English language (like Punjabi or Hindi), you MUST answer in that exact same language.
 
 Answer:
 """
@@ -153,14 +154,13 @@ async def answer_sync(query: str, phone: str, session_id: str):
     memory = _get_memory(phone, session_id)
 
     # 1️⃣ Toxicity check
-    toxic, _ = check_toxicity(query)
+    toxic, _ = await asyncio.to_thread(check_toxicity, query)
     if toxic:
         memory.chat_memory.add_ai_message(WARNING_TEXT)
         await save_message(phone, session_id, "assistant", WARNING_TEXT)
         return {"answer": WARNING_TEXT, "sources": []}
 
-    # 2️⃣ Out-of-domain check
-    if is_out_of_domain(query):
+    if await asyncio.to_thread(is_out_of_domain, query):
         memory.chat_memory.add_ai_message(OOD_TEXT)
         await save_message(phone, session_id, "assistant", OOD_TEXT)
         return {"answer": OOD_TEXT, "sources": []}
@@ -179,7 +179,7 @@ async def answer_sync(query: str, phone: str, session_id: str):
     ans = msg.content.strip()
 
     # Toxicity check on output
-    ai_toxic, _ = check_toxicity(ans)
+    ai_toxic, _ = await asyncio.to_thread(check_toxicity, ans)
     final = WARNING_TEXT if ai_toxic else ans
 
     memory.chat_memory.add_ai_message(final)
@@ -196,13 +196,12 @@ async def answer_stream(query: str, phone: str, session_id: str):
     memory = _get_memory(phone, session_id)
 
     # Input moderation
-    toxic, _ = check_toxicity(query)
+    toxic, _ = await asyncio.to_thread(check_toxicity, query)
     if toxic:
         yield json.dumps({"type": "blocked", "message": WARNING_TEXT}) + "\n"
         return
 
-    # Domain guard
-    if is_out_of_domain(query):
+    if await asyncio.to_thread(is_out_of_domain, query):
         yield json.dumps({"type": "blocked", "message": OOD_TEXT}) + "\n"
         return
 
@@ -215,21 +214,35 @@ async def answer_stream(query: str, phone: str, session_id: str):
     yield json.dumps({"type": "sources", "sources": sources}) + "\n"
 
     acc = ""
+    
     async for chunk in llm.astream(prompt):
         delta = chunk.content
         if not delta:
             continue
-
+            
+        # Strip Markdown as requested
+        delta = re.sub(r'[*_#`]', '', delta)
+            
         acc += delta
-
-        ai_toxic, _ = check_toxicity(acc)
-        if ai_toxic:
-            memory.chat_memory.add_ai_message(WARNING_TEXT)
-            await save_message(phone, session_id, "assistant", WARNING_TEXT)
-            yield json.dumps({"type": "blocked", "message": WARNING_TEXT}) + "\n"
-            return
-
+        
+        # 🚀 CPU OPTIMIZATION: Only run heavy PyTorch toxicity check every 50 characters
+        if len(acc) % 50 < len(delta):
+            ai_toxic, _ = await asyncio.to_thread(check_toxicity, acc)
+            if ai_toxic:
+                memory.chat_memory.add_ai_message(WARNING_TEXT)
+                await save_message(phone, session_id, "assistant", WARNING_TEXT)
+                yield json.dumps({"type": "blocked", "message": WARNING_TEXT}) + "\n"
+                return
+                
         yield json.dumps({"type": "content", "delta": delta}) + "\n"
+
+    # 🚀 CPU OPTIMIZATION: Final toxicity check to catch trailing characters
+    ai_toxic, _ = await asyncio.to_thread(check_toxicity, acc)
+    if ai_toxic:
+        memory.chat_memory.add_ai_message(WARNING_TEXT)
+        await save_message(phone, session_id, "assistant", WARNING_TEXT)
+        yield json.dumps({"type": "blocked", "message": WARNING_TEXT}) + "\n"
+        return
 
     memory.chat_memory.add_ai_message(acc)
     await save_message(phone, session_id, "assistant", acc)
