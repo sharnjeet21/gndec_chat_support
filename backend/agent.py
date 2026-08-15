@@ -139,6 +139,7 @@ User question:
 
 Instructions:
 - Use the provided knowledge (RAG or Web Search) to answer the user's question.
+- Check the conversation history to understand the context of the user's question. Use the older question and response context if the new question is related to it.
 - STRICTLY DO NOT GUESS OR HALLUCINATE. If the provided knowledge does not contain the answer, you must say "I do not have information about that." and suggest visiting gndec.ac.in.
 - Do NOT use irrelevant knowledge.
 - Write in plain text only. No markdown, no asterisks, no bold, no bullet points with *, no # headers.
@@ -146,8 +147,7 @@ Instructions:
 - If the knowledge covers the topic well, give a thorough answer.
 - CRITICAL: When extracting numbers or tabular data like fee structures, ENSURE you add clear spaces between words and numbers. Do NOT output giant unbroken strings of numbers (e.g. format as "Rs. 50,000" rather than "Rs50000").
 - STRICT SINGLE-LANGUAGE RULE: Answer entirely in ONE language (the exact language the user typed). NEVER mix multiple languages. NEVER blend Hindi and English words.
-- First, provide a detailed step-by-step chain of thought analyzing the documents and formatting rules, enclosed in <think>...</think> tags. 
-- Then provide the final, highly accurate, and extremely detailed answer.
+- Give your answer directly without any chain of thought, <think> tags, or conversational filler.
 
 Answer:
 """
