@@ -25,25 +25,25 @@ html, body, #root {
 body {
   margin: 0;
   font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
-  color: #333; /* darkslategray */
-  background-color: #f1f5f7; /* whitesmoke-100 */
+  color: #000; /* black-100 */
+  background-color: #fff8c6; /* lemonchiffon-100 */
   position: relative;
 }
 
 /* Institutional Clean Utilities */
 .gndec-panel {
-  background: #fff;
-  border: 1px solid #ddd; /* gainsboro-100 */
+  background: #fffff0; /* ivory-100 */
+  border: 1px solid #ccc; /* lightgray-100 */
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
 }
 
 .gndec-input {
-  background: #f6f9fb; /* whitesmoke-200 */
-  border: 1px solid #ccc; /* lightgray-100 */
-  color: #333;
+  background: #fff; /* white */
+  border: 1px solid #0066b3; /* cornflowerblue-100 */
+  color: #000; /* black-100 */
 }
 .gndec-input::placeholder {
-  color: #999; /* darkgray-200 */
+  color: #888; /* gray-200 */
 }
 
 ::-webkit-scrollbar {

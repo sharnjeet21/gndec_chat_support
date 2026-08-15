@@ -68,13 +68,13 @@ export default function MessageBubble({ role, text }) {
             <span className="text-[10px] font-bold text-[#666]">Ai-Assistant</span>
             <button 
               onClick={handleSpeak}
-              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-[#ddd] text-[#999] hover:text-[#555]"
+              className="opacity-0 group-hover:opacity-100 transition-opacity p-1 rounded hover:bg-[#ddd] text-[#888] hover:text-[#000]"
               title={isSpeaking ? "Stop speaking" : "Read aloud"}
             >
               {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
             </button>
           </div>
-          <div className="bg-[#f1f5f7] border border-[#ddd] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#333] text-sm leading-relaxed bubble-text whitespace-pre-wrap shadow-sm">
+          <div className="bg-[#fff] border border-[#0066b3] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#000] text-sm leading-relaxed bubble-text whitespace-pre-wrap shadow-sm">
             {text}
           </div>
         </div>
@@ -84,7 +84,7 @@ export default function MessageBubble({ role, text }) {
 
   return (
     <div className="flex justify-end mb-6">
-      <div className="bg-[#890000] rounded-2xl rounded-tr-sm px-5 py-3.5 max-w-[85%] text-[#fff] text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
+      <div className="bg-[#0066b3] rounded-2xl rounded-tr-sm px-5 py-3.5 max-w-[85%] text-[#fff] text-sm leading-relaxed whitespace-pre-wrap shadow-sm">
          {text}
       </div>
     </div>
