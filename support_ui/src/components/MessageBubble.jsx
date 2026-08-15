@@ -84,7 +84,7 @@ export default function MessageBubble({ role, text }) {
 
   return (
     <div className="flex justify-end mb-6 w-full">
-      <div className="bg-[#0066b3] rounded-2xl rounded-tr-sm px-5 py-3.5 w-[85%] text-[#fff] text-sm leading-relaxed whitespace-pre-wrap shadow-sm break-words overflow-hidden">
+      <div className="bg-[#0066b3] rounded-2xl rounded-tr-sm px-5 py-3.5 max-w-[75%] w-fit text-[#fff] text-sm leading-relaxed whitespace-pre-wrap shadow-sm break-words overflow-hidden inline-block">
          {text}
       </div>
     </div>
