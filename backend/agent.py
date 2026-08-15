@@ -234,6 +234,8 @@ async def answer_stream(query: str, phone: str, session_id: str):
 
     acc = ""
     async for chunk in response:
+        if not chunk.choices:
+            continue
         # Important: only read content, ignore reasoning_content!
         delta = chunk.choices[0].delta.content
         if not delta:
