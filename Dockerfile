@@ -30,6 +30,8 @@ COPY requirements.txt .
 RUN pip install --upgrade pip \
     && pip install --no-cache-dir --extra-index-url https://download.pytorch.org/whl/cpu -r requirements.txt
 
+RUN pip install --no-cache-dir python-multipart groq
+
 # Copy application code
 COPY backend ./backend
 COPY data ./data
