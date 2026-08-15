@@ -75,7 +75,17 @@ export default function MessageBubble({ role, text }) {
             </button>
           </div>
           <div className="bg-[#fff] border border-[#0066b3] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#000] text-sm leading-relaxed bubble-text whitespace-pre-wrap shadow-sm w-full break-words overflow-hidden">
-            {text}
+            {text.split(/(<think>[\s\S]*?<\/think>|<think>[\s\S]*)/).map((part, i) => {
+              if (part.startsWith("<think>")) {
+                const inner = part.replace("<think>", "").replace("</think>", "");
+                return (
+                  <div key={i} className="text-xs text-[#555] italic bg-[#f1f5f7] p-3 rounded-lg my-2 border-l-2 border-[#ccc] font-serif">
+                    💭 Thinking: {inner}
+                  </div>
+                );
+              }
+              return <span key={i}>{part}</span>;
+            })}
           </div>
         </div>
       </div>

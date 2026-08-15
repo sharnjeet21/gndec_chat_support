@@ -3,14 +3,20 @@ import { ChevronLeft, LoaderCircle, Mic, Plus, Send, ExternalLink, FileText, Fol
 import { startSession, askStream, getHistory, fetchSessions } from "../api";
 import MessageBubble from "../components/MessageBubble";
 
+// The Avatar Orb mini version
 function OrbAvatar() {
   return (
-    <div className="relative w-8 h-8 shrink-0">
-      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-rose-400 via-fuchsia-500 to-indigo-500 blur-sm opacity-90 scale-110" />
-      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-pink-400 via-purple-500 to-orange-400" />
+    <div className="relative w-8 h-8 shrink-0 mr-3 mt-1">
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#0066b3] via-[#008000] to-[#f00] blur-sm opacity-90 scale-110" />
+      <div className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#0066b3] via-[#f9cf00] to-[#f00]" />
+      {/* Mini Eyes */}
       <div className="absolute top-[35%] left-1/2 -translate-x-1/2 flex gap-[2px]">
-        <svg width="6" height="8" viewBox="0 0 14 20" fill="none"><path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/></svg>
-        <svg width="6" height="8" viewBox="0 0 14 20" fill="none" style={{transform: 'scaleX(-1)'}}><path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/></svg>
+        <svg width="6" height="8" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/>
+        </svg>
+        <svg width="6" height="8" viewBox="0 0 14 20" fill="none" xmlns="http://www.w3.org/2000/svg" style={{transform: 'scaleX(-1)'}}>
+          <path d="M1.38531 16.903C0.0381373 14.1541 3.51347 10.6033 5.48536 8.35821L6.72145 6.95111C7.21855 6.38521 8.13283 6.4673 8.52046 7.11292L13.1362 14.8023C14.7335 17.4633 11.5173 19.8643 8.84714 18.0051L8.52628 17.7817C6.18244 16.149 3.1952 16.0354 1.38531 16.903Z" fill="white"/>
+        </svg>
       </div>
     </div>
   );
