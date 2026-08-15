@@ -33,7 +33,7 @@ else:
         model=LLM_MODEL,
         api_key=os.getenv("OPENAI_API_KEY", "EMPTY"),
         base_url=f"{MODEL_API_URL}/v1",
-        temperature=0.3,
+        temperature=0.0,
         max_tokens=1500,
         model_kwargs={
             "presence_penalty": 0.5,
