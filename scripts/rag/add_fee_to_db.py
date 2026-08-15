@@ -4,9 +4,9 @@ import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-HERE = os.path.dirname(__file__)
-FAISS_DIR = os.path.join(HERE, "faiss_store")
-DATA_DIR = os.path.join(os.path.dirname(HERE), "data")
+HERE = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+FAISS_DIR = os.path.join(HERE, "backend", "faiss_store")
+DATA_DIR = os.path.join(HERE, "data")
 MODEL_NAME = "all-MiniLM-L6-v2"
 MODEL = SentenceTransformer(MODEL_NAME)
 

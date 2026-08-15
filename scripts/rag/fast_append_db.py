@@ -3,11 +3,11 @@ import os
 import faiss
 from sentence_transformers import SentenceTransformer
 
-HERE = os.path.dirname(__file__)
-FAISS_DIR = os.path.join(HERE, "faiss_store")
+HERE = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
+FAISS_DIR = os.path.join(HERE, "backend", "faiss_store")
 INDEX_PATH = os.path.join(FAISS_DIR, "faq.index")
 META_PATH = os.path.join(FAISS_DIR, "meta.json")
-COURSES_PATH = os.path.join(os.path.dirname(HERE), "data", "courses_offered.json")
+COURSES_PATH = os.path.join(HERE, "data", "courses_offered.json")
 
 print("Loading existing FAISS index...")
 index = faiss.read_index(INDEX_PATH)
