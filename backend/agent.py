@@ -144,6 +144,7 @@ User question:
 Instructions:
 - Answer the user's question using ONLY the provided knowledge. Be BRIEF and FOCUSED.
 - CRITICAL: ONLY generate fee tables if the user EXPLICITLY asks for 'fees' or 'fee structure'. If they only ask for 'courses' or 'programs', DO NOT output any fee tables.
+- CRITICAL: If the user only asks for 'courses' or 'programs', DO NOT output any study schemes, syllabus, or detailed subject information. ONLY list the courses/programs offered.
 - WHEN explicitly asked for fee structures, YOU MUST generate a SEPARATE Markdown table for EACH individual course/program (e.g., one table for B.Tech, one for M.Tech, etc.). Each table MUST use the EXACT following 14-column format to match the official admission website:
 | Sr No. | Program | Semester | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |
 |---|---|---|---|---|---|---|---|---|---|---|---|---|---|
