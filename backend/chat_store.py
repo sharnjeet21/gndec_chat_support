@@ -164,10 +164,10 @@ async def close_session_for_phone(phone: str) -> List[str]:
         List[str]: closed session_ids (empty if none closed)
     """
 
-    print(f"[close_session_for_phone] Called with phone={phone!r}")
+    logging.info(f"[close_session_for_phone] Called with phone={phone!r}")
 
     if not phone:
-        print("[close_session_for_phone] ❌ Empty phone provided")
+        logging.warning("[close_session_for_phone] ❌ Empty phone provided")
         return []
 
     update_query = """
@@ -180,7 +180,7 @@ async def close_session_for_phone(phone: str) -> List[str]:
     """
 
     try:
-        print("[close_session_for_phone] Executing UPDATE query...")
+        logging.info("[close_session_for_phone] Executing UPDATE query...")
 
         rows: List[Mapping[str, Any]] | None = await asyncio.to_thread(
             pg_execute,
@@ -190,12 +190,12 @@ async def close_session_for_phone(phone: str) -> List[str]:
         )
 
         if not rows:
-            print("[close_session_for_phone] ⚠️ No active sessions found")
+            logging.warning("[close_session_for_phone] ⚠️ No active sessions found")
             return []
 
         session_ids = [row["session_id"] for row in rows]
 
-        print(
+        logging.info(
             f"[close_session_for_phone] ✅ Closed {len(session_ids)} session(s): "
             f"{session_ids}"
         )
@@ -203,9 +203,8 @@ async def close_session_for_phone(phone: str) -> List[str]:
         return session_ids
 
     except Exception as exc:
-        print(
-            "[close_session_for_phone] ❌ Exception while closing sessions:",
-            repr(exc),
+        logging.error(
+            f"[close_session_for_phone] ❌ Exception while closing sessions: {repr(exc)}"
         )
         logging.exception("close_session_for_phone failed")
         return []

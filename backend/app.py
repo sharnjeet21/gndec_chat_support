@@ -122,9 +122,19 @@ async def search_rag(q: str = Query(...)):
     return {"context": docs_text}
 
 
+ALLOWED_MIMES = ["audio/webm", "audio/mpeg", "audio/mp4", "audio/wav", "audio/x-m4a", "audio/ogg", "audio/flac", "application/octet-stream"]
+MAX_FILE_SIZE = 25 * 1024 * 1024  # 25 MB
+
 @app.post("/api/transcribe")
 async def transcribe_audio(file: UploadFile = File(...)):
     """Transcribes an uploaded audio file using Groq Whisper model."""
+    if file.content_type not in ALLOWED_MIMES:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+        
+    content = await file.read()
+    if len(content) > MAX_FILE_SIZE:
+        raise HTTPException(status_code=400, detail="File too large")
+        
     import tempfile
     from groq import Groq
     
@@ -137,7 +147,7 @@ async def transcribe_audio(file: UploadFile = File(...)):
     # Save uploaded file to temp file
     try:
         with tempfile.NamedTemporaryFile(delete=False, suffix=".webm") as temp_audio:
-            temp_audio.write(await file.read())
+            temp_audio.write(content)
             temp_path = temp_audio.name
             
         with open(temp_path, "rb") as f:
@@ -225,25 +235,5 @@ async def close_session_api(phone: str | None = Query(default=None)):
 
 
 # ── Serve React frontend (built files) ──────────────────────
-# Activated only when support_ui/dist exists (after npm run build)
-_DIST = os.path.abspath(
-    os.path.join(os.path.dirname(__file__), "..", "support_ui", "dist")
-)
-
-if os.path.isdir(_DIST):
-    # Static assets: JS, CSS, images
-    app.mount(
-        "/assets",
-        StaticFiles(directory=os.path.join(_DIST, "assets")),
-        name="assets",
-    )
-
-    # Serve any other static files at root (favicon, vite.svg, etc.)
-    @app.get("/vite.svg", include_in_schema=False)
-    async def vite_svg():
-        return FileResponse(os.path.join(_DIST, "vite.svg"))
-
-    # Catch-all: return index.html for all non-API paths (React Router)
-    @app.get("/{full_path:path}", include_in_schema=False)
-    async def serve_frontend(full_path: str):
-        return FileResponse(os.path.join(_DIST, "index.html"))
+# Removed: In production, use Nginx to serve the support_ui/dist static files 
+# and configure Nginx to reverse-proxy all /api/* requests to your FastAPI backend.

@@ -190,11 +190,12 @@ def build_faiss_index():
     print(f"\nEmbedding {len(texts)} entries with {MODEL_NAME} ...")
     embeddings = MODEL.encode(texts, convert_to_numpy=True, show_progress_bar=True)
     embeddings = embeddings.astype("float32")
+    faiss.normalize_L2(embeddings)
 
     dim = embeddings.shape[1]
     print(f"Vector dim = {dim}")
 
-    index = faiss.IndexFlatL2(dim)
+    index = faiss.IndexFlatIP(dim)
     print("Adding vectors to FAISS...")
     index.add(embeddings)
 

@@ -25,10 +25,14 @@ rm -f cloudflare_startup.log
 nohup ./cloudflared tunnel --url http://localhost:5173 > cloudflare_startup.log 2>&1 &
 
 # 5. Wait for Cloudflare to generate the link
-sleep 15
-
-# 6. Extract the URL
-CF_URL=$(grep -o 'https://[-a-zA-Z0-9]*\.trycloudflare.com' cloudflare_startup.log | head -n 1)
+CF_URL=""
+for i in {1..30}; do
+    CF_URL=$(grep -o 'https://[-a-zA-Z0-9]*\.trycloudflare.com' cloudflare_startup.log | head -n 1)
+    if [ -n "$CF_URL" ]; then
+        break
+    fi
+    sleep 1
+done
 
 if [ -n "$CF_URL" ]; then
     echo "Generated Cloudflare URL: $CF_URL"

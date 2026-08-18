@@ -5,7 +5,7 @@ import logging
 from typing import List, Dict, Any, Tuple, Iterable
 import urllib.parse
 
-from langchain.memory import ConversationBufferMemory
+from langchain.memory import ConversationBufferWindowMemory
 from langchain_community.chat_message_histories import RedisChatMessageHistory
 
 from .vectorstore import get_retriever
@@ -16,17 +16,28 @@ from .vectorstore import get_retriever
 from .tools import search_web_general
 from .domain_guard import is_out_of_domain
 import re
+from openai import AsyncOpenAI
+import os
 
 BANNED_WORDS = [
     "fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "slut", "whore",
-    # Discriminatory / Racial
     "nigger", "nigga", "chink", "spic", "faggot", "fag", "dyke", "tranny", "retard"
 ]
 BANNED_REGEX = re.compile(rf"\b({'|'.join(BANNED_WORDS)})\b", flags=re.IGNORECASE)
 
-def check_toxicity(text: str) -> Tuple[bool, Dict[str, Any]]:
-    # ponytail: naive regex instead of PyTorch model for toxicity
-    return (True, {"toxicity": 1.0}) if (text and text.strip() and BANNED_REGEX.search(text)) else (False, {})
+mod_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", "EMPTY"))
+
+async def check_toxicity(text: str) -> Tuple[bool, Dict[str, Any]]:
+    if not text or not text.strip():
+        return False, {}
+    try:
+        if os.getenv("OPENAI_API_KEY"):
+            res = await mod_client.moderations.create(input=text)
+            flagged = res.results[0].flagged
+            return flagged, {"toxicity": 1.0 if flagged else 0.0}
+    except Exception as e:
+        logging.error(f"Moderation API error: {e}")
+    return (True, {"toxicity": 1.0}) if BANNED_REGEX.search(text) else (False, {})
 
 logging.basicConfig(level=logging.INFO)
 
@@ -68,14 +79,15 @@ OOD_TEXT = (
 
 
 # ---------------- MEMORY -----------------
-def _get_memory(phone: str, session_id: str) -> ConversationBufferMemory:
+def _get_memory(phone: str, session_id: str) -> ConversationBufferWindowMemory:
     key = f"gndec:{phone}:{session_id}"
     history = RedisChatMessageHistory(url=REDIS_URL, session_id=key, ttl=SESSION_TTL)
 
-    return ConversationBufferMemory(
+    return ConversationBufferWindowMemory(
         memory_key="history",
         chat_memory=history,
         return_messages=True,
+        k=10
     )
 
 
@@ -171,7 +183,7 @@ async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto
     memory = _get_memory(phone, session_id)
 
     # 1️⃣ Toxicity check
-    toxic, _ = await asyncio.to_thread(check_toxicity, query)
+    toxic, _ = await check_toxicity(query)
     if toxic:
         memory.chat_memory.add_ai_message(WARNING_TEXT)
         await save_message(phone, session_id, "assistant", WARNING_TEXT)
@@ -203,7 +215,7 @@ async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto
     ans = response.choices[0].message.content.strip()
 
     # Toxicity check on output
-    ai_toxic, _ = await asyncio.to_thread(check_toxicity, ans)
+    ai_toxic, _ = await check_toxicity(ans)
     final = WARNING_TEXT if ai_toxic else ans
 
     memory.chat_memory.add_ai_message(final)
@@ -220,7 +232,7 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
     memory = _get_memory(phone, session_id)
 
     # Input moderation
-    toxic, _ = await asyncio.to_thread(check_toxicity, query)
+    toxic, _ = await check_toxicity(query)
     if toxic:
         yield json.dumps({"type": "blocked", "message": WARNING_TEXT}) + "\n"
         return
@@ -256,14 +268,11 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
         if not delta:
             continue
             
-        # Kept Markdown formatting as requested by user
-        # delta = re.sub(r'[*_#`]', '', delta)
-            
         acc += delta
         
-        # 🚀 CPU OPTIMIZATION: Only run heavy PyTorch toxicity check every 50 characters
-        if len(acc) % 50 < len(delta):
-            ai_toxic, _ = await asyncio.to_thread(check_toxicity, acc)
+        # 🚀 CPU OPTIMIZATION: Only run toxicity check every 500 characters
+        if len(acc) % 500 < len(delta):
+            ai_toxic, _ = await check_toxicity(acc)
             if ai_toxic:
                 memory.chat_memory.add_ai_message(WARNING_TEXT)
                 await save_message(phone, session_id, "assistant", WARNING_TEXT)
@@ -273,7 +282,7 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
         yield json.dumps({"type": "content", "delta": delta}) + "\n"
 
     # 🚀 CPU OPTIMIZATION: Final toxicity check to catch trailing characters
-    ai_toxic, _ = await asyncio.to_thread(check_toxicity, acc)
+    ai_toxic, _ = await check_toxicity(acc)
     if ai_toxic:
         memory.chat_memory.add_ai_message(WARNING_TEXT)
         await save_message(phone, session_id, "assistant", WARNING_TEXT)
@@ -293,22 +302,22 @@ async def clear_redis_session(phone: str, session_ids: Iterable[str]) -> bool:
     """Clears Redis chat history for given session IDs."""
 
     if not session_ids:
-        print("[clear_redis_session] ⚠️ No session IDs provided")
+        logging.warning("[clear_redis_session] ⚠️ No session IDs provided")
         return False
 
     session_ids = list(session_ids)
-    print(f"[clear_redis_session] Clearing Redis for {len(session_ids)} session(s)")
+    logging.info(f"[clear_redis_session] Clearing Redis for {len(session_ids)} session(s)")
 
     def _clear():
         cleared = 0
         for session_id in session_ids:
             key = f"gndec:{phone}:{session_id}"
-            print(f"[clear_redis_session] → Clearing key: {key}")
+            logging.info(f"[clear_redis_session] → Clearing key: {key}")
             history = RedisChatMessageHistory(url=REDIS_URL, session_id=key)
             history.clear()
             cleared += 1
         return cleared
 
     cleared_count = await asyncio.to_thread(_clear)
-    print(f"[clear_redis_session] ✅ Cleared {cleared_count} Redis session(s)")
+    logging.info(f"[clear_redis_session] ✅ Cleared {cleared_count} Redis session(s)")
     return cleared_count > 0

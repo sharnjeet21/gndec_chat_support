@@ -59,13 +59,14 @@ def get_retriever(k: int = 3):
 
         # 1. FAISS Search
         query_vec = embed_model.encode([query], convert_to_numpy=True).astype("float32")
+        faiss.normalize_L2(query_vec)
         scores, ids = faiss_index.search(query_vec, search_k)
         
         docs_faiss = []
         for rank, (idx, score) in enumerate(zip(ids[0], scores[0])):
-            if idx < 0 or score > 1.4:
+            if idx < 0 or score < 0.5:
                 if idx >= 0:
-                    logging.info(f"   [FAISS] #{rank+1} Score={score:.4f} (SKIPPED > 1.4) | Q={META[int(idx)]['question']!r}")
+                    logging.info(f"   [FAISS] #{rank+1} Score={score:.4f} (SKIPPED < 0.5) | Q={META[int(idx)]['question']!r}")
                 continue
             item = META[int(idx)]
             logging.info(f"   [FAISS] #{rank+1} Score={score:.4f} | Q={item['question']!r}")
