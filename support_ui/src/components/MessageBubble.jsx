@@ -76,7 +76,7 @@ export default function MessageBubble({ role, text }) {
               {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
             </button>
           </div>
-          <div className="bg-[#fff] border border-[#0066b3] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#000] text-sm leading-relaxed bubble-text whitespace-pre-wrap shadow-sm w-full break-words overflow-hidden">
+          <div className="bg-[#fff] border border-[#0066b3] rounded-2xl rounded-tl-sm px-5 py-3.5 text-[#000] text-sm leading-relaxed bubble-text shadow-sm w-full break-words overflow-hidden">
             {text.split(/(<think>[\s\S]*?<\/think>|<think>[\s\S]*)/).map((part, i) => {
               if (part.startsWith("<think>")) {
                 const inner = part.replace("<think>", "").replace("</think>", "");
