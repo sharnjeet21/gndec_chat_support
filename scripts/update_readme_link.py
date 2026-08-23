@@ -10,6 +10,10 @@ new_url = sys.argv[1]
 repo_dir = "/home/sharnjeet-singh/Developer/gndec_rag"
 
 def update_readme_content():
+    if not os.path.exists('README.md'):
+        print("README.md not found in this branch. Skipping.")
+        return False
+        
     with open('README.md', 'r', encoding='utf-8') as f:
         lines = f.readlines()
     
@@ -43,6 +47,7 @@ def update_readme_content():
                 
     with open('README.md', 'w', encoding='utf-8') as f:
         f.writelines(out_lines)
+    return True
 
 def update_branches():
     # Save current branch
@@ -59,14 +64,15 @@ def update_branches():
         subprocess.run(f"git checkout {branch}", shell=True, cwd=repo_dir)
         subprocess.run(f"git pull origin {branch}", shell=True, cwd=repo_dir)
         
-        update_readme_content()
+        updated = update_readme_content()
         
-        # Commit and push
-        subprocess.run("git add README.md", shell=True, cwd=repo_dir)
-        res = subprocess.run("git diff --staged --quiet", shell=True, cwd=repo_dir)
-        if res.returncode != 0: # Changes exist
-            subprocess.run(["git", "commit", "-m", "Automated: Update Live Link in README on boot"], cwd=repo_dir)
-            subprocess.run(f"git push origin {branch}", shell=True, cwd=repo_dir)
+        if updated:
+            # Commit and push
+            subprocess.run("git add README.md", shell=True, cwd=repo_dir)
+            res = subprocess.run("git diff --staged --quiet", shell=True, cwd=repo_dir)
+            if res.returncode != 0: # Changes exist
+                subprocess.run(["git", "commit", "-m", "Automated: Update Live Link in README on boot"], cwd=repo_dir)
+                subprocess.run(f"git push origin {branch}", shell=True, cwd=repo_dir)
             
     # Restore original branch
     subprocess.run(f"git checkout {original_branch}", shell=True, cwd=repo_dir)
