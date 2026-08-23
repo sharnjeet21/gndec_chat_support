@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="https://upload.wikimedia.org/wikipedia/en/3/30/Guru_Nanak_Dev_Engineering_College_logo.png" alt="GNDEC Logo" width="150" />
+  <img src="https://gndec.ac.in/sites/default/logo.png" alt="GNDEC Logo" width="150" />
   
   # GNDEC AI Support Agent
   **Intelligent, Multilingual, Voice-Enabled RAG Chatbot for Guru Nanak Dev Engineering College**
@@ -12,8 +12,8 @@
 </div>
 
 ## Live Link
-[Click here to access the live agent](https://test-link.trycloudflare.com)
 
+[Click here to access the live agent](https://hopefully-someone-initial-roster.trycloudflare.com)
 
 ---
 
