@@ -36,6 +36,8 @@ done
 
 if [ -n "$CF_URL" ]; then
     echo "Generated Cloudflare URL: $CF_URL"
+    # Update README on all branches
+    .venv/bin/python scripts/update_readme_link.py "$CF_URL"
     # Send email
     .venv/bin/python scripts/send_mail.py "$CF_URL"
 else
