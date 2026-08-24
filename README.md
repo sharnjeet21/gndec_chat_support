@@ -1,7 +1,7 @@
 <div align="center">
   <img src="https://gndec.ac.in/sites/default/logo.png" alt="GNDEC Logo" width="150" />
   
-  # GNDEC AI Support Agent
+  # GNDEC Tech Support Agent
   **Intelligent, Multilingual, Voice-Enabled RAG Chatbot for Guru Nanak Dev Engineering College**
 
   [![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
@@ -13,13 +13,13 @@
 
 ## Live Link
 
-[Click here to access the live agent](https://hopefully-someone-initial-roster.trycloudflare.com)
+[Click here to access the live agent](https://advance-coleman-nebraska-publication.trycloudflare.com)
 
 ---
 
 ## 🚀 Overview
 
-The **GNDEC AI Support Agent** is a state-of-the-art Retrieval-Augmented Generation (RAG) system designed specifically for the students, faculty, and applicants of Guru Nanak Dev Engineering College. 
+The **GNDEC Tech Support Agent** is a state-of-the-art Retrieval-Augmented Generation (RAG) system designed specifically for the students, faculty, and applicants of Guru Nanak Dev Engineering College. 
 
 Built with an **Agentic AI architecture**, it deeply understands college syllabi, fee structures, faculty details, and admission processes. It operates with strict domain guardrails, ensuring that the bot remains highly professional and strictly focused on college matters.
 
@@ -105,3 +105,4 @@ OPENAI_API_KEY=your_key_here  # If using a cloud LLM provider
 <div align="center">
   <i>Built with ❤️ for Guru Nanak Dev Engineering College</i>
 </div>
+test
