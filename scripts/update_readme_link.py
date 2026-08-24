@@ -53,11 +53,13 @@ def update_readme_content():
         f.writelines(out_lines)
     return True
 
-def update_current_branch():
-    res = subprocess.run("git rev-parse --abbrev-ref HEAD", shell=True, capture_output=True, text=True, cwd=repo_dir)
-    current_branch = res.stdout.strip()
+def update_development_branch():
+    target_branch = "development"
+    print(f"Checking out {target_branch}...")
+    subprocess.run(f"git checkout {target_branch}", shell=True, cwd=repo_dir)
+    subprocess.run(f"git pull origin {target_branch}", shell=True, cwd=repo_dir)
     
-    print(f"Updating current branch: {current_branch}")
+    print(f"Updating branch: {target_branch}")
     
     updated = update_readme_content()
     
@@ -65,15 +67,14 @@ def update_current_branch():
         subprocess.run("git add README.md", shell=True, cwd=repo_dir)
         res = subprocess.run("git diff --staged --quiet", shell=True, cwd=repo_dir)
         if res.returncode != 0: # Changes exist
-            subprocess.run(["git", "commit", "-m", f"Automated: Update Live Link in README on {current_branch}"], cwd=repo_dir)
+            subprocess.run(["git", "commit", "-m", f"Automated: Update Live Link in README on {target_branch}"], cwd=repo_dir)
         
-        # Always push if we are supposed to update on boot, just in case there are pending commits
-        print(f"Pushing to origin {current_branch}...")
-        push_res = subprocess.run(f"git push origin {current_branch}", shell=True, cwd=repo_dir, capture_output=True, text=True)
+        print(f"Pushing to origin {target_branch}...")
+        push_res = subprocess.run(f"git push origin {target_branch}", shell=True, cwd=repo_dir, capture_output=True, text=True)
         print(push_res.stdout)
         if push_res.stderr:
             print("Error/Warning during push:", push_res.stderr)
 
 if __name__ == "__main__":
-    update_current_branch()
+    update_development_branch()
 

@@ -1,0 +1,58 @@
+name: Promote to Production (server-prod)
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for promotion (e.g. "Feature X finalized")'
+        required: true
+        default: 'Ready for production'
+
+jobs:
+  merge-to-prod:
+    name: Merge Development to Server-Prod
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Configure Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create Pull Request and Merge
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Check if there are any differences
+          if git diff --quiet origin/server-prod..origin/development; then
+            echo "development and server-prod are already identical. Nothing to promote."
+            exit 0
+          fi
+          
+          # Attempt to create a PR using GitHub CLI
+          echo "Creating Pull Request from development to server-prod..."
+          PR_URL=$(gh pr create \
+            --base server-prod \
+            --head development \
+            --title "🚀 Promote to Production: ${{ github.event.inputs.reason }}" \
+            --body "Automated promotion triggered by workflow dispatch." \
+            --label "automated-promotion" || echo "PR_EXISTS")
+            
+          if [ "$PR_URL" = "PR_EXISTS" ]; then
+            echo "A pull request already exists for this branch. Attempting to merge existing PR."
+            gh pr merge development --admin --merge --subject "🚀 Promote to Production: ${{ github.event.inputs.reason }}"
+          else
+            echo "Successfully created PR: $PR_URL"
+            # Auto-merge the PR immediately
+            gh pr merge "$PR_URL" --admin --merge --subject "🚀 Promote to Production: ${{ github.event.inputs.reason }}"
+          fi
+          
+          echo "✅ Successfully promoted development to server-prod!"
