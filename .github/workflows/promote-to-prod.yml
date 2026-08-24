@@ -56,3 +56,37 @@ jobs:
           fi
           
           echo "✅ Successfully promoted development to server-prod!"
+
+      - name: Update Production Deployment Environment
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Checkout server-prod to read the latest README
+          git checkout server-prod
+          
+          # Extract trycloudflare URL from README
+          CF_URL=$(grep -oE 'https://[a-zA-Z0-9-]+\.trycloudflare\.com' README.md | head -n 1)
+          
+          if [ -z "$CF_URL" ]; then
+            echo "No Cloudflare URL found in README.md"
+            exit 0
+          fi
+          
+          echo "Found Cloudflare URL: $CF_URL"
+          
+          # Create Deployment
+          DEPLOY_PAYLOAD='{"ref":"server-prod","environment":"production","description":"Cloudflare Tunnel Live Agent","auto_merge":false,"production_environment":true}'
+          DEPLOY_RES=$(gh api -X POST repos/${{ github.repository }}/deployments --input - <<< "$DEPLOY_PAYLOAD")
+          DEPLOY_ID=$(echo "$DEPLOY_RES" | jq -r '.id')
+          
+          if [ -z "$DEPLOY_ID" ] || [ "$DEPLOY_ID" = "null" ]; then
+            echo "Failed to create deployment"
+            exit 1
+          fi
+          
+          # Create Status
+          STATUS_PAYLOAD='{"state":"success","environment_url":"'"$CF_URL"'","description":"Production agent is up and running"}'
+          gh api -X POST repos/${{ github.repository }}/deployments/$DEPLOY_ID/statuses --input - <<< "$STATUS_PAYLOAD"
+          
+          echo "✅ Successfully updated GitHub Deployment Environments with URL: $CF_URL"
+

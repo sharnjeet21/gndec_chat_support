@@ -55,15 +55,15 @@ def update_readme_content():
 
 import json
 
-def update_github_deployment(url, target_env_branch="server-prod"):
+def update_github_deployment(url, target_env_branch="development"):
     print(f"Creating GitHub Deployment on {target_env_branch}...")
     try:
         create_payload = json.dumps({
             "ref": target_env_branch,
-            "environment": "production",
-            "description": "Cloudflare Tunnel Live Agent",
+            "environment": "development",
+            "description": "Cloudflare Tunnel (Development)",
             "auto_merge": False,
-            "production_environment": True
+            "production_environment": False
         })
         res = subprocess.run(
             ["gh", "api", "-X", "POST", "repos/sharnjeet21/gndec_chat_support/deployments", "--input", "-"],
@@ -121,7 +121,7 @@ def update_development_branch():
             print("Error/Warning during push:", push_res.stderr)
             
     # Always update the deployment link on GitHub environment as well!
-    update_github_deployment(new_url, "server-prod")
+    update_github_deployment(new_url, "development")
 
 if __name__ == "__main__":
     update_development_branch()
