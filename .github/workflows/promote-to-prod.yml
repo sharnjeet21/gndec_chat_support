@@ -37,8 +37,10 @@ jobs:
             exit 0
           fi
           
-          echo "Fast-forwarding server-prod to match development..."
-          git push origin origin/development:refs/heads/server-prod
+          echo "Merging development into server-prod..."
+          git checkout server-prod
+          git merge origin/development -m "🚀 Promote to Production: ${{ github.event.inputs.reason }}"
+          git push origin server-prod
           
           echo "✅ Successfully promoted development to server-prod!"
 
