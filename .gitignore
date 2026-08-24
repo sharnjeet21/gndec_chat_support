@@ -54,3 +54,20 @@ support_ui/.env
 
 TECH_STACK.Modelsdata.db
 Placement_Brochure_2026.pdf
+
+# ── Project Specific Auto Scripts & Binaries ──────────────────
+cloudflared
+*.db
+*.sqlite3
+temp*.txt
+tests/
+test_*.py
+update_*.py
+fix_*.py
+get_*.py
+scrape_*.py
+replace*.py
+rewrite*.py
+TR_102/
+*.tex
+*.pdf
