@@ -43,16 +43,19 @@ jobs:
             --base server-prod \
             --head development \
             --title "🚀 Promote to Production: ${{ github.event.inputs.reason }}" \
-            --body "Automated promotion triggered by workflow dispatch." \
-            --label "automated-promotion" || echo "PR_EXISTS")
-            
-          if [ "$PR_URL" = "PR_EXISTS" ]; then
-            echo "A pull request already exists for this branch. Attempting to merge existing PR."
-            gh pr merge development --admin --merge --subject "🚀 Promote to Production: ${{ github.event.inputs.reason }}"
-          else
-            echo "Successfully created PR: $PR_URL"
-            # Auto-merge the PR immediately
-            gh pr merge "$PR_URL" --admin --merge --subject "🚀 Promote to Production: ${{ github.event.inputs.reason }}"
+            --body "Automated promotion triggered by workflow dispatch." 2>/dev/null || true)
+
+          if [ -z "$PR_URL" ]; then
+            echo "PR was not created (it may already exist). Looking up existing PR..."
+            PR_URL=$(gh pr list --base server-prod --head development --state open --json url --jq '.[0].url')
           fi
+
+          if [ -z "$PR_URL" ]; then
+            echo "❌ Failed to create or locate an open PR from development to server-prod."
+            exit 1
+          fi
+
+          echo "Merging PR: $PR_URL"
+          gh pr merge "$PR_URL" --admin --merge --subject "🚀 Promote to Production: ${{ github.event.inputs.reason }}"
           
           echo "✅ Successfully promoted development to server-prod!"
