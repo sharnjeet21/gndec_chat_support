@@ -53,6 +53,51 @@ def update_readme_content():
         f.writelines(out_lines)
     return True
 
+import json
+
+def update_github_deployment(url, target_env_branch="development"):
+    print(f"Creating GitHub Deployment on {target_env_branch}...")
+    try:
+        create_payload = json.dumps({
+            "ref": target_env_branch,
+            "environment": "development",
+            "description": "Cloudflare Tunnel (Development)",
+            "auto_merge": False,
+            "production_environment": False
+        })
+        res = subprocess.run(
+            ["gh", "api", "-X", "POST", "repos/sharnjeet21/gndec_chat_support/deployments", "--input", "-"],
+            input=create_payload, text=True, capture_output=True, cwd=repo_dir
+        )
+        if res.returncode != 0:
+            print("Failed to create deployment:", res.stderr)
+            return
+
+        deployment_data = json.loads(res.stdout)
+        deployment_id = deployment_data.get("id")
+        
+        if not deployment_id:
+            print("Could not get deployment ID:", res.stdout)
+            return
+            
+        status_payload = json.dumps({
+            "state": "success",
+            "environment_url": url,
+            "description": "Live agent is up and running"
+        })
+        res = subprocess.run(
+            ["gh", "api", "-X", "POST", f"repos/sharnjeet21/gndec_chat_support/deployments/{deployment_id}/statuses", "--input", "-"],
+            input=status_payload, text=True, capture_output=True, cwd=repo_dir
+        )
+        
+        if res.returncode == 0:
+            print(f"Successfully updated GitHub Deployment Environments with URL: {url}")
+        else:
+            print("Failed to set deployment status:", res.stderr)
+            
+    except Exception as e:
+        print("Error updating GitHub deployment:", e)
+
 def update_development_branch():
     target_branch = "development"
     print(f"Checking out {target_branch}...")
@@ -74,6 +119,9 @@ def update_development_branch():
         print(push_res.stdout)
         if push_res.stderr:
             print("Error/Warning during push:", push_res.stderr)
+            
+    # Always update the deployment link on GitHub environment as well!
+    update_github_deployment(new_url, "development")
 
 if __name__ == "__main__":
     update_development_branch()
