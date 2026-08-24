@@ -22,6 +22,10 @@ def update_readme_content():
     found_live_link = False
     
     for line in lines:
+        # Update logo if present
+        if "Guru_Nanak_Dev_Engineering_College_logo.png" in line:
+            line = line.replace("https://upload.wikimedia.org/wikipedia/en/3/30/Guru_Nanak_Dev_Engineering_College_logo.png", "https://gndec.ac.in/sites/default/logo.png")
+            
         if line.strip() == '## Live Link':
             in_live_link = True
             found_live_link = True
@@ -49,33 +53,27 @@ def update_readme_content():
         f.writelines(out_lines)
     return True
 
-def update_branches():
-    # Save current branch
+def update_current_branch():
     res = subprocess.run("git rev-parse --abbrev-ref HEAD", shell=True, capture_output=True, text=True, cwd=repo_dir)
-    original_branch = res.stdout.strip()
+    current_branch = res.stdout.strip()
     
-    # Get all local branches
-    res = subprocess.run("git branch --format='%(refname:short)'", shell=True, capture_output=True, text=True, cwd=repo_dir)
-    branches = res.stdout.strip().split('\n')
+    print(f"Updating current branch: {current_branch}")
     
-    for branch in branches:
-        if not branch: continue
-        print(f"Updating branch {branch}")
-        subprocess.run(f"git checkout {branch}", shell=True, cwd=repo_dir)
-        subprocess.run(f"git pull origin {branch}", shell=True, cwd=repo_dir)
+    updated = update_readme_content()
+    
+    if updated:
+        subprocess.run("git add README.md", shell=True, cwd=repo_dir)
+        res = subprocess.run("git diff --staged --quiet", shell=True, cwd=repo_dir)
+        if res.returncode != 0: # Changes exist
+            subprocess.run(["git", "commit", "-m", f"Automated: Update Live Link in README on {current_branch}"], cwd=repo_dir)
         
-        updated = update_readme_content()
-        
-        if updated:
-            # Commit and push
-            subprocess.run("git add README.md", shell=True, cwd=repo_dir)
-            res = subprocess.run("git diff --staged --quiet", shell=True, cwd=repo_dir)
-            if res.returncode != 0: # Changes exist
-                subprocess.run(["git", "commit", "-m", "Automated: Update Live Link in README on boot"], cwd=repo_dir)
-                subprocess.run(f"git push origin {branch}", shell=True, cwd=repo_dir)
-            
-    # Restore original branch
-    subprocess.run(f"git checkout {original_branch}", shell=True, cwd=repo_dir)
+        # Always push if we are supposed to update on boot, just in case there are pending commits
+        print(f"Pushing to origin {current_branch}...")
+        push_res = subprocess.run(f"git push origin {current_branch}", shell=True, cwd=repo_dir, capture_output=True, text=True)
+        print(push_res.stdout)
+        if push_res.stderr:
+            print("Error/Warning during push:", push_res.stderr)
 
 if __name__ == "__main__":
-    update_branches()
+    update_current_branch()
+
