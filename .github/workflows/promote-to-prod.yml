@@ -37,22 +37,8 @@ jobs:
             exit 0
           fi
           
-          # Attempt to create a PR using GitHub CLI
-          echo "Creating Pull Request from development to server-prod..."
-          PR_URL=$(gh pr create \
-            --base server-prod \
-            --head development \
-            --title "🚀 Promote to Production: ${{ github.event.inputs.reason }}" \
-            --body "Automated promotion triggered by workflow dispatch." || echo "PR_EXISTS")
-            
-          if [ "$PR_URL" = "PR_EXISTS" ]; then
-            echo "A pull request already exists for this branch. Attempting to merge existing PR."
-            gh pr merge development --admin --merge --subject "🚀 Promote to Production: ${{ github.event.inputs.reason }}"
-          else
-            echo "Successfully created PR: $PR_URL"
-            # Auto-merge the PR immediately
-            gh pr merge "$PR_URL" --admin --merge --subject "🚀 Promote to Production: ${{ github.event.inputs.reason }}"
-          fi
+          echo "Fast-forwarding server-prod to match development..."
+          git push origin origin/development:refs/heads/server-prod
           
           echo "✅ Successfully promoted development to server-prod!"
 
