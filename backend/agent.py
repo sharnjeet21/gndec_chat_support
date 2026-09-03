@@ -7,7 +7,7 @@ import re
 from typing import List, Dict, Any, Tuple, Iterable
 
 from langchain.memory import ConversationBufferWindowMemory
-from langchain_community.chat_message_histories import RedisChatMessageHistory
+from langchain_community.chat_message_histories import RedisChatMessageHistory, ChatMessageHistory
 from openai import AsyncOpenAI
 
 from .vectorstore import get_retriever
@@ -78,9 +78,18 @@ OOD_TEXT = (
 
 
 # ---------------- MEMORY -----------------
+_local_memories: Dict[str, ChatMessageHistory] = {}
+
 def _get_memory(phone: str, session_id: str) -> ConversationBufferWindowMemory:
     key = f"gndec:{phone}:{session_id}"
-    history = RedisChatMessageHistory(url=REDIS_URL, session_id=key, ttl=SESSION_TTL)
+    try:
+        history = RedisChatMessageHistory(url=REDIS_URL, session_id=key, ttl=SESSION_TTL)
+        _ = history.messages
+    except Exception as e:
+        logging.warning(f"Redis memory unavailable ({e}), using in-memory fallback.")
+        if key not in _local_memories:
+            _local_memories[key] = ChatMessageHistory()
+        history = _local_memories[key]
 
     return ConversationBufferWindowMemory(
         memory_key="history",
@@ -239,14 +248,14 @@ User question:
 Instructions:
 - Answer the user's question using ONLY the provided knowledge. Be BRIEF and FOCUSED.
 - CRITICAL: ONLY generate fee tables if the user EXPLICITLY asks for 'fees' or 'fee structure'. If they only ask for 'courses' or 'programs', DO NOT output any fee tables.
-- WHEN explicitly asked for fee structures, YOU MUST generate a SEPARATE Markdown table for EACH individual course/program (e.g., one table for B.Tech, one for M.Tech, etc.). Each table MUST use the EXACT following 14-column format to match the official admission website:
+- WHEN explicitly asked for fee structures, YOU MUST output a SEPARATE complete Markdown table for EACH individual course/program (e.g., one table for B.Tech, one for M.Tech, etc.). Each table MUST strictly preserve the exact 14-column format provided in the knowledge context:
+| Sr No. | Program | Sem | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
+Directly render the exact markdown table rows for each program from the retrieved knowledge without omitting columns or altering pipe delimiters.
 - CRITICAL - COURSE QUERIES: If the user asks for a list of courses/programs (e.g., "What B.Tech courses are offered?"):
   * Ignore the "Be Exhaustive" rule for this specific query.
   * Provide a simple, clean bulleted list of ONLY the names of the branches/programs (e.g., Computer Science, Mechanical, Civil).
   * STRIP OUT and NEVER output any scheme years (e.g., 2024, 2018), syllabi, subject lists, or classroom numbers.
-| Sr No. | Program | Semester | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-Fill the rows with data from the knowledge context. Leave cells blank if data is missing. Do not summarize fee data.
 - Dynamically choose the best Markdown formatting for other data: bulleted lists for criteria/features, numbered lists for steps.
 - Check conversation history for context on follow-up questions.
 - STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the provided knowledge, say "I do not have information about that." and suggest visiting gndec.ac.in.
@@ -294,9 +303,9 @@ async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto
         model=LLM_MODEL,
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
-        max_tokens=2048,
-        frequency_penalty=0.5,
-        presence_penalty=0.5
+        max_tokens=4096,
+        frequency_penalty=0.0,
+        presence_penalty=0.0
     )
     ans = response.choices[0].message.content.strip()
 
@@ -340,8 +349,8 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
         messages=[{"role": "user", "content": prompt}],
         temperature=0.0,
         max_tokens=4096,
-        frequency_penalty=0.5,
-        presence_penalty=0.5,
+        frequency_penalty=0.0,
+        presence_penalty=0.0,
         stream=True
     )
 

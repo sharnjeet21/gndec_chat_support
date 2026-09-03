@@ -24,6 +24,7 @@ FAISS_DIR = os.path.join(HERE, "faiss_store")
 INDEX_PATH = os.path.join(FAISS_DIR, "faq.index")
 META_PATH = os.path.join(FAISS_DIR, "meta.json")
 FACULTY_PATH = os.path.join(DATA_DIR, "faculty.json")
+FEE_PATH = os.path.join(DATA_DIR, "fee_structures.json")
 
 if not os.path.exists(INDEX_PATH) or not os.path.exists(META_PATH):
     raise RuntimeError(
@@ -45,6 +46,16 @@ if os.path.exists(FACULTY_PATH):
         logger.info(f"Loaded {len(FACULTY_LIST)} faculty members for structured lookup.")
     except Exception as e:
         logger.warning(f"Could not load faculty.json: {e}")
+
+# Structured Fee Structure Data
+FEE_LIST: List[Dict[str, Any]] = []
+if os.path.exists(FEE_PATH):
+    try:
+        with open(FEE_PATH, "r", encoding="utf-8") as f:
+            FEE_LIST = json.load(f)
+        logger.info(f"Loaded {len(FEE_LIST)} fee structure records for structured lookup.")
+    except Exception as e:
+        logger.warning(f"Could not load fee_structures.json: {e}")
 
 # Embedding Model (CPU)
 MODEL_NAME = "all-MiniLM-L6-v2"
@@ -126,12 +137,55 @@ def find_faculty_matches(query: str) -> List[Document]:
 
 
 # ----------------------------------------------------
+# Structured Fee Matcher (100% Precision Fee Table Lookup)
+# ----------------------------------------------------
+def find_fee_structure_matches(query: str) -> List[Document]:
+    """Finds exact or high-confidence fee structure tables when fees are requested."""
+    if not FEE_LIST:
+        return []
+
+    q_lower = query.lower()
+    fee_keywords = {"fee", "fees", "cost", "kharcha", "paisa", "structure", "hostel fee", "tuition", "tution", "pms", "tfw"}
+    if not any(k in q_lower for k in fee_keywords):
+        return []
+
+    matched = []
+    prog_keywords = {
+        "b.tech": ["b.tech", "btech", "b tech", "b. tech", "engineering", "b.e", "be"],
+        "lateral": ["lateral", "leet", "diploma to degree"],
+        "m.tech": ["m.tech", "mtech", "m tech", "m. tech", "master of technology"],
+        "mba": ["mba", "master of business"],
+        "mca": ["mca", "master of computer applications"],
+        "bba": ["bba", "bachelor of business"],
+        "bca": ["bca", "bachelor of computer applications"],
+        "b.voc": ["b.voc", "bvoc", "b voc", "vocational", "interior design"],
+        "b.arch": ["b.arch", "barch", "b arch", "architecture"],
+        "b.com": ["b.com", "bcom", "b com", "commerce", "entrepreneurship"]
+    }
+
+    found_specific = False
+    for fee_item in FEE_LIST:
+        q_item = fee_item.get("question", "").lower()
+        for prog_key, syns in prog_keywords.items():
+            if any(s in q_lower for s in syns):
+                if prog_key in q_item:
+                    matched.append(metadata_to_doc(fee_item))
+                    found_specific = True
+
+    # If general fee question without specific course or only 'college fee'
+    if not found_specific and any(w in q_lower for w in ["fee", "fees", "fee structure", "hostel"]):
+        matched = [metadata_to_doc(item) for item in FEE_LIST]
+
+    return matched
+
+
+# ----------------------------------------------------
 # Hybrid Retrieval with Cross-Encoder Re-ranking
 # ----------------------------------------------------
 def retrieve(query: str, k: int = 6, min_score: float = -11.0) -> List[Document]:
     """
     Hybrid Retriever:
-    1. Structured Entity Lookup (Faculty)
+    1. Structured Entity Lookup (Faculty & Fee Structures)
     2. Dense FAISS Search (Top 10)
     3. Sparse BM25 Search (Top 10)
     4. Cross-Encoder Re-Ranking & Top-k Selection
@@ -140,6 +194,13 @@ def retrieve(query: str, k: int = 6, min_score: float = -11.0) -> List[Document]
 
     # 1. Structured matches
     faculty_docs = find_faculty_matches(query)
+    fee_docs = find_fee_structure_matches(query)
+    if fee_docs:
+        # Structured fee docs have 100% official tables. Return them directly without legacy pollution.
+        logger.info(f"[RAG] Returning {len(fee_docs)} structured fee documents.")
+        return fee_docs[:k]
+
+    structured_docs = faculty_docs
 
     # 2. Dense FAISS
     query_vec = embed_model.encode([query], convert_to_numpy=True, show_progress_bar=False).astype("float32")
@@ -164,7 +225,7 @@ def retrieve(query: str, k: int = 6, min_score: float = -11.0) -> List[Document]
             seen.add(int(idx))
             candidate_indices.append(int(idx))
 
-    if not candidate_indices and not faculty_docs:
+    if not candidate_indices and not structured_docs:
         return []
 
     # 4. Cross-Encoder Re-Ranking
@@ -178,12 +239,15 @@ def retrieve(query: str, k: int = 6, min_score: float = -11.0) -> List[Document]
     scored_candidates = sorted(zip(scores, candidates), key=lambda x: x[0], reverse=True)
 
     # 5. Filter by confidence threshold
-    top_docs: List[Document] = list(faculty_docs)
+    top_docs: List[Document] = list(structured_docs)
     seen_contents = {d.page_content for d in top_docs}
 
     for score, item in scored_candidates:
         if len(top_docs) >= k:
             break
+        # Skip outdated/corrupted legacy fee chunks if structured fee docs exist
+        if fee_docs and ("Sr No. | Name of Program" in item.get("answer", "") or "Hostel Fee | Post Matric" in item.get("answer", "")):
+            continue
         if float(score) >= min_score:
             doc = metadata_to_doc(item)
             if doc.page_content not in seen_contents:
