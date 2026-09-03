@@ -90,6 +90,90 @@ def _get_memory(phone: str, session_id: str) -> ConversationBufferWindowMemory:
     )
 
 
+# ---------------- QUERY REWRITING & TRANSLATION -----------------
+REGIONAL_MAP = {
+    "kinni": "fee structure amount",
+    "kinna": "fee structure amount",
+    "kitni": "fee structure amount",
+    "kitna": "fee structure amount",
+    "kado": "date schedule timing",
+    "kab": "date schedule timing",
+    "kithe": "location address",
+    "kaha": "location address",
+    "dakhla": "admission apply",
+    "dakhle": "admissions",
+    "kholna": "open reopening date",
+    "khulna": "open reopening date",
+    "chahida": "required eligibility",
+    "chahiye": "required eligibility",
+    "clg": "GNDEC college",
+    "hostel da": "hostel",
+    "hostel di": "hostel",
+    "ਫੀਸ": "fee structure",
+    "ਦਾਖਲਾ": "admission",
+    "ਹੋਸਟਲ": "hostel",
+    "ਕਦੋਂ": "when schedule date",
+    "ਕਿੱਥੇ": "where location",
+    "फीस": "fee structure",
+    "दाखिला": "admission",
+    "हॉस्टल": "hostel",
+    "कब": "when schedule date",
+    "कहाँ": "where location"
+}
+
+def rewrite_query(query: str, history_msgs: list = None) -> str:
+    """
+    Expands multilingual/slang query and resolves conversational coreference pronouns
+    using recent conversation history for 100% precision retrieval.
+    """
+    if not query:
+        return ""
+    q = query.strip()
+    q_lower = q.lower()
+
+    # 1. Regional / Slang Expansion
+    expanded_text = q_lower
+    for k, v in REGIONAL_MAP.items():
+        if k in expanded_text:
+            expanded_text = expanded_text.replace(k, v)
+
+    # 2. Multi-turn Pronoun & Topic Coreference Resolution
+    if history_msgs:
+        ref_tokens = {
+            "he", "she", "his", "her", "him", "they", "their", "them", "it", "its",
+            "that", "this", "same", "also", "qualification", "email", "phone", "contact",
+            "office", "cabin", "fees", "eligibility", "hod", "head", "subjects", "credits",
+            "who", "where", "how"
+        }
+        query_words = set(re.findall(r"[a-zA-Z0-9]+", q_lower))
+
+        if len(query_words) <= 4 or query_words.intersection(ref_tokens):
+            history_text = " ".join([
+                (m.content if hasattr(m, "content") else str(m))
+                for m in history_msgs[-4:]
+            ])
+
+            # Extract names with titles
+            names = re.findall(r"(?:Dr\.|Prof\.|Er\.|Mr\.|Mrs\.)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*", history_text)
+            # Extract departments / branches
+            depts = re.findall(
+                r"\b(Computer Science|Information Technology|Mechanical Engineering|Civil Engineering|Electrical Engineering|Electronics|Production|Applied Science|CSE|ECE|IT|EE|B\.?Tech|M\.?Tech|BCA|MCA|MBA|Hostel|Library|Placement)\b",
+                history_text,
+                re.IGNORECASE
+            )
+
+            cues = []
+            if names:
+                cues.append(names[-1])
+            if depts:
+                cues.append(depts[-1])
+
+            if cues:
+                expanded_text = f"{expanded_text} {' '.join(cues)}"
+
+    return expanded_text
+
+
 # ---------------- NORMALIZE DOCS -----------------
 def _normalize_docs(docs_raw: List[Any]) -> Tuple[str, List[Dict[str, Any]]]:
     parts: List[str] = []
@@ -124,8 +208,8 @@ async def build_prompt(
         f"Using last {len(limited_history)} messages out of {len(hist_msgs)} in memory"
     )
 
-    standalone_query = query
-    # Skipped LLM rewrite step for much lower latency
+    standalone_query = rewrite_query(query, limited_history)
+    logging.info(f"[QUERY REWRITE] Original: {query!r} -> Search query: {standalone_query!r}")
 
     # RAG — retrieve relevant GNDEC knowledge
     docs_raw = await asyncio.to_thread(retriever, standalone_query)

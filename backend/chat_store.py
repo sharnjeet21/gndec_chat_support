@@ -5,6 +5,8 @@ import uuid
 from typing import Any, List, Mapping
 import logging
 
+logger = logging.getLogger(__name__)
+
 
 async def register_session(phone: str, session_id: str):
     query = """
@@ -16,25 +18,31 @@ async def register_session(phone: str, session_id: str):
         is_active = TRUE,
         closed_at = NULL
     """
-    await asyncio.to_thread(
-        pg_execute,
-        query,
-        (phone, session_id),
-    )
+    try:
+        await asyncio.to_thread(
+            pg_execute,
+            query,
+            (phone, session_id),
+        )
+    except Exception as e:
+        logger.warning(f"Could not register session in Postgres: {e}")
 
 
 async def save_message(phone: str, session_id: str, role: str, message: str):
-    await register_session(phone, session_id)
+    try:
+        await register_session(phone, session_id)
 
-    query = """
-    INSERT INTO chat_history (phone, session_id, role, message)
-    VALUES (%s, %s, %s, %s)
-    """
-    await asyncio.to_thread(
-        pg_execute,
-        query,
-        (phone, session_id, role, message),
-    )
+        query = """
+        INSERT INTO chat_history (phone, session_id, role, message)
+        VALUES (%s, %s, %s, %s)
+        """
+        await asyncio.to_thread(
+            pg_execute,
+            query,
+            (phone, session_id, role, message),
+        )
+    except Exception as e:
+        logger.warning(f"Could not save message in Postgres: {e}")
 
 
 async def get_session_history(phone: str, session_id: str, limit: int = 50):
@@ -45,13 +53,17 @@ async def get_session_history(phone: str, session_id: str, limit: int = 50):
     ORDER BY created_at DESC
     LIMIT %s
     """
-    rows = await asyncio.to_thread(
-        pg_execute,
-        query,
-        (phone, session_id, limit),
-        True,  # fetch
-    )
-    return list(reversed(rows or []))
+    try:
+        rows = await asyncio.to_thread(
+            pg_execute,
+            query,
+            (phone, session_id, limit),
+            True,  # fetch
+        )
+        return list(reversed(rows or []))
+    except Exception as e:
+        logger.warning(f"Could not fetch session history from Postgres: {e}")
+        return []
 
 
 async def list_sessions(phone: str):
@@ -77,28 +89,32 @@ async def list_sessions(phone: str):
         FROM combined_sessions
         GROUP BY session_id
     )
-    SELECT u.session_id, 
-           (SELECT message 
-            FROM chat_history h 
-            WHERE h.session_id = u.session_id AND h.role = 'user' 
+    SELECT u.session_id,
+           (SELECT message
+            FROM chat_history h
+            WHERE h.session_id = u.session_id AND h.role = 'user'
             ORDER BY created_at DESC LIMIT 1) as last_question
     FROM unique_sessions u
     ORDER BY u.last_activity DESC NULLS LAST
     """
-    rows = await asyncio.to_thread(
-        pg_execute,
-        query,
-        (phone, phone),
-        True,  # fetch
-    )
-    
-    res = []
-    if rows:
-        for r in rows:
-            q = r["last_question"]
-            title = q[:30] + "..." if q and len(q) > 30 else (q or "New Chat")
-            res.append({"id": r["session_id"], "title": title})
-    return res
+    try:
+        rows = await asyncio.to_thread(
+            pg_execute,
+            query,
+            (phone, phone),
+            True,  # fetch
+        )
+
+        res = []
+        if rows:
+            for r in rows:
+                q = r["last_question"]
+                title = q[:30] + "..." if q and len(q) > 30 else (q or "New Chat")
+                res.append({"id": r["session_id"], "title": title})
+        return res
+    except Exception as e:
+        logger.warning(f"Could not list sessions from Postgres: {e}")
+        return []
 
 
 async def get_or_create_session_id(phone: str) -> str | None:
