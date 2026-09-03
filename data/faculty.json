@@ -55,9 +55,21 @@
     },
     {
         "department": "Applied Science",
+        "name": "DR. AMANDEEP KAUR",
+        "designation": "Assistant Professor",
+        "email": "aman089chem@gmail.com"
+    },
+    {
+        "department": "Applied Science",
         "name": "DR. AMARJOT KAUR RANDHAWA",
         "designation": "Assistant Professor",
         "email": "as_amarjot@gndec.ac.in"
+    },
+    {
+        "department": "Applied Science",
+        "name": "DR. ISHA DUDEJA",
+        "designation": "Assistant Professor",
+        "email": "ishadudeja275@gmail.com"
     },
     {
         "department": "Applied Science",
@@ -76,6 +88,12 @@
         "name": "DR. PARAMJIT SINGH",
         "designation": "Assistant Professor",
         "email": "appsc_paramjit@gndec.ac.in"
+    },
+    {
+        "department": "Applied Science",
+        "name": "DR. RAJBIR KAUR",
+        "designation": "Assistant Professor",
+        "email": "rajbiramar@yahoo.com"
     },
     {
         "department": "Applied Science",
@@ -148,12 +166,6 @@
         "name": "PRAGYA GOYAL",
         "designation": "Assistant Professor",
         "email": "pragya@gndec.ac.in"
-    },
-    {
-        "department": "Applied Science",
-        "name": "RAJBIR KAUR",
-        "designation": "Assistant Professor",
-        "email": "rajbiramar@yahoo.com"
     },
     {
         "department": "Applied Science",

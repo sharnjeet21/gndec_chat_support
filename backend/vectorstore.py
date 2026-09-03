@@ -5,10 +5,11 @@ import faiss
 import logging
 from typing import List, Dict, Any
 
-import numpy as np
 from sentence_transformers import SentenceTransformer
-from langchain.docstore.document import Document
+from langchain_core.documents import Document
+from langchain_core.retrievers import BaseRetriever
 from langchain_community.retrievers import BM25Retriever
+from langchain.retrievers import EnsembleRetriever
 
 logging.basicConfig(level=logging.INFO)
 
@@ -20,7 +21,7 @@ META_PATH = os.path.join(FAISS_DIR, "meta.json")
 
 if not os.path.exists(INDEX_PATH) or not os.path.exists(META_PATH):
     raise RuntimeError(
-        f"FAISS index or meta.json missing!\n" f"Run: python backend/build_vector_db.py"
+        f"FAISS index or meta.json missing!\nRun: python backend/build_vector_db.py"
     )
 
 logging.info("🔄 Loading FAISS index & metadata...")
@@ -31,7 +32,7 @@ with open(META_PATH, "r", encoding="utf-8") as f:
 
 # Embeddings
 MODEL_NAME = "all-MiniLM-L6-v2"
-logging.info(f"Loading embedding model: {MODEL_NAME} on CPU to avoid MPS crash")
+logging.info(f"Loading embedding model: {MODEL_NAME} on CPU")
 embed_model = SentenceTransformer(MODEL_NAME, device="cpu")
 
 
@@ -48,64 +49,39 @@ all_docs = [metadata_to_doc(item) for item in bm25_meta]
 bm25_retriever = BM25Retriever.from_documents(all_docs)
 
 
-def get_retriever(k: int = 3):
-    """LangChain-compatible retriever using FAISS + BM25 Hybrid Search (Reciprocal Rank Fusion)"""
+class FaissRetriever(BaseRetriever):
+    """Custom LangChain retriever wrapping CPU FAISS index."""
+    k: int = 10
+    min_score: float = 0.35
 
-    def retrieve(query: str) -> List[Document]:
-        logging.info(f"[RAG] Searching FAISS+BM25 Hybrid for query={query!r}")
-
-        # Search wider than k for better RRF fusion candidates
-        search_k = max(k * 2, 10)
-
-        # 1. FAISS Search
+    def _get_relevant_documents(self, query: str, *, run_manager=None) -> List[Document]:
         query_vec = embed_model.encode([query], convert_to_numpy=True).astype("float32")
         faiss.normalize_L2(query_vec)
-        scores, ids = faiss_index.search(query_vec, search_k)
-        
-        docs_faiss = []
-        for rank, (idx, score) in enumerate(zip(ids[0], scores[0])):
-            if idx < 0 or score < 0.5:
-                if idx >= 0:
-                    logging.info(f"   [FAISS] #{rank+1} Score={score:.4f} (SKIPPED < 0.5) | Q={META[int(idx)]['question']!r}")
-                continue
-            item = META[int(idx)]
-            logging.info(f"   [FAISS] #{rank+1} Score={score:.4f} | Q={item['question']!r}")
-            docs_faiss.append(metadata_to_doc(item))
+        scores, ids = faiss_index.search(query_vec, self.k)
 
-        # 2. BM25 Search
-        bm25_retriever.k = search_k
-        docs_bm25 = bm25_retriever.invoke(query)
-        for rank, doc in enumerate(docs_bm25):
-            logging.info(f"   [BM25]  #{rank+1} | Q={doc.metadata.get('question', '')!r}")
+        docs = []
+        for idx, l2_score in zip(ids[0], scores[0]):
+            cosine_sim = max(-1.0, min(1.0, 1.0 - (float(l2_score) ** 2) / 2.0))
+            if idx >= 0 and cosine_sim >= self.min_score:
+                docs.append(metadata_to_doc(META[int(idx)]))
+        return docs
 
-        # 3. Reciprocal Rank Fusion (RRF)
-        # Equal weights for better coverage of keyword-matched fee docs
-        rrf_scores = {}
-        doc_map = {}
-        
-        for rank, doc in enumerate(docs_faiss):
-            key = doc.page_content
-            rrf_scores[key] = rrf_scores.get(key, 0) + (1.0 / (rank + 60)) * 0.5
-            doc_map[key] = doc
-            
-        for rank, doc in enumerate(docs_bm25):
-            key = doc.page_content
-            rrf_scores[key] = rrf_scores.get(key, 0) + (1.0 / (rank + 60)) * 0.5
-            doc_map[key] = doc
-            
-        sorted_docs = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
-        final_docs = [doc_map[key] for key, _ in sorted_docs[:k]]
-        
-        logging.info(f"   [HYBRID] {len(rrf_scores)} unique docs after RRF, returning top {len(final_docs)}.")
-        return final_docs
+
+faiss_retriever = FaissRetriever(k=10, min_score=0.35)
+bm25_retriever.k = 10
+ensemble_retriever = EnsembleRetriever(
+    retrievers=[faiss_retriever, bm25_retriever],
+    weights=[0.5, 0.5]
+)
+
+
+def get_retriever(k: int = 8):
+    """LangChain EnsembleRetriever (FAISS + BM25 with RRF)"""
+    def retrieve(query: str) -> List[Document]:
+        logging.info(f"[RAG] Searching FAISS+BM25 Ensemble for query={query!r}")
+        return ensemble_retriever.invoke(query)[:k]
 
     return retrieve
-
-
-def similarity_search(query: str, k: int = 3) -> List[Document]:
-    """LangChain-style wrapper for pipelines needing retriever with LC API"""
-    docs = get_retriever(k)(query)
-    return docs
 
 
 retriever = get_retriever(k=8)

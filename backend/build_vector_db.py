@@ -77,6 +77,9 @@ def load_faculty_json() -> list:
         data = json.load(f)
 
     out = []
+    from collections import defaultdict
+    dept_map = defaultdict(list)
+
     for item in data:
         name = item.get("name", "").strip()
         dept = item.get("department", "").strip()
@@ -89,6 +92,19 @@ def load_faculty_json() -> list:
         q = f"Who is {name}? What is the contact email and designation for {name} in {dept}?"
         a = f"{name} is a {desig} in the {dept} department at GNDEC. You can contact them via email at {email}."
         
+        out.append({
+            "question": q,
+            "answer": a,
+            "section": "Faculty Directory",
+            "source_file": "faculty.json"
+        })
+
+        dept_map[dept].append(f"- {name}, {desig} (Email: {email})")
+
+    # Add grouped QA pairs for each department
+    for dept, members in dept_map.items():
+        q = f"Who are the faculty and staff members of the {dept} department? What is the list of teachers in {dept}?"
+        a = f"The faculty and staff members of the {dept} department at GNDEC include:\n" + "\n".join(members)
         out.append({
             "question": q,
             "answer": a,

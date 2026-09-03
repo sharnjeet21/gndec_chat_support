@@ -2,22 +2,19 @@
 import json
 import asyncio
 import logging
+import os
+import re
 from typing import List, Dict, Any, Tuple, Iterable
-import urllib.parse
 
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_community.chat_message_histories import RedisChatMessageHistory
+from openai import AsyncOpenAI
 
 from .vectorstore import get_retriever
 from .llm.llm import client, LLM_MODEL
 from .chat_store import save_message
 from .db import REDIS_URL, SESSION_TTL
-from .vectorstore import get_retriever
-from .tools import search_web_general
 from .domain_guard import is_out_of_domain
-import re
-from openai import AsyncOpenAI
-import os
 
 BANNED_WORDS = [
     "fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "slut", "whore",
@@ -25,18 +22,20 @@ BANNED_WORDS = [
 ]
 BANNED_REGEX = re.compile(rf"\b({'|'.join(BANNED_WORDS)})\b", flags=re.IGNORECASE)
 
-mod_client = AsyncOpenAI(api_key=os.getenv("OPENAI_API_KEY", "EMPTY"))
+openai_key = os.getenv("OPENAI_API_KEY", "")
+is_openai_official = openai_key.startswith("sk-") and "openai.com" in os.getenv("MODEL_API_URL", "https://api.openai.com")
+mod_client = AsyncOpenAI(api_key=openai_key) if is_openai_official else None
 
 async def check_toxicity(text: str) -> Tuple[bool, Dict[str, Any]]:
     if not text or not text.strip():
         return False, {}
-    try:
-        if os.getenv("OPENAI_API_KEY"):
+    if mod_client:
+        try:
             res = await mod_client.moderations.create(input=text)
             flagged = res.results[0].flagged
             return flagged, {"toxicity": 1.0 if flagged else 0.0}
-    except Exception as e:
-        logging.error(f"Moderation API error: {e}")
+        except Exception as e:
+            logging.error(f"Moderation API error: {e}")
     return (True, {"toxicity": 1.0}) if BANNED_REGEX.search(text) else (False, {})
 
 logging.basicConfig(level=logging.INFO)
