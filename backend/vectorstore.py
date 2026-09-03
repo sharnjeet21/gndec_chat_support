@@ -139,6 +139,19 @@ def find_faculty_matches(query: str) -> List[Document]:
 # ----------------------------------------------------
 # Structured Fee Matcher (100% Precision Fee Table Lookup)
 # ----------------------------------------------------
+PROG_PATTERNS = {
+    "b.tech": re.compile(r"\b(b\.?tech|btech|b\s+tech|bachelor of technology)\b", re.IGNORECASE),
+    "lateral": re.compile(r"\b(lateral|leet|diploma to degree|lateral entry)\b", re.IGNORECASE),
+    "m.tech": re.compile(r"\b(m\.?tech|mtech|m\s+tech|master of technology)\b", re.IGNORECASE),
+    "mba": re.compile(r"\b(mba|master of business administration)\b", re.IGNORECASE),
+    "mca": re.compile(r"\b(mca|master of computer applications)\b", re.IGNORECASE),
+    "bba": re.compile(r"\b(bba|bachelor of business administration)\b", re.IGNORECASE),
+    "bca": re.compile(r"\b(bca|bachelor of computer applications)\b", re.IGNORECASE),
+    "b.voc": re.compile(r"\b(b\.?voc|bvoc|interior design)\b", re.IGNORECASE),
+    "b.arch": re.compile(r"\b(b\.?arch|barch|architecture)\b", re.IGNORECASE),
+    "b.com": re.compile(r"\b(b\.?com|bcom|entrepreneurship)\b", re.IGNORECASE)
+}
+
 def find_fee_structure_matches(query: str) -> List[Document]:
     """Finds exact or high-confidence fee structure tables when fees are requested."""
     if not FEE_LIST:
@@ -150,24 +163,12 @@ def find_fee_structure_matches(query: str) -> List[Document]:
         return []
 
     matched = []
-    prog_keywords = {
-        "b.tech": ["b.tech", "btech", "b tech", "b. tech", "engineering", "b.e", "be"],
-        "lateral": ["lateral", "leet", "diploma to degree"],
-        "m.tech": ["m.tech", "mtech", "m tech", "m. tech", "master of technology"],
-        "mba": ["mba", "master of business"],
-        "mca": ["mca", "master of computer applications"],
-        "bba": ["bba", "bachelor of business"],
-        "bca": ["bca", "bachelor of computer applications"],
-        "b.voc": ["b.voc", "bvoc", "b voc", "vocational", "interior design"],
-        "b.arch": ["b.arch", "barch", "b arch", "architecture"],
-        "b.com": ["b.com", "bcom", "b com", "commerce", "entrepreneurship"]
-    }
-
     found_specific = False
+
     for fee_item in FEE_LIST:
         q_item = fee_item.get("question", "").lower()
-        for prog_key, syns in prog_keywords.items():
-            if any(s in q_lower for s in syns):
+        for prog_key, pattern in PROG_PATTERNS.items():
+            if pattern.search(query):
                 if prog_key in q_item:
                     matched.append(metadata_to_doc(fee_item))
                     found_specific = True
@@ -196,9 +197,9 @@ def retrieve(query: str, k: int = 6, min_score: float = -11.0) -> List[Document]
     faculty_docs = find_faculty_matches(query)
     fee_docs = find_fee_structure_matches(query)
     if fee_docs:
-        # Structured fee docs have 100% official tables. Return them directly without legacy pollution.
+        # Structured fee docs have 100% official tables. Return ALL matched fee docs directly.
         logger.info(f"[RAG] Returning {len(fee_docs)} structured fee documents.")
-        return fee_docs[:k]
+        return fee_docs
 
     structured_docs = faculty_docs
 

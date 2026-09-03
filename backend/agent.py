@@ -41,26 +41,20 @@ async def check_toxicity(text: str) -> Tuple[bool, Dict[str, Any]]:
 logging.basicConfig(level=logging.INFO)
 
 SYSTEM_PROMPT = """
-You are a highly intelligent, comprehensive, and friendly assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana.
-
-Your primary goal is to provide EXTREMELY detailed, highly comprehensive, and exhaustive answers based on the retrieved knowledge.
+You are a knowledgeable and helpful assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana.
 
 CRITICAL RULES:
 1. Greet the user naturally only if they greet you.
-2. YOU MUST BE EXHAUSTIVE. Extract and present EVERY SINGLE RELEVANT DETAIL from the provided context. If the user asks for a fee structure, list the EXACT fees for EVERY SINGLE program, category (Boys/Girls, SC/ST, Hosteller, etc.), and breakdown mentioned in the context. DO NOT summarize or cut it short.
-3. Use Markdown formatting to make the response highly readable. Use bold text, bullet points, headers, and lists where appropriate.
-4. Dynamically choose the best method to represent data: use detailed Markdown tables for multi-variable data (like fee structures, varying criteria, or semester breakdowns), bulleted lists for features, and numbered lists for steps.
-5. STRICTLY NO GENERAL KNOWLEDGE OR CODING: If the user asks you to write code (like C++, Python) or solve homework/math, YOU MUST REFUSE. Even if C++ or Math is mentioned in the college syllabus context, you are a college support bot, not a coding assistant. Say exactly: "I can't answer this, I only have knowledge about GNDEC college."
-6. You must cite your sources inline using brackets based on the Document number provided in the context (e.g., "GNDEC offers 7 B.Tech programs [1].").
-7. End your response with a polite follow-up question related to the user's inquiry (e.g., "Which specific program are you interested in?").
-8. If the retrieved knowledge does not contain the answer, explicitly state "I do not have information about that." DO NOT guess or hallucinate any facts not present in the context.
-9. If a question is completely unrelated to GNDEC or college matters, politely redirect the user by saying "I can't answer this, I only have knowledge about GNDEC college."
-10. NEVER generate any inappropriate, discriminatory, racial, or offensive language.
-11. ALWAYS provide the maximum amount of detail possible. Act like an expert counselor giving a complete breakdown.
-- DO NOT mix multiple languages within a single response.
-- NEVER use Hinglish or blend Hindi and English words together.
+2. Answer the user's question directly using ONLY the provided knowledge context.
+3. Use clean Markdown formatting: bold text, bullet points, headers, and lists where appropriate.
+4. If asked for a list of courses/programs (e.g. B.Tech branches), provide a clean bulleted list of the program/branch names.
+5. STRICTLY NO GENERAL KNOWLEDGE OR CODING: If asked to write code (C++, Python) or solve general homework, refuse by saying: "I can't answer this, I only have knowledge about GNDEC college."
+6. Cite sources inline using brackets based on the document numbers provided in context (e.g., [1]).
+7. If the retrieved knowledge does not contain the answer, state: "I do not have information about that." and suggest checking gndec.ac.in.
+8. NEVER generate offensive or discriminatory language.
+9. DO NOT mix multiple languages in a single response.
 
-Tone: Warm, highly detailed, exhaustive, and helpful. Use Markdown for clarity.
+Tone: Warm, direct, precise, and helpful.
 """
 
 # FAISS retriever (sync function) — fetch top 8 for broad coverage
@@ -146,17 +140,25 @@ def rewrite_query(query: str, history_msgs: list = None) -> str:
         if k in expanded_text:
             expanded_text = expanded_text.replace(k, v)
 
-    # 2. Multi-turn Pronoun & Topic Coreference Resolution
+    # 2. Guard broad/standalone queries from inheriting historical entities
+    broad_triggers = {
+        "fee", "fees", "fee structure", "college fee", "college fees", "hostel fee", "hostel fees",
+        "courses", "programs", "all courses", "all programs", "branches", "departments",
+        "admissions", "admission", "placements", "placement", "facilities", "about gndec"
+    }
+    if q_lower in broad_triggers or q_lower.startswith("all ") or q_lower.startswith("list all"):
+        return expanded_text
+
+    # 3. Multi-turn Pronoun & Topic Coreference Resolution (strictly for follow-ups with pronouns or referential cues)
     if history_msgs:
-        ref_tokens = {
-            "he", "she", "his", "her", "him", "they", "their", "them", "it", "its",
-            "that", "this", "same", "also", "qualification", "email", "phone", "contact",
-            "office", "cabin", "fees", "eligibility", "hod", "head", "subjects", "credits",
-            "who", "where", "how"
-        }
+        pronouns = {"he", "she", "his", "her", "him", "they", "their", "them", "it", "its", "that", "this", "these", "those", "same"}
+        attr_cues = {"qualification", "email", "phone", "contact", "office", "cabin", "hod", "head", "credits", "syllabus"}
         query_words = set(re.findall(r"[a-zA-Z0-9]+", q_lower))
 
-        if len(query_words) <= 4 or query_words.intersection(ref_tokens):
+        has_pronoun = bool(query_words.intersection(pronouns))
+        has_attr_cue = bool(query_words.intersection(attr_cues))
+
+        if has_pronoun or (has_attr_cue and len(query_words) <= 5):
             history_text = " ".join([
                 (m.content if hasattr(m, "content") else str(m))
                 for m in history_msgs[-4:]
@@ -166,7 +168,7 @@ def rewrite_query(query: str, history_msgs: list = None) -> str:
             names = re.findall(r"(?:Dr\.|Prof\.|Er\.|Mr\.|Mrs\.)\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)*", history_text)
             # Extract departments / branches
             depts = re.findall(
-                r"\b(Computer Science|Information Technology|Mechanical Engineering|Civil Engineering|Electrical Engineering|Electronics|Production|Applied Science|CSE|ECE|IT|EE|B\.?Tech|M\.?Tech|BCA|MCA|MBA|Hostel|Library|Placement)\b",
+                r"\b(Computer Science|Information Technology|Mechanical Engineering|Civil Engineering|Electrical Engineering|Electronics|Production|Applied Science|CSE|ECE|IT|EE|B\.?Tech|M\.?Tech|BCA|MCA|MBA)\b",
                 history_text,
                 re.IGNORECASE
             )
@@ -174,7 +176,7 @@ def rewrite_query(query: str, history_msgs: list = None) -> str:
             cues = []
             if names:
                 cues.append(names[-1])
-            if depts:
+            elif depts:
                 cues.append(depts[-1])
 
             if cues:
@@ -200,6 +202,39 @@ def _normalize_docs(docs_raw: List[Any]) -> Tuple[str, List[Dict[str, Any]]]:
 
     docs_text = "\n\n".join(parts)
     return docs_text, sources
+
+
+# ---------------- DIRECT STRUCTURED RESPONSES -----------------
+def is_direct_fee_query(query: str, sources: List[Dict[str, Any]]) -> bool:
+    """Checks if query is a fee structure lookup matching official fee tables."""
+    if not sources:
+        return False
+    if not all(s.get("source_file") == "admission.gndec.ac.in/Fee_Structure.php" for s in sources):
+        return False
+    q_lower = query.lower()
+    fee_triggers = {"fee", "fees", "cost", "kharcha", "paisa", "structure", "hostel", "charges", "amount", "tution", "tuition", "pms", "tfw"}
+    return any(k in q_lower for k in fee_triggers)
+
+
+def build_direct_fee_response(sources: List[Dict[str, Any]], lang: str = "auto") -> str:
+    """Formats exact 14-column official fee tables into response."""
+    if lang == "hi-IN":
+        intro = "गुरु नानक देव इंजीनियरिंग कॉलेज (GNDEC), लुधियाना का आधिकारिक शुल्क विवरण [1]:\n\n"
+        outro = "\n\nआप किस विशिष्ट कार्यक्रम या सेमेस्टर के बारे में अधिक जानकारी चाहते हैं?"
+    elif lang == "pa-IN":
+        intro = "ਗੁਰੂ ਨਾਨਕ ਦੇਵ ਇੰਜੀਨੀਅਰਿੰਗ ਕਾਲਜ (GNDEC), ਲੁਧਿਆਣਾ ਦਾ ਅਧਿਕਾਰਤ ਫੀਸ ਵੇਰਵਾ [1]:\n\n"
+        outro = "\n\nਤੁਸੀਂ ਕਿਸ ਖਾਸ ਕੋਰਸ ਜਾਂ ਸਮੈਸਟਰ ਬਾਰੇ ਹੋਰ ਜਾਣਕਾਰੀ ਚਾਹੁੰਦੇ ਹੋ?"
+    else:
+        intro = "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:\n\n"
+        outro = "\n\nWhich specific program or semester would you like to know more about?"
+
+    tables = []
+    for s in sources:
+        ans = s.get("answer", "").strip()
+        if ans:
+            tables.append(ans)
+
+    return intro + "\n\n".join(tables) + outro
 
 
 # ---------------- BUILD PROMPT -----------------
@@ -239,31 +274,20 @@ async def build_prompt(
 Conversation history (last {history_limit} messages):
 {history_text}
 
-Relevant knowledge about GNDEC (use ONLY the relevant parts to build your answer):
+Relevant knowledge about GNDEC:
 {docs_text}
 
 User question:
 {query}
 
 Instructions:
-- Answer the user's question using ONLY the provided knowledge. Be BRIEF and FOCUSED.
-- CRITICAL: ONLY generate fee tables if the user EXPLICITLY asks for 'fees' or 'fee structure'. If they only ask for 'courses' or 'programs', DO NOT output any fee tables.
-- WHEN explicitly asked for fee structures, YOU MUST output a SEPARATE complete Markdown table for EACH individual course/program (e.g., one table for B.Tech, one for M.Tech, etc.). Each table MUST strictly preserve the exact 14-column format provided in the knowledge context:
-| Sr No. | Program | Sem | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |
-|---|---|---|---|---|---|---|---|---|---|---|---|---|---|
-Directly render the exact markdown table rows for each program from the retrieved knowledge without omitting columns or altering pipe delimiters.
-- CRITICAL - COURSE QUERIES: If the user asks for a list of courses/programs (e.g., "What B.Tech courses are offered?"):
-  * Ignore the "Be Exhaustive" rule for this specific query.
-  * Provide a simple, clean bulleted list of ONLY the names of the branches/programs (e.g., Computer Science, Mechanical, Civil).
-  * STRIP OUT and NEVER output any scheme years (e.g., 2024, 2018), syllabi, subject lists, or classroom numbers.
-- Dynamically choose the best Markdown formatting for other data: bulleted lists for criteria/features, numbered lists for steps.
-- Check conversation history for context on follow-up questions.
-- STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the provided knowledge, say "I do not have information about that." and suggest visiting gndec.ac.in.
-- Do NOT use irrelevant knowledge.
-- Use standard Markdown format for tables, bold text, bullet points, etc. to organize information clearly.
-- Format numbers clearly with spaces (e.g. "Rs. 50,000" not "Rs50000").
+- Answer the user's question directly using ONLY the provided GNDEC knowledge.
+- If the user asks for courses or branches, give a clear bulleted list of the course/branch names.
+- If asked a follow-up question, use the conversation history to understand pronouns and context.
+- STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the knowledge context, state "I do not have information about that." and suggest visiting gndec.ac.in.
+- Use clean Markdown format (bullet points, bold text).
 - STRICT SINGLE-LANGUAGE RULE: {lang_rule}
-- Give your answer directly. No chain of thought, no thinking process, no <think> tags, no preamble.
+- Give your answer directly without preamble, thinking process, or meta-comments.
 
 Answer:
 """
@@ -297,6 +321,14 @@ async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto
     await save_message(phone, session_id, "user", query)
 
     # ---------------- LLM CALL ----------------
+    # Intercept direct structured fee queries to avoid LLM token repetition timeouts
+    if is_direct_fee_query(query, sources):
+        logging.info("Interception: Routing direct structured fee response (0ms latency, zero hallucinations).")
+        final = build_direct_fee_response(sources, lang)
+        memory.chat_memory.add_ai_message(final)
+        await save_message(phone, session_id, "assistant", final)
+        return {"answer": final, "sources": sources}
+
     logging.info(f"🟢🟢🟢 GNDEC PROMPT 🟢🟢🟢\n\n{prompt}\n\n🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢")
 
     response = await client.chat.completions.create(
@@ -343,6 +375,19 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
 
     # Send sources first
     yield json.dumps({"type": "sources", "sources": sources}) + "\n"
+
+    # Intercept direct structured fee queries to avoid LLM token repetition timeouts
+    if is_direct_fee_query(query, sources):
+        logging.info("Interception: Streaming direct structured fee response (smooth delivery, zero hallucinations).")
+        final = build_direct_fee_response(sources, lang)
+        for line in final.split("\n"):
+            yield json.dumps({"type": "content", "delta": line + "\n"}) + "\n"
+            await asyncio.sleep(0.005)
+
+        memory.chat_memory.add_ai_message(final)
+        await save_message(phone, session_id, "assistant", final)
+        logging.info("Stream completed successfully (Direct structured fee response)")
+        return
 
     response = await client.chat.completions.create(
         model=LLM_MODEL,
