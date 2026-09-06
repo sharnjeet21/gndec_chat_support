@@ -235,5 +235,19 @@ async def close_session_api(phone: str | None = Query(default=None)):
 
 
 # ── Serve React frontend (built files) ──────────────────────
-# Removed: In production, use Nginx to serve the support_ui/dist static files 
+import os
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+
+if os.path.isdir("support_ui/dist"):
+    app.mount("/", StaticFiles(directory="support_ui/dist", html=True), name="static")
+
+@app.exception_handler(404)
+async def not_found_handler(request: Request, exc: HTTPException):
+    if request.url.path.startswith("/api"):
+        return JSONResponse(status_code=404, content={"detail": "Not found"})
+    if os.path.exists("support_ui/dist/index.html"):
+        return FileResponse("support_ui/dist/index.html")
+    return JSONResponse(status_code=404, content={"detail": "Not found"})
+
 # and configure Nginx to reverse-proxy all /api/* requests to your FastAPI backend.
