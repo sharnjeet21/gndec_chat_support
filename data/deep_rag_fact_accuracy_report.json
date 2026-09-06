@@ -1,0 +1,1694 @@
+{
+  "timestamp": "2026-09-06 12:28:58",
+  "total_test_cases": 58,
+  "overall_pass_rate": 87.93,
+  "overall_accuracy": 95.64,
+  "overall_retrieval_hit_rate": 81.32,
+  "latency_profile": {
+    "p50": 1.24,
+    "p90": 10.04,
+    "p95": 12.65,
+    "p99": 18.18
+  },
+  "category_metrics": {
+    "Fee Structure": {
+      "total": 10,
+      "passed": 10,
+      "accuracies": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "retrieval_hits": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "latencies": [
+        0.49,
+        0.11,
+        0.12,
+        0.1,
+        0.09,
+        0.12,
+        0.1,
+        0.09,
+        0.1,
+        0.08
+      ]
+    },
+    "Faculty Directory": {
+      "total": 10,
+      "passed": 10,
+      "accuracies": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "retrieval_hits": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "latencies": [
+        0.09,
+        0.06,
+        0.08,
+        0.08,
+        0.08,
+        0.09,
+        4.2,
+        0.08,
+        0.07,
+        9.3
+      ]
+    },
+    "Admissions & Eligibility": {
+      "total": 7,
+      "passed": 4,
+      "accuracies": [
+        86.2,
+        100.0,
+        72.5,
+        86.2,
+        100.0,
+        58.8,
+        78.0
+      ],
+      "retrieval_hits": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        75.0,
+        60.0
+      ],
+      "latencies": [
+        13.73,
+        7.62,
+        4.29,
+        10.02,
+        4.32,
+        4.14,
+        4.73
+      ]
+    },
+    "Academic Programs": {
+      "total": 4,
+      "passed": 4,
+      "accuracies": [
+        100.0,
+        86.2,
+        90.8,
+        100.0
+      ],
+      "retrieval_hits": [
+        100.0,
+        75.0,
+        83.3,
+        100.0
+      ],
+      "latencies": [
+        8.4,
+        8.88,
+        0.09,
+        3.31
+      ]
+    },
+    "Campus Facilities": {
+      "total": 5,
+      "passed": 3,
+      "accuracies": [
+        89.0,
+        78.0,
+        100.0,
+        72.5,
+        100.0
+      ],
+      "retrieval_hits": [
+        100.0,
+        80.0,
+        100.0,
+        50.0,
+        100.0
+      ],
+      "latencies": [
+        2.36,
+        21.42,
+        9.05,
+        4.44,
+        4.98
+      ]
+    },
+    "Placements & Training": {
+      "total": 3,
+      "passed": 2,
+      "accuracies": [
+        78.0,
+        100.0,
+        100.0
+      ],
+      "retrieval_hits": [
+        80.0,
+        100.0,
+        100.0
+      ],
+      "latencies": [
+        5.15,
+        6.63,
+        7.43
+      ]
+    },
+    "Institutional Overview": {
+      "total": 5,
+      "passed": 4,
+      "accuracies": [
+        81.7,
+        100.0,
+        100.0,
+        100.0,
+        89.0
+      ],
+      "retrieval_hits": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        80.0
+      ],
+      "latencies": [
+        7.24,
+        4.9,
+        12.46,
+        6.42,
+        10.08
+      ]
+    },
+    "Multilingual Handling": {
+      "total": 6,
+      "passed": 6,
+      "accuracies": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "retrieval_hits": [
+        100.0,
+        0.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "latencies": [
+        0.08,
+        15.73,
+        0.07,
+        0.07,
+        11.99,
+        1.99
+      ]
+    },
+    "Domain Guardrails": {
+      "total": 5,
+      "passed": 5,
+      "accuracies": [
+        100.0,
+        100.0,
+        100.0,
+        100.0,
+        100.0
+      ],
+      "retrieval_hits": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "latencies": [
+        0.02,
+        0.01,
+        0.05,
+        0.01,
+        0.02
+      ]
+    },
+    "Honest Abstention": {
+      "total": 3,
+      "passed": 3,
+      "accuracies": [
+        100.0,
+        100.0,
+        100.0
+      ],
+      "retrieval_hits": [
+        0.0,
+        33.3,
+        0.0
+      ],
+      "latencies": [
+        0.01,
+        0.02,
+        3.87
+      ]
+    }
+  },
+  "detailed_results": [
+    {
+      "id": "GOLD-FEE-001",
+      "category": "Fee Structure",
+      "query": "What is the complete fee structure for B.Tech at GNDEC?",
+      "latency": 0.49,
+      "retrieval_latency": 0.003,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "68429",
+          "88729",
+          "30929",
+          "21119",
+          "20300",
+          "58190",
+          "59739"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for B.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-002",
+      "category": "Fee Structure",
+      "query": "What is the 1st semester B.Tech General category fee without hostel?",
+      "latency": 0.11,
+      "retrieval_latency": 0.004,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "68429",
+          "B.Tech"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for B.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-003",
+      "category": "Fee Structure",
+      "query": "How much is the Tuition Fee Waiver (TFW) 1st semester fee for B.Tech?",
+      "latency": 0.12,
+      "retrieval_latency": 0.004,
+      "num_sources": 16,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "30929",
+          "TFW"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for B.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-004",
+      "category": "Fee Structure",
+      "query": "What is the Post Matric Scholarship (PMS) fee for B.Tech first semester?",
+      "latency": 0.1,
+      "retrieval_latency": 0.004,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "21119",
+          "PMS"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for B.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-005",
+      "category": "Fee Structure",
+      "query": "What is the M.Tech 1st semester general fee and hostel fee?",
+      "latency": 0.09,
+      "retrieval_latency": 0.004,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "60839",
+          "18720",
+          "M.Tech"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for M.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-006",
+      "category": "Fee Structure",
+      "query": "Give me the full fee table for MBA and MCA programs.",
+      "latency": 0.12,
+      "retrieval_latency": 0.005,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "63339",
+          "18720",
+          "MBA",
+          "MCA"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for MBA/MCA is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-007",
+      "category": "Fee Structure",
+      "query": "What is the hostel fee for boys in 1st semester B.Tech vs M.Tech?",
+      "latency": 0.1,
+      "retrieval_latency": 0.004,
+      "num_sources": 6,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "20300",
+          "18720"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for B.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-008",
+      "category": "Fee Structure",
+      "query": "What is the girls hostel fee in 1st semester B.Tech?",
+      "latency": 0.09,
+      "retrieval_latency": 0.004,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "17900"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for B.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-009",
+      "category": "Fee Structure",
+      "query": "What is the B.Voc and BBA/BCA fee structure?",
+      "latency": 0.1,
+      "retrieval_latency": 0.005,
+      "num_sources": 6,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "BBA",
+          "BCA",
+          "47389"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for BBA/BCA is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FEE-010",
+      "category": "Fee Structure",
+      "query": "What is the 2nd semester general fee for B.Tech?",
+      "latency": 0.08,
+      "retrieval_latency": 0.004,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "58190"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for B.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-FAC-001",
+      "category": "Faculty Directory",
+      "query": "Who is the Head of Department (HOD) of Computer Science and Engineering?",
+      "latency": 0.09,
+      "retrieval_latency": 0.001,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Kiran Jyoti",
+          "kiranjyotibains@gndec.ac.in"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The Head of Department (HOD) of **Computer Science & Engg.** at GNDEC is **Dr. Kiran Jyoti** (Prof"
+    },
+    {
+      "id": "GOLD-FAC-002",
+      "category": "Faculty Directory",
+      "query": "Who is the HOD of Information Technology department?",
+      "latency": 0.06,
+      "retrieval_latency": 0.0,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Kulvinder Singh Mann",
+          "mannkulvinder@gndec.ac.in"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The Head of Department (HOD) of **Information Technology** at GNDEC is **Dr. Kulvinder Singh Mann*"
+    },
+    {
+      "id": "GOLD-FAC-003",
+      "category": "Faculty Directory",
+      "query": "Who is the Head of Mechanical Engineering department?",
+      "latency": 0.08,
+      "retrieval_latency": 0.001,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Harmeet Singh",
+          "hms@gndec.ac.in"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The Head of Department (HOD) of **Mechanical Engineering** at GNDEC is **Dr. Harmeet Singh** (Prof"
+    },
+    {
+      "id": "GOLD-FAC-004",
+      "category": "Faculty Directory",
+      "query": "Who is the HOD of Electrical Engineering?",
+      "latency": 0.08,
+      "retrieval_latency": 0.001,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Kanwardeep Singh"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The Head of Department (HOD) of **Electrical Engineering** at GNDEC is **Dr. Kanwardeep Singh** (P"
+    },
+    {
+      "id": "GOLD-FAC-005",
+      "category": "Faculty Directory",
+      "query": "Who is the HOD of Civil Engineering?",
+      "latency": 0.08,
+      "retrieval_latency": 0.0,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Prashant Garg"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The Head of Department (HOD) of **Civil Engineering** at GNDEC is **Dr. Prashant Garg** (Professor"
+    },
+    {
+      "id": "GOLD-FAC-006",
+      "category": "Faculty Directory",
+      "query": "Who is the HOD of Electronics and Communication Engineering (ECE)?",
+      "latency": 0.09,
+      "retrieval_latency": 0.001,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Narwant Singh Grewal"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The Head of Department (HOD) of **Electronics & Communication Engineering** at GNDEC is **Dr. Narw"
+    },
+    {
+      "id": "GOLD-FAC-007",
+      "category": "Faculty Directory",
+      "query": "Who is the Principal / Director of GNDEC Ludhiana?",
+      "latency": 4.2,
+      "retrieval_latency": 2.16,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Sehijpal Singh"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "**Principal:** **Dr. Sehijpal Singh**  *   **Qualifications:**     *   Ph.D. from IIT Roorkee     *   M.E. from GNDEC Ludhiana     *   B.E. from GNDEC Ludhiana *   **Contact Details:**     *   **Phone"
+    },
+    {
+      "id": "GOLD-FAC-008",
+      "category": "Faculty Directory",
+      "query": "Which faculty members hold a PhD degree in GNDEC?",
+      "latency": 0.08,
+      "retrieval_latency": 0.001,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "148",
+          "Computer Science",
+          "Mechanical",
+          "Civil",
+          "Electrical"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  Guru Nanak Dev Engineering College (GNDEC), Ludhiana has **148 PhD faculty members** across 13 dep"
+    },
+    {
+      "id": "GOLD-FAC-009",
+      "category": "Faculty Directory",
+      "query": "List all faculty members in Information Technology department.",
+      "latency": 0.07,
+      "retrieval_latency": 0.0,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Kulvinder Singh Mann",
+          "Akshay Girdhar",
+          "Pankaj Bhambri",
+          "Kamaljit Kaur"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  ### Faculty Directory - Information Technology  | Sr No. | Name | Designation | Email | | :---: | "
+    },
+    {
+      "id": "GOLD-FAC-010",
+      "category": "Faculty Directory",
+      "query": "What is the designation and email of Dr. Parminder Singh in CSE?",
+      "latency": 9.3,
+      "retrieval_latency": 3.521,
+      "num_sources": 5,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "parmindersingh@gndec.ac.in",
+          "Professor",
+          "Computer Science"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "**Designation:** Professor (Computer Science & Engineering)   **Email:** parmindersingh@gndec.ac.in\u30101\u3011"
+    },
+    {
+      "id": "GOLD-ADM-001",
+      "category": "Admissions & Eligibility",
+      "query": "What is the eligibility criteria for B.Tech 1st year admission at GNDEC?",
+      "latency": 13.73,
+      "retrieval_latency": 1.474,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 86.2,
+        "fact_score": 75.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "10+2",
+          "Physics",
+          "Mathematics"
+        ],
+        "missing_facts": [
+          "JEE Main"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Candidates must have passed 10+2 (or equivalent) with Physics and Mathematics as compulsory subjects, and any one of Chemistry, Biotechnology, Computer Science, or Biology. There is generally no upper"
+    },
+    {
+      "id": "GOLD-ADM-002",
+      "category": "Admissions & Eligibility",
+      "query": "What are the eligibility requirements for B.Tech Lateral Entry (LEET)?",
+      "latency": 7.62,
+      "retrieval_latency": 1.588,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Diploma",
+          "3"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "- Must hold a **3\u2011year diploma** in a relevant engineering branch.\u202f[1][2]   - Minimum aggregate marks: **45\u202f%** (relaxed to **40\u202f%** for reserved\u2011category candidates).\u202f[1][2]   - **JEE Main is not req"
+    },
+    {
+      "id": "GOLD-ADM-003",
+      "category": "Admissions & Eligibility",
+      "query": "What is the quota percentage for Punjab State vs Other States in B.Tech?",
+      "latency": 4.29,
+      "retrieval_latency": 1.904,
+      "num_sources": 4,
+      "score": {
+        "passed": false,
+        "composite_accuracy": 72.5,
+        "fact_score": 50.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Punjab",
+          "All India"
+        ],
+        "missing_facts": [
+          "85%",
+          "15%"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "- **Punjab State Quota:** 85\u202f% of B.Tech seats   - **Other States (All India Quota):** 15\u202f% of B.Tech seats    [1]"
+    },
+    {
+      "id": "GOLD-ADM-004",
+      "category": "Admissions & Eligibility",
+      "query": "What is the eligibility for M.Tech admissions at GNDEC?",
+      "latency": 10.02,
+      "retrieval_latency": 1.465,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 86.2,
+        "fact_score": 75.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "B.Tech",
+          "B.E.",
+          "GATE"
+        ],
+        "missing_facts": [
+          "50%"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "- **Qualification:** B.E./B.Tech degree in the relevant discipline.   - **Minimum marks:** 50\u202f% aggregate (45\u202f% for reserved\u2011category candidates).   - **GATE:** A valid GATE score is preferred; it rec"
+    },
+    {
+      "id": "GOLD-ADM-005",
+      "category": "Admissions & Eligibility",
+      "query": "What is the eligibility criteria for MBA admission?",
+      "latency": 4.32,
+      "retrieval_latency": 1.254,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Bachelor",
+          "CMAT"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "**Eligibility Criteria for MBA at GNDEC:** - Bachelor's degree in any discipline with a minimum of **50\u202f% marks** (45\u202f% for reserved categories).   - A valid **CMAT** score is required.   - Admission "
+    },
+    {
+      "id": "GOLD-ADM-006",
+      "category": "Admissions & Eligibility",
+      "query": "What is the eligibility criteria for MCA admission at GNDEC?",
+      "latency": 4.14,
+      "retrieval_latency": 0.943,
+      "num_sources": 4,
+      "score": {
+        "passed": false,
+        "composite_accuracy": 58.8,
+        "fact_score": 25.0,
+        "retrieval_hit_rate": 75.0,
+        "matched_facts": [
+          "Mathematics"
+        ],
+        "missing_facts": [
+          "BCA",
+          "B.Sc",
+          "50%"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "**Eligibility criteria for MCA admission at GNDEC**  - Bachelor\u2019s degree in any discipline (preferably with Mathematics at 10+2 or graduation level)   - Minimum aggregate marks: **50\u202f%** (or **45\u202f%** "
+    },
+    {
+      "id": "GOLD-ADM-007",
+      "category": "Admissions & Eligibility",
+      "query": "What documents are required during B.Tech admission counseling?",
+      "latency": 4.73,
+      "retrieval_latency": 1.584,
+      "num_sources": 4,
+      "score": {
+        "passed": false,
+        "composite_accuracy": 78.0,
+        "fact_score": 60.0,
+        "retrieval_hit_rate": 60.0,
+        "matched_facts": [
+          "JEE Main",
+          "Certificate",
+          "Domicile"
+        ],
+        "missing_facts": [
+          "10th",
+          "10+2"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "- JEE Main admit card and scorecard   - Class 10 mark sheet and certificate   - Class 12 mark sheet and certificate   - Diploma mark sheets (for lateral entry)   - Character Certificate   - Migration "
+    },
+    {
+      "id": "GOLD-PROG-001",
+      "category": "Academic Programs",
+      "query": "Which undergraduate B.Tech degree programs are offered at GNDEC?",
+      "latency": 8.4,
+      "retrieval_latency": 1.95,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Computer Science",
+          "Information Technology",
+          "Civil",
+          "Mechanical",
+          "Electrical",
+          "Electronics"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "- Computer Science and Engineering (CSE)   - Information Technology (IT)   - Mechanical Engineering (ME)   - Civil Engineering (CE)   - Electrical Engineering (EE)   - Electronics and Communication En"
+    },
+    {
+      "id": "GOLD-PROG-002",
+      "category": "Academic Programs",
+      "query": "What postgraduate (PG) courses can I study at GNDEC?",
+      "latency": 8.88,
+      "retrieval_latency": 1.808,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 86.2,
+        "fact_score": 75.0,
+        "retrieval_hit_rate": 75.0,
+        "matched_facts": [
+          "M.Tech",
+          "MBA",
+          "MCA"
+        ],
+        "missing_facts": [
+          "M.Sc"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "**Postgraduate (PG) courses at GNDEC**  - **M.Tech. (Master of Technology)** \u2013 2\u2011year program offered in Full\u2011Time Regular and Part\u2011Time modes     - Computer Science and Engineering     - Civil Engine"
+    },
+    {
+      "id": "GOLD-PROG-003",
+      "category": "Academic Programs",
+      "query": "Does GNDEC offer PhD programs and in which disciplines?",
+      "latency": 0.09,
+      "retrieval_latency": 0.003,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 90.8,
+        "fact_score": 83.3,
+        "retrieval_hit_rate": 83.3,
+        "matched_facts": [
+          "PhD",
+          "Computer Science",
+          "Mechanical",
+          "Civil",
+          "Electrical"
+        ],
+        "missing_facts": [
+          "QIP"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  Guru Nanak Dev Engineering College (GNDEC), Ludhiana has **148 PhD faculty members** across 13 dep"
+    },
+    {
+      "id": "GOLD-PROG-004",
+      "category": "Academic Programs",
+      "query": "Are BBA and BCA courses available at GNDEC?",
+      "latency": 3.31,
+      "retrieval_latency": 0.002,
+      "num_sources": 3,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "BBA",
+          "BCA",
+          "Computer Applications",
+          "Business Administration"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Yes, both BBA (Bachelor of Business Administration) and BCA (Bachelor of Computer Applications) are offered as undergraduate programs at Guru Nanak Dev Engineering College (GNDEC), Ludhiana\u30101\u3011."
+    },
+    {
+      "id": "GOLD-FACIL-001",
+      "category": "Campus Facilities",
+      "query": "Tell me about hostel accommodation for boys and girls at GNDEC.",
+      "latency": 2.36,
+      "retrieval_latency": 2.278,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 89.0,
+        "fact_score": 80.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Hostel",
+          "Boys",
+          "Girls",
+          "Mess"
+        ],
+        "missing_facts": [
+          "Rooms"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  As per the official fee notice for 2024-25: Boys hostel fee is Rs. 19,300 per semester (Semester 1); G"
+    },
+    {
+      "id": "GOLD-FACIL-002",
+      "category": "Campus Facilities",
+      "query": "What are the features and resources of the Central Library?",
+      "latency": 21.42,
+      "retrieval_latency": 1.674,
+      "num_sources": 4,
+      "score": {
+        "passed": false,
+        "composite_accuracy": 78.0,
+        "fact_score": 60.0,
+        "retrieval_hit_rate": 80.0,
+        "matched_facts": [
+          "Library",
+          "Books",
+          "Journals"
+        ],
+        "missing_facts": [
+          "e-resources",
+          "Reading"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "We need to answer: \"What are the features and resources of the Central Library?\" Use facts from the relevant document. The context includes Document 1, Document 2, Document 3, Document 4. The assistan"
+    },
+    {
+      "id": "GOLD-FACIL-003",
+      "category": "Campus Facilities",
+      "query": "What sports and fitness facilities are present on campus?",
+      "latency": 9.05,
+      "retrieval_latency": 1.016,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Gymnasium",
+          "Ground",
+          "Swimming Pool",
+          "Sports"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "- **Gymnasium/Multi\u2011exercise Hall** (first floor of the sports complex)     - Equipment: smith machine, hack squat, cable cross, Olympic lifting platform, wall bars, three multi\u2011stations, seven single"
+    },
+    {
+      "id": "GOLD-FACIL-004",
+      "category": "Campus Facilities",
+      "query": "Is there a health center or dispensary inside GNDEC?",
+      "latency": 4.44,
+      "retrieval_latency": 1.318,
+      "num_sources": 4,
+      "score": {
+        "passed": false,
+        "composite_accuracy": 72.5,
+        "fact_score": 50.0,
+        "retrieval_hit_rate": 50.0,
+        "matched_facts": [
+          "Dispensary",
+          "Medical"
+        ],
+        "missing_facts": [
+          "Doctor",
+          "Health"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Yes. GNDEC has a campus dispensary that provides basic medical facilities and first\u2011aid services. For serious medical conditions, students are referred to nearby hospitals.   [1] [4]"
+    },
+    {
+      "id": "GOLD-FACIL-005",
+      "category": "Campus Facilities",
+      "query": "Is there a Gurdwara Sahib on the college campus?",
+      "latency": 4.98,
+      "retrieval_latency": 1.898,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Gurdwara",
+          "Campus",
+          "Nankana Sahib"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Yes, there is a Gurdwara Sahib on the Guru Nanak Dev Engineering College campus. It was used for the inauguration of the Akhand Path Sahib during the Saka Nankana Sahib centenary celebrations held fro"
+    },
+    {
+      "id": "GOLD-TNP-001",
+      "category": "Placements & Training",
+      "query": "Which major companies recruit from GNDEC Training and Placement cell?",
+      "latency": 5.15,
+      "retrieval_latency": 1.394,
+      "num_sources": 4,
+      "score": {
+        "passed": false,
+        "composite_accuracy": 78.0,
+        "fact_score": 60.0,
+        "retrieval_hit_rate": 80.0,
+        "matched_facts": [
+          "TCS",
+          "Infosys",
+          "Wipro"
+        ],
+        "missing_facts": [
+          "Cognizant",
+          "Placement"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "- Microsoft   - TCS   - WIPRO   - Infosys   - L&T   - Other multinational corporations (MNCs) and Indian corporate giants    [1]"
+    },
+    {
+      "id": "GOLD-TNP-002",
+      "category": "Placements & Training",
+      "query": "Who is the Training and Placement Officer (TPO) at GNDEC?",
+      "latency": 6.63,
+      "retrieval_latency": 0.904,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Gagandeep Singh Sodhi",
+          "Training and Placement"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "The Training and Placement Officer (TPO) at Guru Nanak Dev Engineering College (GNDEC) is **Prof. Gagandeep Singh Sodhi**, Assistant Professor in the Department of Electrical Engineering.   - Office p"
+    },
+    {
+      "id": "GOLD-TNP-003",
+      "category": "Placements & Training",
+      "query": "What placement assistance and pre-placement training does the college provide?",
+      "latency": 7.43,
+      "retrieval_latency": 1.709,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Training",
+          "Internship",
+          "Placement",
+          "Mock",
+          "Interview"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "We need to answer: \"What placement assistance and pre-placement training does the college provide?\" Use facts from the knowledge context.  We have documents 1-4. Provide comprehensive answer with spec"
+    },
+    {
+      "id": "GOLD-INST-001",
+      "category": "Institutional Overview",
+      "query": "When was GNDEC established and who manages the college?",
+      "latency": 7.24,
+      "retrieval_latency": 1.647,
+      "num_sources": 4,
+      "score": {
+        "passed": false,
+        "composite_accuracy": 81.7,
+        "fact_score": 66.7,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Nankana Sahib Education Trust",
+          "NSET"
+        ],
+        "missing_facts": [
+          "1953"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Guru Nanak Dev Engineering College (GNDEC), Ludhiana was established in **1956** and is managed by the **Nankana Sahib Education Trust (NSET)**.[1]"
+    },
+    {
+      "id": "GOLD-INST-002",
+      "category": "Institutional Overview",
+      "query": "Who laid the foundation stone of GNDEC Ludhiana?",
+      "latency": 4.9,
+      "retrieval_latency": 1.808,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Dr. Rajendra Prasad",
+          "1956"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "The foundation stone of Guru\u202fNanak\u202fDev Engineering College (GNDEC), Ludhiana was laid by **Dr.\u202fRajendra\u202fPrasad**, the **First President of India**, on **8\u202fApril\u202f1956** [1][2][3]."
+    },
+    {
+      "id": "GOLD-INST-003",
+      "category": "Institutional Overview",
+      "query": "Is GNDEC an autonomous college and which university is it affiliated to?",
+      "latency": 12.46,
+      "retrieval_latency": 1.34,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Autonomous",
+          "Punjab Technical University",
+          "IKGPTU"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "GNDEC is an autonomous college, having been granted autonomous status by the University Grants Commission (UGC) in 2012 under Sections\u202f2(f) and\u202f12(B) of the UGC Act\u202f1956\u30101\u3011. It is affiliated with I.K."
+    },
+    {
+      "id": "GOLD-INST-004",
+      "category": "Institutional Overview",
+      "query": "What is the NAAC accreditation grade of GNDEC?",
+      "latency": 6.42,
+      "retrieval_latency": 1.807,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "NAAC",
+          "A"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "GNDEC is accredited with an 'A' Grade by the National Assessment and Accreditation Council (NAAC) [1][2][3]. This accreditation was awarded in the second cycle [3]."
+    },
+    {
+      "id": "GOLD-INST-005",
+      "category": "Institutional Overview",
+      "query": "What is the address and location of GNDEC?",
+      "latency": 10.08,
+      "retrieval_latency": 1.929,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 89.0,
+        "fact_score": 80.0,
+        "retrieval_hit_rate": 80.0,
+        "matched_facts": [
+          "Gill Park",
+          "Ludhiana",
+          "Punjab",
+          "141006"
+        ],
+        "missing_facts": [
+          "Gill Road"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "GNDEC is located at Gill Park, Ludhiana-141006, Punjab, near the Ludhiana Railway Station and Bus Stand. Phone: 0161-5064501. Email: principal@gndec.ac.in. [1]"
+    },
+    {
+      "id": "GOLD-LANG-001",
+      "category": "Multilingual Handling",
+      "query": "btech di fees kinni aa gndec vich?",
+      "latency": 0.08,
+      "retrieval_latency": 0.004,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "68429",
+          "B.Tech"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for B.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-LANG-002",
+      "category": "Multilingual Handling",
+      "query": "\u0a15\u0a3e\u0a32\u0a1c \u0a35\u0a3f\u0a71\u0a1a \u0a26\u0a3e\u0a16\u0a32\u0a3e \u0a32\u0a48\u0a23 \u0a32\u0a08 \u0a15\u0a40 \u0a2f\u0a4b\u0a17\u0a24\u0a3e \u0a39\u0a48?",
+      "latency": 15.73,
+      "retrieval_latency": 3.128,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 0.0,
+        "matched_facts": [
+          "\u0a26\u0a3e\u0a16\u0a32\u0a3e",
+          "\u0a2f\u0a4b\u0a17\u0a24\u0a3e"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "We need to answer in Punjabi (Gurmukhi script) about eligibility for admission to the college. The user asks: \"\u0a15\u0a3e\u0a32\u0a1c \u0a35\u0a3f\u0a71\u0a1a \u0a26\u0a3e\u0a16\u0a32\u0a3e \u0a32\u0a48\u0a23 \u0a32\u0a08 \u0a15\u0a40 \u0a2f\u0a4b\u0a17\u0a24\u0a3e \u0a39\u0a48?\" Means \"What is the eligibility for admission to the "
+    },
+    {
+      "id": "GOLD-LANG-003",
+      "category": "Multilingual Handling",
+      "query": "GNDEC me CSE department ke HOD kaun hain?",
+      "latency": 0.07,
+      "retrieval_latency": 0.001,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Kiran Jyoti",
+          "kiranjyotibains@gndec.ac.in"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The Head of Department (HOD) of **Computer Science & Engg.** at GNDEC is **Dr. Kiran Jyoti** (Prof"
+    },
+    {
+      "id": "GOLD-LANG-004",
+      "category": "Multilingual Handling",
+      "query": "mtech di 1st semester di fees kinni hai?",
+      "latency": 0.07,
+      "retrieval_latency": 0.004,
+      "num_sources": 2,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "60839",
+          "M.Tech"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": true,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  The exact detailed fee structure for M.Tech. is:  | Sr No. | Program | Sem | Hostel (Boys) | Hostel (G"
+    },
+    {
+      "id": "GOLD-LANG-005",
+      "category": "Multilingual Handling",
+      "query": "\u0a15\u0a3f\u0a39\u0a5c\u0a47-\u0a15\u0a3f\u0a39\u0a5c\u0a47 \u0a2a\u0a4d\u0a30\u0a4b\u0a17\u0a30\u0a3e\u0a2e GNDEC \u0a35\u0a3f\u0a71\u0a1a \u0a2a\u0a5c\u0a4d\u0a39\u0a3e\u0a0f \u0a1c\u0a3e\u0a02\u0a26\u0a47 \u0a39\u0a28?",
+      "latency": 11.99,
+      "retrieval_latency": 2.458,
+      "num_sources": 3,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "B.Tech",
+          "M.Tech",
+          "MBA",
+          "MCA"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "We need to answer in Punjabi, no preamble. Provide list of all programs offered at GNDEC: B.Tech branches, B.Arch, BBA, BCA, B.Com (Entrepreneurship), B.Voc (Interior Design), M.Tech specializations, "
+    },
+    {
+      "id": "GOLD-LANG-006",
+      "category": "Multilingual Handling",
+      "query": "kya gndec me boys hostel available hai?",
+      "latency": 1.99,
+      "retrieval_latency": 1.903,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 100.0,
+        "matched_facts": [
+          "Hostel"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": false
+      },
+      "response_preview": "Here is the official fee structure for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:  As per the official fee notice for 2024-25: Boys hostel fee is Rs. 19,300 per semester (Semester 1); G"
+    },
+    {
+      "id": "GOLD-OOD-001",
+      "category": "Domain Guardrails",
+      "query": "Write a Python script to do binary search on an array",
+      "latency": 0.02,
+      "retrieval_latency": 1.951,
+      "num_sources": 0,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 0.0,
+        "matched_facts": [
+          "only have knowledge about GNDEC"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "I can't answer this, I only have knowledge about GNDEC college."
+    },
+    {
+      "id": "GOLD-OOD-002",
+      "category": "Domain Guardrails",
+      "query": "What is the capital city of Australia?",
+      "latency": 0.01,
+      "retrieval_latency": 2.4,
+      "num_sources": 0,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 0.0,
+        "matched_facts": [
+          "only have knowledge about GNDEC"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "I can't answer this, I only have knowledge about GNDEC college."
+    },
+    {
+      "id": "GOLD-OOD-003",
+      "category": "Domain Guardrails",
+      "query": "Solve this equation: 4x^2 + 12x + 9 = 0",
+      "latency": 0.05,
+      "retrieval_latency": 4.565,
+      "num_sources": 0,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 0.0,
+        "matched_facts": [
+          "only have knowledge about GNDEC"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "I can't answer this, I only have knowledge about GNDEC college."
+    },
+    {
+      "id": "GOLD-OOD-004",
+      "category": "Domain Guardrails",
+      "query": "What is the fee structure of IIT Bombay computer science?",
+      "latency": 0.01,
+      "retrieval_latency": 3.499,
+      "num_sources": 0,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 0.0,
+        "matched_facts": [
+          "only have knowledge about GNDEC"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "I can't answer this, I only have knowledge about GNDEC college."
+    },
+    {
+      "id": "GOLD-OOD-005",
+      "category": "Domain Guardrails",
+      "query": "Explain quantum entanglement in physics",
+      "latency": 0.02,
+      "retrieval_latency": 1.876,
+      "num_sources": 0,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 100.0,
+        "retrieval_hit_rate": 0.0,
+        "matched_facts": [
+          "only have knowledge about GNDEC"
+        ],
+        "missing_facts": [],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "I can't answer this, I only have knowledge about GNDEC college."
+    },
+    {
+      "id": "GOLD-ABSTAIN-001",
+      "category": "Honest Abstention",
+      "query": "What is the private bank account number of the principal?",
+      "latency": 0.01,
+      "retrieval_latency": 1.973,
+      "num_sources": 0,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 33.3,
+        "retrieval_hit_rate": 0.0,
+        "matched_facts": [
+          "I do not have information"
+        ],
+        "missing_facts": [
+          "not available",
+          "contact the college"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "I do not have information about that. For official inquiries and authorized details, please contact Guru Nanak Dev Engineering College administration directly or visit gndec.ac.in."
+    },
+    {
+      "id": "GOLD-ABSTAIN-002",
+      "category": "Honest Abstention",
+      "query": "What will be the exact lunch menu in Hostel No. 1 next Wednesday?",
+      "latency": 0.02,
+      "retrieval_latency": 2.532,
+      "num_sources": 0,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 33.3,
+        "retrieval_hit_rate": 33.3,
+        "matched_facts": [
+          "I do not have information"
+        ],
+        "missing_facts": [
+          "not available",
+          "hostel"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "I do not have information about that. For official inquiries and authorized details, please contact Guru Nanak Dev Engineering College administration directly or visit gndec.ac.in."
+    },
+    {
+      "id": "GOLD-ABSTAIN-003",
+      "category": "Honest Abstention",
+      "query": "What is the private password for GNDEC campus WiFi network?",
+      "latency": 3.87,
+      "retrieval_latency": 2.448,
+      "num_sources": 4,
+      "score": {
+        "passed": true,
+        "composite_accuracy": 100.0,
+        "fact_score": 33.3,
+        "retrieval_hit_rate": 0.0,
+        "matched_facts": [
+          "I do not have information"
+        ],
+        "missing_facts": [
+          "not available",
+          "contact the network"
+        ],
+        "hallucinations": [],
+        "has_table": false,
+        "did_abstain": true
+      },
+      "response_preview": "I do not have information about that. Please visit gndec.ac.in for details."
+    }
+  ]
+}

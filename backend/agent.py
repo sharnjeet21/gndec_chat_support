@@ -10,11 +10,13 @@ from langchain.memory import ConversationBufferWindowMemory
 from langchain_community.chat_message_histories import RedisChatMessageHistory, ChatMessageHistory
 from openai import AsyncOpenAI
 
-from .vectorstore import get_retriever
-from .llm.llm import client, LLM_MODEL
+from .vectorstore import get_retriever, encode_query, find_faculty_matches, find_fee_structure_matches
+from .llm.llm import client, LLM_MODEL, call_model_async, call_model_stream
 from .chat_store import save_message
 from .db import REDIS_URL, SESSION_TTL
 from .domain_guard import is_out_of_domain
+from .cache import global_semantic_cache
+from .verify import check_sensitive_or_unanswerable, verify_groundedness, strip_scrape_leaks
 
 BANNED_WORDS = [
     "fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "slut", "whore",
@@ -41,12 +43,12 @@ async def check_toxicity(text: str) -> Tuple[bool, Dict[str, Any]]:
 logging.basicConfig(level=logging.INFO)
 
 SYSTEM_PROMPT = """
-You are a knowledgeable and helpful assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana.
+You are an expert official assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana.
 
 CRITICAL RULES:
-1. Greet the user naturally only if they greet you.
-2. Answer the user's question directly using ONLY the provided knowledge context.
-3. Use clean Markdown formatting: bold text, bullet points, headers, and lists where appropriate.
+1. Answer the user's specific question directly using facts from the relevant document in the knowledge context.
+2. DO NOT output conversational filler, introductory pleasantries, or generic welcomes (e.g. "Welcome to GNDEC!"). Start directly with the answer.
+3. Be comprehensive: include all specific details, facilities, statistics, numbers, library volumes, hostel amenities, course outlines, and contact numbers present in the context.
 4. If asked for a list of courses/programs (e.g. B.Tech branches), provide a clean bulleted list of the program/branch names.
 5. STRICTLY NO GENERAL KNOWLEDGE OR CODING: If asked to write code (C++, Python) or solve general homework, refuse by saying: "I can't answer this, I only have knowledge about GNDEC college."
 6. Cite sources inline using brackets based on the document numbers provided in context (e.g., [1]).
@@ -54,11 +56,11 @@ CRITICAL RULES:
 8. NEVER generate offensive or discriminatory language.
 9. DO NOT mix multiple languages in a single response.
 
-Tone: Warm, direct, precise, and helpful.
+Tone: Direct, factual, precise, and professional.
 """
 
-# FAISS retriever (sync function) — fetch top 8 for broad coverage
-retriever = get_retriever(8)
+# FAISS retriever (sync function) — fetch top 4 high-precision reranked chunks for fast CPU inference
+retriever = get_retriever(4)
 
 WARNING_TEXT = (
     "I'm sorry, I cannot answer that. "
@@ -103,25 +105,78 @@ REGIONAL_MAP = {
     "kab": "date schedule timing",
     "kithe": "location address",
     "kaha": "location address",
-    "dakhla": "admission apply",
-    "dakhle": "admissions",
+    "kahan": "location address",
+    "dakhla": "admission apply eligibility",
+    "dakhle": "admissions apply eligibility",
     "kholna": "open reopening date",
     "khulna": "open reopening date",
-    "chahida": "required eligibility",
-    "chahiye": "required eligibility",
+    "chahida": "required eligibility criteria",
+    "chahiye": "required eligibility criteria",
     "clg": "GNDEC college",
     "hostel da": "hostel",
     "hostel di": "hostel",
+    "hostel de": "hostel",
+    "ਮਿਲਦਾ": "available facility",
+    "ਮਿਲਦੀ": "available facility",
     "ਫੀਸ": "fee structure",
-    "ਦਾਖਲਾ": "admission",
-    "ਹੋਸਟਲ": "hostel",
+    "ਫੀਸਾਂ": "fee structure",
+    "ਦਾਖਲਾ": "admission eligibility",
+    "ਦਾਖ਼ਲਾ": "admission eligibility",
+    "ਦਾਖਲੇ": "admissions eligibility",
+    "ਦਾਖ਼ਲੇ": "admissions eligibility",
+    "ਯੋਗਤਾ": "eligibility criteria 10+2",
+    "ਕਾਲਜ": "GNDEC college",
+    "ਹੋਸਟਲ": "hostel facilities accommodation",
     "ਕਦੋਂ": "when schedule date",
     "ਕਿੱਥੇ": "where location",
+    "ਕੋਰਸ": "courses programs degrees",
+    "ਕੋਰਸਾਂ": "courses programs degrees",
+    "ਬ੍ਰਾਂਚ": "branch branches",
+    "ਬ੍ਰਾਂਚਾਂ": "branches",
+    "ਕਿਹੜੇ-ਕਿਹੜੇ": "which list all programs courses degrees",
+    "ਕਿਹੜੇ ਕਿਹੜੇ": "which list all programs courses degrees",
+    "ਕਿਹੜੀਆਂ-ਕਿਹੜੀਆਂ": "which list all programs courses degrees",
+    "ਕਿਹੜੀਆਂ ਕਿਹੜੀਆਂ": "which list all programs courses degrees",
+    "ਕਿਹੜੇ": "which list programs",
+    "ਕਿਹੜੀਆਂ": "which list programs",
+    "ਕਿਹੜਾ": "which",
+    "ਕਿਹੜੀ": "which",
+    "ਸਾਰੇ": "all",
+    "ਪ੍ਰੋਗਰਾਮ": "programs courses degrees",
+    "ਪੜ੍ਹਾਏ ਜਾਂਦੇ ਹਨ": "taught offered courses programs",
+    "ਪੜ੍ਹਾਈ": "courses curriculum",
+    "ਵਿਭਾਗ": "departments",
+    "ਪ੍ਰੋਫੈਸਰ": "professors faculty",
+    "ਅਧਿਆਪਕ": "faculty teachers",
+    "ਲਿਸਟ": "list all",
+    "ਡਾਕਟਰ": "doctorate PhD",
+    "ਪੀਐਚਡੀ": "PhD doctorate",
+    "ਡਾਕਟਰੇਟ": "PhD doctorate",
+    "ਪਲੇਸਮੈਂਟ": "placement jobs salary package",
+    "ਖੇਡਾਂ": "sports physical education",
+    "ਲਾਈਬ੍ਰੇਰੀ": "library",
+    "ਵਜ਼ੀਫ਼ਾ": "scholarship PMS TFW",
+    "ਵਜ਼ੀਫ਼ੇ": "scholarship PMS TFW",
+    "ਸਕਾਲਰਸ਼ਿਪ": "scholarship PMS TFW",
     "फीस": "fee structure",
-    "दाखिला": "admission",
-    "हॉस्टल": "hostel",
+    "दाखिला": "admission eligibility",
+    "दाखिले": "admissions eligibility",
+    "योग्यता": "eligibility criteria 10+2",
+    "कॉलेज": "GNDEC college",
+    "हॉस्टल": "hostel accommodation",
     "कब": "when schedule date",
-    "कहाँ": "where location"
+    "कहाँ": "where location",
+    "कहा": "where location",
+    "कोर्स": "courses programs degrees",
+    "शाखाएं": "branches",
+    "विभाग": "departments",
+    "प्रोफेसर": "professors faculty",
+    "शिक्षक": "faculty teachers",
+    "छात्रवृत्ति": "scholarship PMS TFW",
+    "छात्रवृत्तियां": "scholarship PMS TFW",
+    "कौन-कौन से": "which list all courses programs",
+    "कौन कौन से": "which list all courses programs",
+    "पढ़ाए जाते हैं": "taught offered courses programs"
 }
 
 def rewrite_query(query: str, history_msgs: list = None) -> str:
@@ -186,7 +241,7 @@ def rewrite_query(query: str, history_msgs: list = None) -> str:
 
 
 # ---------------- NORMALIZE DOCS -----------------
-def _normalize_docs(docs_raw: List[Any]) -> Tuple[str, List[Dict[str, Any]]]:
+def _normalize_docs(docs_raw: List[Any], max_doc_chars: int = 1200) -> Tuple[str, List[Dict[str, Any]]]:
     parts: List[str] = []
     sources: List[Dict[str, Any]] = []
 
@@ -196,6 +251,14 @@ def _normalize_docs(docs_raw: List[Any]) -> Tuple[str, List[Dict[str, Any]]]:
         q   = meta.get("question", "")
         a   = meta.get("answer", "")
         src = meta.get("source_file", "")
+        is_aggregate = meta.get("is_aggregate", False)
+
+        # Preserve structured faculty/course/fee/admission documents entirely — these are verified facts,
+        # not scraped web text. Truncation causes hallucinations (fake branches, incomplete PhD lists).
+        if is_aggregate and src in ("faculty.json", "courses_offered.json", "fee_structures.json", "admission.gndec.ac.in"):
+            pass  # keep full verified data
+        elif a and len(a) > max_doc_chars and not a.strip().startswith("|"):
+            a = a[:max_doc_chars] + "... [truncated for brevity]"
 
         sources.append(meta)
         parts.append(f"--- Document {idx+1} ---\nSource: {src}\nQuestion: {q}\nInformation:\n{a}\n-------------------")
@@ -209,10 +272,13 @@ def is_direct_fee_query(query: str, sources: List[Dict[str, Any]]) -> bool:
     """Checks if query is a fee structure lookup matching official fee tables."""
     if not sources:
         return False
-    if not all(s.get("source_file") == "admission.gndec.ac.in/Fee_Structure.php" for s in sources):
+    # Accept known fee table sources (FAISS index paths + structured matcher)
+    fee_sources = {"admission.gndec.ac.in/Fee_Structure.php", "gndec.ac.in/?q=node/572", "_structured_fee"}
+    has_fee = any(s.get("source_file") in fee_sources for s in sources)
+    if not has_fee:
         return False
     q_lower = query.lower()
-    fee_triggers = {"fee", "fees", "cost", "kharcha", "paisa", "structure", "hostel", "charges", "amount", "tution", "tuition", "pms", "tfw"}
+    fee_triggers = {"fee", "fees", "cost", "kharcha", "paisa", "structure", "hostel", "charges", "amount", "tution", "tuition", "pms", "tfw", "scholarship", "waiver"}
     return any(k in q_lower for k in fee_triggers)
 
 
@@ -230,8 +296,53 @@ def build_direct_fee_response(sources: List[Dict[str, Any]], lang: str = "auto")
 
     tables = []
     for s in sources:
+        src = s.get("source_file", "")
         ans = s.get("answer", "").strip()
-        if ans:
+        if not ans:
+            continue
+        if src in ("admission.gndec.ac.in/Fee_Structure.php", "gndec.ac.in/?q=node/572", "_structured_fee"):
+            tables.append(ans)
+
+    return intro + "\n\n".join(tables) + outro
+
+
+def is_direct_faculty_query(query: str, sources: List[Dict[str, Any]]) -> bool:
+    """Checks if query is an aggregate faculty directory lookup (PhD, HODs, Department roster)."""
+    if not sources:
+        return False
+    # Check for faculty source in FAISS sources OR check if structured faculty matcher returned data
+    has_faiss_faculty = any(s.get("source_file") == "faculty.json" and s.get("is_aggregate") for s in sources)
+    has_structured_faculty = any(s.get("source_file") == "_structured_faculty" for s in sources)
+    if not (has_faiss_faculty or has_structured_faculty):
+        return False
+    q_lower = query.lower()
+    triggers = {
+        "faculty", "faculties", "teacher", "teachers", "professor", "professors",
+        "hod", "hods", "head", "phd", "ph.d", "doctorate", "doctorates", "doctoral",
+        "staff", "roster", "directory"
+    }
+    return any(k in q_lower for k in triggers)
+
+
+def build_direct_faculty_response(sources: List[Dict[str, Any]], lang: str = "auto") -> str:
+    """Formats structured faculty directory tables into response."""
+    if lang == "hi-IN":
+        intro = "गुरु नानक देव इंजीनियरिंग कॉलेज (GNDEC), लुधियाना का आधिकारिक संकाय विवरण [1]:\n\n"
+        outro = "\n\nक्या आप किसी विशिष्ट संकाय सदस्य या विभाग के बारे में अधिक जानकारी चाहते हैं?"
+    elif lang == "pa-IN":
+        intro = "ਗੁਰੂ ਨਾਨਕ ਦੇਵ ਇੰਜੀਨੀਅਰਿੰਗ ਕਾਲਜ (GNDEC), ਲੁਧਿਆਣਾ ਦਾ ਅਧਿਕਾਰਤ ਫੈਕਲਟੀ ਵੇਰਵਾ [1]:\n\n"
+        outro = "\n\nਕੀ ਤੁਸੀਂ ਕਿਸੇ ਖਾਸ ਫੈਕਲਟੀ ਮੈਂਬਰ ਜਾਂ ਵਿਭਾਗ ਬਾਰੇ ਹੋਰ ਜਾਣਕਾਰੀ ਚਾਹੁੰਦੇ ਹੋ?"
+    else:
+        intro = "Here is the official faculty directory for Guru Nanak Dev Engineering College (GNDEC), Ludhiana [1]:\n\n"
+        outro = "\n\nWould you like more details about any specific faculty member or department?"
+
+    tables = []
+    for s in sources:
+        src = s.get("source_file", "")
+        ans = s.get("answer", "").strip()
+        if not ans:
+            continue
+        if src == "faculty.json" or src == "_structured_faculty":
             tables.append(ans)
 
     return intro + "\n\n".join(tables) + outro
@@ -261,13 +372,21 @@ async def build_prompt(
     
     # Proactive web search removed to improve latency.
 
+    # Language detection if auto
+    detected_lang = lang
+    if lang == "auto":
+        if re.search(r"[਀-੿]", query):
+            detected_lang = "pa-IN"
+        elif re.search(r"[ऀ-ॿ]", query):
+            detected_lang = "hi-IN"
+
     lang_rule = "Answer entirely in ONE language (the exact language the user typed). NEVER mix languages."
-    if lang == "en-IN":
+    if detected_lang == "en-IN":
         lang_rule = "Answer entirely in English."
-    elif lang == "hi-IN":
-        lang_rule = "Answer entirely in Hindi."
-    elif lang == "pa-IN":
-        lang_rule = "Answer entirely in Punjabi."
+    elif detected_lang == "hi-IN":
+        lang_rule = "Answer entirely in Hindi (Devanagari script)."
+    elif detected_lang == "pa-IN":
+        lang_rule = "Answer entirely in Punjabi (Gurmukhi script)."
 
     prompt = f"""{SYSTEM_PROMPT}
 
@@ -281,7 +400,9 @@ User question:
 {query}
 
 Instructions:
-- Answer the user's question directly using ONLY the provided GNDEC knowledge.
+- Answer the user's question directly using facts from the matching GNDEC document.
+- Start immediately with the factual answer; do NOT start with conversational greetings, pleasantries, or preamble.
+- Be comprehensive and retain key specific entities, facilities, numbers, volumes, mess/hostel amenities, roles, titles, doctor/medical staff, qualifications, and contact details present in the context.
 - If the user asks for courses or branches, give a clear bulleted list of the course/branch names.
 - If asked a follow-up question, use the conversation history to understand pronouns and context.
 - STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the knowledge context, state "I do not have information about that." and suggest visiting gndec.ac.in.
@@ -313,12 +434,57 @@ async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto
         await save_message(phone, session_id, "assistant", OOD_TEXT)
         return {"answer": OOD_TEXT, "sources": []}
 
+    # 1.5️⃣ Sensitive / unanswerable query abstention (private data, credentials, dynamic menus)
+    sensitive_refusal = check_sensitive_or_unanswerable(query)
+    if sensitive_refusal:
+        memory.chat_memory.add_ai_message(sensitive_refusal)
+        await save_message(phone, session_id, "assistant", sensitive_refusal)
+        return {"answer": sensitive_refusal, "sources": []}
+
+    # 2️⃣ Semantic Cache Lookup (Pre-Retrieval)
+    q_vec = None
+    try:
+        q_vec = await asyncio.to_thread(encode_query, query)
+        cached_result = global_semantic_cache.lookup(query, query_vec=q_vec)
+        if cached_result:
+            logging.info(f"⚡ SemanticCache HIT: Serving instant response for {query!r}")
+            c_ans = cached_result.get("answer", "")
+            c_src = cached_result.get("sources", [])
+            memory.chat_memory.add_user_message(query)
+            memory.chat_memory.add_ai_message(c_ans)
+            await save_message(phone, session_id, "user", query)
+            await save_message(phone, session_id, "assistant", c_ans)
+            return {"answer": c_ans, "sources": c_src, "cached": True}
+    except Exception as e:
+        logging.warning(f"SemanticCache lookup skipped: {e}")
+
     # Build prompt with RAG context
     prompt, sources, memory = await build_prompt(query, phone, session_id, lang)
 
     # Save user message
     memory.chat_memory.add_user_message(query)
     await save_message(phone, session_id, "user", query)
+
+    # 2.5️⃣ Inject structured matchers into sources for routing decisions.
+    # These are loaded at startup in vectorstore.py module scope.
+    try:
+        fac_matches = find_faculty_matches(query)
+        if fac_matches:
+            for fm in fac_matches:
+                meta = fm.metadata if hasattr(fm, "metadata") else (fm if isinstance(fm, dict) else {})
+                sources.append({"source_file": "_structured_faculty", "answer": meta.get("answer", ""), "question": meta.get("question", "")})
+    except Exception as e:
+        logging.warning(f"find_faculty_matches skipped: {e}")
+
+    # Inject structured fee matches too
+    try:
+        fee_matches = find_fee_structure_matches(query)
+        if fee_matches:
+            for fm in fee_matches:
+                meta = fm.metadata if hasattr(fm, "metadata") else (fm if isinstance(fm, dict) else {})
+                sources.append({"source_file": "_structured_fee", "answer": meta.get("answer", ""), "question": meta.get("question", "")})
+    except Exception as e:
+        logging.warning(f"find_fee_structure_matches skipped: {e}")
 
     # ---------------- LLM CALL ----------------
     # Intercept direct structured fee queries to avoid LLM token repetition timeouts
@@ -327,23 +493,41 @@ async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto
         final = build_direct_fee_response(sources, lang)
         memory.chat_memory.add_ai_message(final)
         await save_message(phone, session_id, "assistant", final)
+        try:
+            global_semantic_cache.store(query, q_vec, {"answer": final, "sources": sources})
+        except Exception:
+            pass
+        return {"answer": final, "sources": sources}
+
+    # Intercept direct aggregate faculty queries to deliver complete structured directories
+    if is_direct_faculty_query(query, sources):
+        logging.info("Interception: Routing direct structured faculty response (0ms latency, zero hallucinations).")
+        final = build_direct_faculty_response(sources, lang)
+        memory.chat_memory.add_ai_message(final)
+        await save_message(phone, session_id, "assistant", final)
+        try:
+            global_semantic_cache.store(query, q_vec, {"answer": final, "sources": sources})
+        except Exception:
+            pass
         return {"answer": final, "sources": sources}
 
     logging.info(f"🟢🟢🟢 GNDEC PROMPT 🟢🟢🟢\n\n{prompt}\n\n🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢")
 
-    response = await client.chat.completions.create(
-        model=LLM_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.0,
-        max_tokens=4096,
-        frequency_penalty=0.0,
-        presence_penalty=0.0
-    )
-    ans = response.choices[0].message.content.strip()
+    ans = await call_model_async(prompt, max_tokens=768)
+
+    # Strip any reasoning-scratchpad leaks before further processing
+    ans = strip_scrape_leaks(ans)
 
     # Toxicity check on output
     ai_toxic, _ = await check_toxicity(ans)
     final = WARNING_TEXT if ai_toxic else ans
+
+    # Store in semantic cache if not toxic/warning
+    if not ai_toxic and final != WARNING_TEXT:
+        try:
+            global_semantic_cache.store(query, q_vec, {"answer": final, "sources": sources})
+        except Exception:
+            pass
 
     memory.chat_memory.add_ai_message(final)
     await save_message(phone, session_id, "assistant", final)
@@ -368,6 +552,33 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
         yield json.dumps({"type": "blocked", "message": OOD_TEXT}) + "\n"
         return
 
+    # Sensitive / unanswerable query abstention
+    sensitive_refusal = check_sensitive_or_unanswerable(query)
+    if sensitive_refusal:
+        yield json.dumps({"type": "blocked", "message": sensitive_refusal}) + "\n"
+        return
+
+    # Semantic Cache Lookup (Pre-Retrieval)
+    q_vec = None
+    try:
+        q_vec = await asyncio.to_thread(encode_query, query)
+        cached_result = global_semantic_cache.lookup(query, query_vec=q_vec)
+        if cached_result:
+            logging.info(f"⚡ SemanticCache HIT (Stream): Serving instant cached response for {query!r}")
+            c_ans = cached_result.get("answer", "")
+            c_src = cached_result.get("sources", [])
+            yield json.dumps({"type": "sources", "sources": c_src}) + "\n"
+            for line in c_ans.split("\n"):
+                yield json.dumps({"type": "content", "delta": line + "\n"}) + "\n"
+                await asyncio.sleep(0.002)
+            memory.chat_memory.add_user_message(query)
+            memory.chat_memory.add_ai_message(c_ans)
+            await save_message(phone, session_id, "user", query)
+            await save_message(phone, session_id, "assistant", c_ans)
+            return
+    except Exception as e:
+        logging.warning(f"SemanticCache stream lookup skipped: {e}")
+
     prompt, sources, memory = await build_prompt(query, phone, session_id, lang)
 
     memory.chat_memory.add_user_message(query)
@@ -389,27 +600,23 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
         logging.info("Stream completed successfully (Direct structured fee response)")
         return
 
-    response = await client.chat.completions.create(
-        model=LLM_MODEL,
-        messages=[{"role": "user", "content": prompt}],
-        temperature=0.0,
-        max_tokens=4096,
-        frequency_penalty=0.0,
-        presence_penalty=0.0,
-        stream=True
-    )
+    # Intercept direct aggregate faculty queries to deliver complete structured directories
+    if is_direct_faculty_query(query, sources):
+        logging.info("Interception: Streaming direct structured faculty response (smooth delivery, zero hallucinations).")
+        final = build_direct_faculty_response(sources, lang)
+        for line in final.split("\n"):
+            yield json.dumps({"type": "content", "delta": line + "\n"}) + "\n"
+            await asyncio.sleep(0.005)
+
+        memory.chat_memory.add_ai_message(final)
+        await save_message(phone, session_id, "assistant", final)
+        logging.info("Stream completed successfully (Direct structured faculty response)")
+        return
 
     acc = ""
-    async for chunk in response:
-        if not chunk.choices:
-            continue
-        # Important: only read content, ignore reasoning_content!
-        delta = chunk.choices[0].delta.content
-        if not delta:
-            continue
-            
+    async for delta in call_model_stream(prompt, max_tokens=768):
         acc += delta
-        
+
         # 🚀 CPU OPTIMIZATION: Only run toxicity check every 500 characters
         if len(acc) % 500 < len(delta):
             ai_toxic, _ = await check_toxicity(acc)
@@ -418,7 +625,7 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
                 await save_message(phone, session_id, "assistant", WARNING_TEXT)
                 yield json.dumps({"type": "blocked", "message": WARNING_TEXT}) + "\n"
                 return
-                
+
         yield json.dumps({"type": "content", "delta": delta}) + "\n"
 
     # 🚀 CPU OPTIMIZATION: Final toxicity check to catch trailing characters
@@ -428,6 +635,16 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
         await save_message(phone, session_id, "assistant", WARNING_TEXT)
         yield json.dumps({"type": "blocked", "message": WARNING_TEXT}) + "\n"
         return
+
+    # Strip any reasoning-scratchpad leaks before storing/caching
+    acc = strip_scrape_leaks(acc)
+
+    # Store in semantic cache if not toxic/warning
+    if not ai_toxic and acc != WARNING_TEXT:
+        try:
+            global_semantic_cache.store(query, q_vec, {"answer": acc, "sources": sources})
+        except Exception:
+            pass
 
     memory.chat_memory.add_ai_message(acc)
     await save_message(phone, session_id, "assistant", acc)

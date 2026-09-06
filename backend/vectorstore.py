@@ -37,6 +37,24 @@ faiss_index = faiss.read_index(INDEX_PATH)
 with open(META_PATH, "r", encoding="utf-8") as f:
     META: List[Dict[str, Any]] = json.load(f)
 
+# Load and merge any curated/external datasets
+EXTERNAL_PATH = os.path.join(DATA_DIR, "external_facts.json")
+COURSES_PATH = os.path.join(DATA_DIR, "courses_offered.json")
+
+seen_qs = {m.get("question", "").strip().lower() for m in META}
+for extra_path in [EXTERNAL_PATH, COURSES_PATH, FEE_PATH]:
+    if os.path.exists(extra_path):
+        try:
+            with open(extra_path, "r", encoding="utf-8") as f:
+                extra_data = json.load(f)
+                for item in extra_data:
+                    q = item.get("question", "").strip()
+                    if q and q.lower() not in seen_qs:
+                        META.append(item)
+                        seen_qs.add(q.lower())
+        except Exception as e:
+            logger.warning(f"Could not load {extra_path}: {e}")
+
 # Structured Faculty Data
 FACULTY_LIST: List[Dict[str, Any]] = []
 if os.path.exists(FACULTY_PATH):
@@ -57,6 +75,33 @@ if os.path.exists(FEE_PATH):
     except Exception as e:
         logger.warning(f"Could not load fee_structures.json: {e}")
 
+# Structured Courses Offered Data — verified 7 B.Tech branches, loaded with is_aggregate flag
+COURSES_LIST: List[Dict[str, Any]] = []
+if os.path.exists(COURSES_PATH):
+    try:
+        with open(COURSES_PATH, "r", encoding="utf-8") as f:
+            raw_courses = json.load(f)
+        for item in raw_courses:
+            item["is_aggregate"] = True
+        COURSES_LIST = raw_courses
+        logger.info(f"Loaded {len(COURSES_LIST)} verified course entries for structured lookup.")
+    except Exception as e:
+        logger.warning(f"Could not load courses_offered.json: {e}")
+
+# Structured Admission Process Data — verified application/entrance-exam procedures
+ADMISSION_PATH = os.path.join(DATA_DIR, "admission_process.json")
+ADMISSION_LIST: List[Dict[str, Any]] = []
+if os.path.exists(ADMISSION_PATH):
+    try:
+        with open(ADMISSION_PATH, "r", encoding="utf-8") as f:
+            raw_admission = json.load(f)
+        for item in raw_admission:
+            item["is_aggregate"] = True
+        ADMISSION_LIST = raw_admission
+        logger.info(f"Loaded {len(ADMISSION_LIST)} verified admission-process entries for structured lookup.")
+    except Exception as e:
+        logger.warning(f"Could not load admission_process.json: {e}")
+
 # Embedding Model (CPU)
 MODEL_NAME = "all-MiniLM-L6-v2"
 logger.info(f"Loading embedding model: {MODEL_NAME} on CPU")
@@ -66,6 +111,13 @@ embed_model = SentenceTransformer(MODEL_NAME, device="cpu")
 RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
 logger.info(f"Loading Cross-Encoder reranker: {RERANKER_MODEL_NAME} on CPU")
 cross_encoder = CrossEncoder(RERANKER_MODEL_NAME, device="cpu")
+
+
+def encode_query(query: str):
+    """Encodes query into L2-normalized dense vector for semantic search and caching."""
+    vec = embed_model.encode([query], convert_to_numpy=True, show_progress_bar=False).astype("float32")
+    faiss.normalize_L2(vec)
+    return vec[0]
 
 
 def metadata_to_doc(item: Dict[str, Any]) -> Document:
@@ -89,18 +141,176 @@ logger.info("✅ BM25 index built successfully.")
 # ----------------------------------------------------
 # Structured Faculty Matcher (100% Precision Entity Lookup)
 # ----------------------------------------------------
-FACULTY_TITLES = {"dr", "er", "prof", "mr", "ms", "mrs"}
+FACULTY_TITLES = {"dr", "er", "ar", "prof", "mr", "ms", "mrs"}
 COMMON_NAME_TOKENS = {
-    "dr", "er", "prof", "mr", "ms", "mrs", "singh", "kaur", "kumar",
+    "dr", "er", "ar", "prof", "mr", "ms", "mrs", "singh", "kaur", "kumar",
     "sharma", "gndec", "the", "is", "who", "what", "email", "contact",
     "of", "in", "department", "and", "faculty", "teacher", "hod", "head"
 }
 
+DEPT_PATTERNS = {
+    "Applied Science": re.compile(r"\b(applied science|applied sciences|physics|chemistry|mathematics|maths|humanities)\b", re.IGNORECASE),
+    "Business Administration": re.compile(r"\b(business administration|mba|management)\b", re.IGNORECASE),
+    "Civil Engineering": re.compile(r"(?i:\b(civil|civil engineering|civil\s+dept)\b)|\bCE\b"),
+    "Computer Applications": re.compile(r"\b(computer applications|mca|bca)\b", re.IGNORECASE),
+    "Computer Center": re.compile(r"(?i:\b(computer center|computer centre)\b)|\bCC\b"),
+    "Computer Science & Engg.": re.compile(r"(?i:\b(computer science|cse|comp\s*sci)\b)|\bCS\b"),
+    "Electrical Engineering": re.compile(r"(?i:\b(electrical|electrical engineering|electrical\s+dept)\b)|\bEE\b"),
+    "Electronics & Communication Engineering": re.compile(r"\b(electronics|ece|electronics and communication|electronics & communication)\b", re.IGNORECASE),
+    "Information Technology": re.compile(r"(?i:\b(information technology|info\s*tech|it\s+dept|it\s+department)\b)|\bIT\b"),
+    "Mechanical Engineering": re.compile(r"(?i:\b(mechanical|mechanical engineering|mech|mech\s+dept)\b)|\bME\b"),
+    "Production Engineering": re.compile(r"(?i:\b(production|production engineering|prod\s+engg)\b)|\bPE\b"),
+    "School of Architecture": re.compile(r"\b(architecture|b\.?arch|school of architecture)\b", re.IGNORECASE),
+    "Sports": re.compile(r"\b(sports|physical education|dpe)\b", re.IGNORECASE),
+    "Workshops": re.compile(r"\b(workshop|workshops)\b", re.IGNORECASE),
+}
+
+PHD_PATTERNS = re.compile(r"\b(phd|ph\.d|doctorate|doctorates|doctoral)\b", re.IGNORECASE)
+HOD_PATTERNS = re.compile(r"\b(hod|hods|head\s+of|heads?\s+of|department\s+heads?|dept\s+heads?|incharge|in-charge)\b", re.IGNORECASE)
+ROSTER_PATTERNS = re.compile(
+    r"\b(faculty|faculties|teachers?|teaches|teaching|professors?|staff|directory|roster|members?|"
+    r"list of faculty|list of teachers|list of professors|who is in|who are in)\b",
+    re.IGNORECASE
+)
+
+# All academic titles that imply a PhD/doctorate (covers "Professor", "Associate Professor",
+# "Assistant Professor", "Instructor", "Lab. Supdt.", "DPE" — anyone with a doctoral degree)
+PHD_TITLE_PATTERN = re.compile(
+    r"\b(professor|associate professor|assistant professor|instructor|lab\.?\s*supdt|dpe|"
+    r"professor and head|head of department|hod)\b", re.IGNORECASE
+)
+# Names that may lack "DR." prefix but are still doctorate holders
+NON_DR_TITLES = {"ASSISTANT PROFESSOR", "ASSOCIATE PROFESSOR", "PROFESSOR", "INSTRUCTOR", "LAB. SUPDT.", "DPE"}
+
+OFFICIAL_HOD_MAP = {
+    "Computer Science & Engg.": {"name": "Dr. Kiran Jyoti", "designation": "Professor & Head", "email": "kiranjyotibains@gndec.ac.in"},
+    "Information Technology": {"name": "Dr. Kulvinder Singh Mann", "designation": "Professor & Head", "email": "mannkulvinder@gndec.ac.in"},
+    "Mechanical Engineering": {"name": "Dr. Harmeet Singh", "designation": "Professor & Head", "email": "hms@gndec.ac.in"},
+    "Electrical Engineering": {"name": "Dr. Kanwardeep Singh", "designation": "Professor & Head", "email": "kds@gndec.ac.in"},
+    "Civil Engineering": {"name": "Dr. Prashant Garg", "designation": "Professor & Head", "email": "pgarg@gndec.ac.in"},
+    "Electronics & Communication Engineering": {"name": "Dr. Narwant Singh Grewal", "designation": "Professor & Head", "email": "narwant@gndec.ac.in"},
+    "Applied Science": {"name": "Dr. Harpreet Kaur Grewal", "designation": "Professor & Head", "email": "hkgrewal@gndec.ac.in"},
+    "Production Engineering": {"name": "Dr. Jasmaninder Singh Grewal", "designation": "Professor & Head", "email": "jsgrewal_2000@gndec.ac.in"},
+    "Business Administration": {"name": "Dr. Amanjot Kaur Gill", "designation": "Associate Professor & Head", "email": "amanjot@gndec.ac.in"},
+    "Computer Applications": {"name": "Dr. Jasbir Singh Saini", "designation": "Associate Professor (CP) cum System Analyst", "email": "mca@gndec.ac.in"},
+    "School of Architecture": {"name": "Ar. Akanksha Sharma", "designation": "Professor & Head", "email": "hod_arch@gndec.ac.in"},
+    "Workshops": {"name": "Dr. Jasmaninder Singh Grewal", "designation": "Professor & Head Workshop", "email": "jsgrewal_2000@gndec.ac.in"},
+    "Computer Center": {"name": "Dr. Jasbir Singh Saini", "designation": "Associate Professor (CP) cum System Analyst", "email": "cc@gndec.ac.in"},
+    "Sports": {"name": "Dr. Gunjan Bhardwaj", "designation": "DPE", "email": "gunjan@gndec.ac.in"},
+}
+
+
+def _format_faculty_table(members: List[Dict[str, Any]], title: str, include_dept: bool = False) -> str:
+    lines = [f"### {title}\n"]
+    if include_dept:
+        lines.append("| Sr No. | Name | Designation | Department | Email |")
+        lines.append("| :---: | :--- | :--- | :--- | :--- |")
+        for i, m in enumerate(members, 1):
+            lines.append(f"| {i} | {m['name']} | {m['designation']} | {m['department']} | {m['email']} |")
+    else:
+        lines.append("| Sr No. | Name | Designation | Email |")
+        lines.append("| :---: | :--- | :--- | :--- |")
+        for i, m in enumerate(members, 1):
+            lines.append(f"| {i} | {m['name']} | {m['designation']} | {m['email']} |")
+    return "\n".join(lines)
+
+
 def find_faculty_matches(query: str) -> List[Document]:
-    """Finds exact or high-confidence faculty matches from structured records."""
+    """Finds exact or aggregate faculty matches from structured records."""
     if not FACULTY_LIST:
         return []
 
+    matched_dept = None
+    for dept, pat in DEPT_PATTERNS.items():
+        if pat.search(query):
+            matched_dept = dept
+            break
+
+    # 1. PhD / Doctorate Query
+    if PHD_PATTERNS.search(query):
+        phd_fac = [
+            m for m in FACULTY_LIST
+            if m.get("name", "").upper().startswith(("DR.", "DR "))
+            or "PH.D" in m.get("designation", "").upper()
+            or "PHD" in m.get("designation", "").upper()
+            or "PH.D" in m.get("qualification", "").upper()
+            or "PHD" in m.get("qualification", "").upper()
+            or "DOCTOR OF" in m.get("qualification", "").upper()
+        ]
+        if matched_dept:
+            dept_phd = [m for m in phd_fac if m.get("department") == matched_dept]
+            table_md = _format_faculty_table(dept_phd, f"PhD Faculty - {matched_dept}")
+            doc_data = {
+                "question": f"Which faculty members hold a PhD degree in {matched_dept} at GNDEC?",
+                "answer": table_md,
+                "section": f"Faculty Directory - PhD in {matched_dept}",
+                "source_file": "faculty.json",
+                "is_aggregate": True
+            }
+            return [metadata_to_doc(doc_data)]
+        else:
+            by_dept = {}
+            for m in phd_fac:
+                by_dept.setdefault(m["department"], []).append(m)
+
+            lines = [f"Guru Nanak Dev Engineering College (GNDEC), Ludhiana has **{len(phd_fac)} PhD faculty members** across {len(by_dept)} departments:\n"]
+            for d, members in sorted(by_dept.items()):
+                lines.append(f"**{d}** ({len(members)}):")
+                names = ", ".join(m["name"] for m in sorted(members, key=lambda x: x.get("name", "")))
+                lines.append(f"  {names}")
+                lines.append("")
+
+            full_md = "\n".join(lines)
+            doc_data = {
+                "question": "Which faculty members hold a PhD degree at Guru Nanak Dev Engineering College (GNDEC)?",
+                "answer": full_md,
+                "section": "Faculty Directory - PhD Faculty",
+                "source_file": "faculty.json",
+                "is_aggregate": True
+            }
+            return [metadata_to_doc(doc_data)]
+
+    # 2. HOD Query
+    if HOD_PATTERNS.search(query):
+        hods = [m for m in FACULTY_LIST if "head" in m.get("designation", "").lower() or "hod" in m.get("designation", "").lower()]
+        if matched_dept:
+            dept_hod = [m for m in hods if m.get("department") == matched_dept]
+            h = OFFICIAL_HOD_MAP.get(matched_dept) or (dept_hod[0] if dept_hod else None)
+            if h:
+                ans = f"The Head of Department (HOD) of **{matched_dept}** at GNDEC is **{h['name']}** ({h['designation']}).\n- **Email:** {h['email']}"
+                doc_data = {
+                    "question": f"Who is the Head of Department (HOD) of {matched_dept} at GNDEC?",
+                    "answer": ans,
+                    "section": f"Faculty Directory - HOD {matched_dept}",
+                    "source_file": "faculty.json",
+                    "is_aggregate": True
+                }
+                return [metadata_to_doc(doc_data)]
+        else:
+            table_md = _format_faculty_table(hods, "Heads of Departments (HODs) - GNDEC", include_dept=True)
+            doc_data = {
+                "question": "Who are the Heads of Departments (HODs) at GNDEC?",
+                "answer": table_md,
+                "section": "Faculty Directory - HODs",
+                "source_file": "faculty.json",
+                "is_aggregate": True
+            }
+            return [metadata_to_doc(doc_data)]
+
+    # 3. Department Roster Query
+    if ROSTER_PATTERNS.search(query) and matched_dept:
+        dept_fac = [m for m in FACULTY_LIST if m.get("department") == matched_dept]
+        table_md = _format_faculty_table(dept_fac, f"Faculty Directory - {matched_dept}")
+        doc_data = {
+            "question": f"Who are the faculty members in the {matched_dept} department at GNDEC?",
+            "answer": table_md,
+            "section": f"Faculty Directory - {matched_dept}",
+            "source_file": "faculty.json",
+            "is_aggregate": True
+        }
+        return [metadata_to_doc(doc_data)]
+
+    # 4. Individual Faculty Name Matcher
     q_tokens = set(re.findall(r"[a-zA-Z]+", query.lower()))
     matches = []
 
@@ -124,12 +334,33 @@ def find_faculty_matches(query: str) -> List[Document]:
             is_match = True
 
         if is_match:
+            details = [f"{name} is a {desig} in the {dept} department at GNDEC (Guru Nanak Dev Engineering College)."]
+            if email:
+                details.append(f"- **Email:** {email}")
+            if fac.get("qualification"):
+                details.append(f"- **Qualification:** {fac['qualification']}")
+            if fac.get("experience"):
+                details.append(f"- **Experience:** {fac['experience']}")
+            if fac.get("research_interest"):
+                details.append(f"- **Research Interests:** {fac['research_interest']}")
+            if fac.get("publications_journal"):
+                details.append(f"- **Journal Publications:** {fac['publications_journal']}")
+            if fac.get("publications_conference"):
+                details.append(f"- **Conference Publications:** {fac['publications_conference']}")
+            if fac.get("memberships"):
+                details.append(f"- **Professional Memberships:** {fac['memberships']}")
+            if fac.get("profile_url"):
+                details.append(f"- **Official Profile:** {fac['profile_url']}")
+
             doc_data = {
-                "question": f"Who is {name}? What is the contact email and designation for {name} in {dept}?",
-                "answer": f"{name} is a {desig} in the {dept} department at GNDEC. You can contact them via email at {email}.",
-                "section": "Faculty Directory",
-                "source_file": "faculty.json"
+                "question": f"Who is {name}? What is the contact email, designation, qualification, and research interest of {name} in {dept}?",
+                "answer": "\n".join(details),
+                "section": f"Faculty Directory - {dept}",
+                "source_file": "faculty.json",
+                "is_aggregate": False
             }
+            if fac.get("profile_url"):
+                doc_data["doc_url"] = fac["profile_url"]
             matches.append((len(matched_tokens), metadata_to_doc(doc_data)))
 
     matches.sort(key=lambda x: x[0], reverse=True)
@@ -158,13 +389,36 @@ def find_fee_structure_matches(query: str) -> List[Document]:
         return []
 
     q_lower = query.lower()
-    fee_keywords = {"fee", "fees", "cost", "kharcha", "paisa", "structure", "hostel fee", "tuition", "tution", "pms", "tfw"}
+    # If the user is asking about fees of another college/institution, do not route to GNDEC fee tables
+    ext_matches = [
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford)\b"
+    ]
+    if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
+        return []
+
+    # Procedural / conceptual fee or scholarship queries should NOT return raw fee tables
+    procedural_keywords = [
+        "how to pay", "how can students pay", "how can i pay", "mode of payment",
+        "payment mode", "payment method", "online payment", "fee payment", "pay fee", "pay fees", "pay college",
+        "who is eligible", "eligibility", "criteria for tfw", "scholarship scheme",
+        "scholarships available", "financial aid", "needy students", "pms scheme",
+        "post matric scholarship scheme", "tfw scheme", "tuition fee waiver scheme"
+    ]
+    if any(pk in q_lower for pk in procedural_keywords):
+        return []
+
+    fee_keywords = {"fee", "fees", "cost", "kharcha", "paisa", "fee structure", "hostel fee", "tuition", "tution"}
     if not any(k in q_lower for k in fee_keywords):
         return []
+
+    # If asking specifically for fee amount under TFW/PMS, return fee tables
+    if re.search(r"\b(tfw fee|pms fee|fee under tfw|fee under pms|fee.*tfw|fee.*pms)\b", q_lower):
+        return [metadata_to_doc(item) for item in FEE_LIST]
 
     matched = []
     found_specific = False
 
+    # Match specific program patterns
     for fee_item in FEE_LIST:
         q_item = fee_item.get("question", "").lower()
         for prog_key, pattern in PROG_PATTERNS.items():
@@ -178,6 +432,69 @@ def find_fee_structure_matches(query: str) -> List[Document]:
         matched = [metadata_to_doc(item) for item in FEE_LIST]
 
     return matched
+
+
+# ----------------------------------------------------
+# Structured Courses Matcher (verified B.Tech/PG branches)
+# ----------------------------------------------------
+COURSE_EXPLICIT_PATTERNS = re.compile(
+    r"\b("
+    r"(what|which|list|tell me about|how many)\s+(are\s+the\s+|the\s+)?(all\s+)?(b\.?tech\s+|m\.?tech\s+|pg\s+|ug\s+|undergraduate\s+|postgraduate\s+|engineering\s+)?(branches|courses|programs|programmes|degrees|streams|disciplines)|"
+    r"(branches|courses|programs|programmes|degrees|streams|disciplines)\s+(offered|available|taught|running|present)\s+(in|at|by)\s+(gndec|gne|the college|college)|"
+    r"what\s+(b\.?tech|m\.?tech|pg|ug)\s+(branches|courses|programs|specializations)|"
+    r"(b\.?tech|m\.?tech|pg|ug)\s+(branches|courses|specializations)|"
+    r"(undergraduate|postgraduate|pg|ug)\s+(courses|programs|degrees)\s+(available|offered)"
+    r")\b",
+    re.IGNORECASE,
+)
+
+def find_courses_matches(query: str) -> List[Document]:
+    """Returns verified course/program data when the query specifically asks about branches, courses, or degree programs."""
+    if not COURSES_LIST:
+        return []
+
+    q_lower = query.lower()
+
+    # Exclude facility/sports/library/hostel/fee/placement queries from course routing
+    facility_keywords = {"facility", "facilities", "library", "sports", "gym", "gymnasium", "hostel", "mess", "canteen", "medical", "hospital", "dispensary", "fee", "fees", "placement", "faculty", "hod"}
+    if any(k in q_lower for k in facility_keywords) and not re.search(r"\b(course|courses|program|programs|branch|branches|degree|degrees)\b", q_lower):
+        return []
+
+    if not COURSE_EXPLICIT_PATTERNS.search(query):
+        return []
+
+    # Check for specific subset (e.g. B.Tech branches specifically vs PG courses)
+    if re.search(r"\b(b\.?tech|engineering|ug|undergraduate)\s+(branches|courses|programs|streams)\b", q_lower) or re.search(r"\bwhat\s+b\.?tech\s+branches\b", q_lower):
+        btech_doc = [item for item in COURSES_LIST if "B.Tech branches" in item.get("question", "")]
+        if btech_doc:
+            return [metadata_to_doc(btech_doc[0])]
+
+    if re.search(r"\b(pg|postgraduate|m\.?tech|mba|mca|master)\s+(courses|programs|degrees)\b", q_lower):
+        pg_doc = [item for item in COURSES_LIST if "postgraduate" in item.get("question", "").lower()]
+        if pg_doc:
+            return [metadata_to_doc(pg_doc[0])]
+
+    return [metadata_to_doc(item) for item in COURSES_LIST]
+
+
+# ----------------------------------------------------
+# Structured Admission Process Matcher
+# ----------------------------------------------------
+ADMISSION_KEYWORDS = re.compile(
+    r"\b(how (to|do i|can i) (apply|register|get admission)|admission (process|procedure|steps)|"
+    r"entrance (exam|test)|need (any )?(exam|jee|gate)|gate (score|exam|required)|"
+    r"jee main (required|needed)|apply for admission|spot admission|seat allotment process|"
+    r"admission.*counseling process|counseling process)\b",
+    re.IGNORECASE,
+)
+
+def find_admission_matches(query: str) -> List[Document]:
+    """Returns verified admission-process data when the query asks about application/entrance exam procedures."""
+    if not ADMISSION_LIST:
+        return []
+    if not ADMISSION_KEYWORDS.search(query):
+        return []
+    return [metadata_to_doc(item) for item in ADMISSION_LIST]
 
 
 # ----------------------------------------------------
@@ -196,10 +513,28 @@ def retrieve(query: str, k: int = 6, min_score: float = -11.0) -> List[Document]
     # 1. Structured matches
     faculty_docs = find_faculty_matches(query)
     fee_docs = find_fee_structure_matches(query)
+    course_docs = find_courses_matches(query)
     if fee_docs:
         # Structured fee docs have 100% official tables. Return ALL matched fee docs directly.
         logger.info(f"[RAG] Returning {len(fee_docs)} structured fee documents.")
         return fee_docs
+
+    if faculty_docs and any(getattr(d, "metadata", {}).get("is_aggregate") for d in faculty_docs):
+        # Aggregate faculty queries (PhD lists, HOD lists, Department rosters) have 100% precision tables.
+        logger.info(f"[RAG] Returning {len(faculty_docs)} structured aggregate faculty documents.")
+        return faculty_docs
+
+    if course_docs:
+        # Course/program queries return verified branches from courses_offered.json
+        # — this prevents the LLM from hallucinating fake branches (Chemical, Biotech, etc.)
+        logger.info(f"[RAG] Returning {len(course_docs)} verified structured course documents.")
+        return course_docs
+
+    admission_docs = find_admission_matches(query)
+    if admission_docs:
+        # Admission-process queries return verified procedures, plus top FAISS/BM25 context below.
+        logger.info(f"[RAG] Returning {len(admission_docs)} verified admission-process documents.")
+        return admission_docs
 
     structured_docs = faculty_docs
 
