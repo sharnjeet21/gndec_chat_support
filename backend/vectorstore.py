@@ -103,19 +103,33 @@ if os.path.exists(ADMISSION_PATH):
         logger.warning(f"Could not load admission_process.json: {e}")
 
 # Embedding Model (CPU)
-MODEL_NAME = "all-MiniLM-L6-v2"
+MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "intfloat/multilingual-e5-small")
+IS_E5_MODEL = "e5" in MODEL_NAME.lower()
 logger.info(f"Loading embedding model: {MODEL_NAME} on CPU")
 embed_model = SentenceTransformer(MODEL_NAME, device="cpu")
 
 # Cross-Encoder Re-ranker (CPU)
-RERANKER_MODEL_NAME = "cross-encoder/ms-marco-MiniLM-L-6-v2"
+RERANKER_MODEL_NAME = os.getenv("RERANKER_MODEL_NAME", "cross-encoder/ms-marco-MiniLM-L-6-v2")
 logger.info(f"Loading Cross-Encoder reranker: {RERANKER_MODEL_NAME} on CPU")
 cross_encoder = CrossEncoder(RERANKER_MODEL_NAME, device="cpu")
+
+# Retrieval tuning (env-tunable for production / calibration sweeps)
+RETRIEVAL_K = int(os.getenv("RETRIEVAL_K", "6"))                 # docs passed to the LLM
+RERANK_MIN_SCORE = float(os.getenv("RERANK_MIN_SCORE", "-11.0")) # cross-encoder score floor
+
+
+def format_query_embedding_input(query: str) -> str:
+    """Format query based on model requirements (e.g., e5 models require 'query: ' prefix)."""
+    q_str = query.strip()
+    if IS_E5_MODEL:
+        return f"query: {q_str}"
+    return q_str
 
 
 def encode_query(query: str):
     """Encodes query into L2-normalized dense vector for semantic search and caching."""
-    vec = embed_model.encode([query], convert_to_numpy=True, show_progress_bar=False).astype("float32")
+    q_formatted = format_query_embedding_input(query)
+    vec = embed_model.encode([q_formatted], convert_to_numpy=True, show_progress_bar=False).astype("float32")
     faiss.normalize_L2(vec)
     return vec[0]
 
@@ -126,9 +140,9 @@ def metadata_to_doc(item: Dict[str, Any]) -> Document:
     return Document(page_content=text, metadata=item)
 
 
-# Lightweight tokenization for BM25
+# Lightweight tokenization for BM25 (Unicode-aware to support Punjabi/Hindi/English)
 def _tokenize(text: str) -> List[str]:
-    return re.findall(r"[a-zA-Z0-9]+", text.lower())
+    return re.findall(r"\w+", text.lower())
 
 
 logger.info("🔄 Building lightweight BM25 keyword index...")
@@ -500,13 +514,26 @@ def find_admission_matches(query: str) -> List[Document]:
 # ----------------------------------------------------
 # Hybrid Retrieval with Cross-Encoder Re-ranking
 # ----------------------------------------------------
-def retrieve(query: str, k: int = 6, min_score: float = -11.0) -> List[Document]:
+def reciprocal_rank_fusion(dense_ids: List[int], sparse_ids: List[int], k: int = 60) -> List[int]:
+    """Combines dense and sparse rankings using Reciprocal Rank Fusion."""
+    rrf_scores = {}
+    for rank, doc_id in enumerate(dense_ids):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k + rank + 1))
+    for rank, doc_id in enumerate(sparse_ids):
+        rrf_scores[doc_id] = rrf_scores.get(doc_id, 0.0) + (1.0 / (k + rank + 1))
+
+    # Sort by descending RRF score
+    return sorted(rrf_scores.keys(), key=lambda doc_id: rrf_scores[doc_id], reverse=True)
+
+
+def retrieve(query: str, k: int = RETRIEVAL_K, min_score: float = RERANK_MIN_SCORE) -> List[Document]:
     """
     Hybrid Retriever:
     1. Structured Entity Lookup (Faculty & Fee Structures)
-    2. Dense FAISS Search (Top 10)
-    3. Sparse BM25 Search (Top 10)
-    4. Cross-Encoder Re-Ranking & Top-k Selection
+    2. Dense FAISS Search (Top 30)
+    3. Sparse BM25 Search (Top 30)
+    4. Reciprocal Rank Fusion
+    5. Cross-Encoder Re-Ranking & Top-k Selection
     """
     logger.info(f"[RAG] Retrieving for query: {query!r}")
 
@@ -538,43 +565,40 @@ def retrieve(query: str, k: int = 6, min_score: float = -11.0) -> List[Document]
 
     structured_docs = faculty_docs
 
-    # 2. Dense FAISS
-    query_vec = embed_model.encode([query], convert_to_numpy=True, show_progress_bar=False).astype("float32")
+    # 2. Dense FAISS (increase top-N for better recall before fusion)
+    DENSE_TOP_N = int(os.getenv("DENSE_TOP_N", "30"))
+    q_formatted = format_query_embedding_input(query)
+    query_vec = embed_model.encode([q_formatted], convert_to_numpy=True, show_progress_bar=False).astype("float32")
     faiss.normalize_L2(query_vec)
-    faiss_scores, faiss_ids = faiss_index.search(query_vec, 10)
+    faiss_scores, faiss_ids = faiss_index.search(query_vec, DENSE_TOP_N)
 
-    # 3. Sparse BM25
+    # 3. Sparse BM25 (increase top-N for better recall before fusion)
+    SPARSE_TOP_N = int(os.getenv("SPARSE_TOP_N", "30"))
     q_tokens = _tokenize(query)
-    bm25_ids = bm25_index.get_top_n(q_tokens, range(len(META)), n=10)
+    bm25_ids = bm25_index.get_top_n(q_tokens, range(len(META)), n=SPARSE_TOP_N)
 
-    # Union candidate indices
-    candidate_indices = []
-    seen = set()
-
-    for idx in faiss_ids[0]:
-        if idx >= 0 and idx not in seen:
-            seen.add(int(idx))
-            candidate_indices.append(int(idx))
-
-    for idx in bm25_ids:
-        if idx not in seen:
-            seen.add(int(idx))
-            candidate_indices.append(int(idx))
+    # 4. Reciprocal Rank Fusion
+    candidate_indices = reciprocal_rank_fusion(
+        [int(i) for i in faiss_ids[0] if i >= 0],
+        bm25_ids,
+        k=60  # typical RRF constant
+    )
 
     if not candidate_indices and not structured_docs:
         return []
 
-    # 4. Cross-Encoder Re-Ranking
+    # 5. Cross-Encoder Re-Ranking (use full answer, no truncation)
     candidates = [META[i] for i in candidate_indices]
+    # Increased context window for cross-encoder: use full answer and question
     pairs = [
-        (query, f"Q: {c.get('question', '')}\nA: {c.get('answer', '')[:250]}\nSection: {c.get('section', '')}")
+        (query, f"Q: {c.get('question', '')}\nA: {c.get('answer', '')}\nSection: {c.get('section', '')}")
         for c in candidates
     ]
 
     scores = cross_encoder.predict(pairs, show_progress_bar=False)
     scored_candidates = sorted(zip(scores, candidates), key=lambda x: x[0], reverse=True)
 
-    # 5. Filter by confidence threshold
+    # 6. Filter by confidence threshold
     top_docs: List[Document] = list(structured_docs)
     seen_contents = {d.page_content for d in top_docs}
 
@@ -601,4 +625,4 @@ def get_retriever(k: int = 6):
     return _retriever_fn
 
 
-retriever = get_retriever(k=6)
+retriever = get_retriever(k=RETRIEVAL_K)
