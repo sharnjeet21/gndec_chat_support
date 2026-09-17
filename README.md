@@ -16,7 +16,7 @@
 
 ## Live Link
 
-[Click here to access the live agent](https://taste-deaths-this-oxide.trycloudflare.com)
+[Click here to access the live agent](https://mining-crystal-internationally-meetings.trycloudflare.com)
 
 ---
 
