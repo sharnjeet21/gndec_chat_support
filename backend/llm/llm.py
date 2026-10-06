@@ -241,6 +241,7 @@ async def call_model_async(
     Asynchronous inference call with automatic retries and model failover.
     Tries models in priority order, skipping rate-limited or repeatedly failing models.
     """
+    global _GROQ_MODELS_CACHE_TIMESTAMP
     last_error: Optional[Exception] = None
     tried_models = set()
 
@@ -335,7 +336,6 @@ async def call_model_async(
         # Clear the tried models set so we can try the updated list
         tried_models.clear()
         # Invalidate the Groq model cache to force refresh
-        global _GROQ_MODELS_CACHE_TIMESTAMP
         _GROQ_MODELS_CACHE_TIMESTAMP = 0
         # Get updated model priority
         model_priority = get_groq_model_priority()

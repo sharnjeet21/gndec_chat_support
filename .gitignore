@@ -71,3 +71,11 @@ rewrite*.py
 TR_102/
 *.tex
 *.pdf
+
+# graft's local graph cache — regenerable, not committed (run `graft build`).
+/graft/
+
+# Local AI agent cache & scratch
+.claude/
+.firecrawl/
+.ignore

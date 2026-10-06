@@ -20,15 +20,18 @@ print("Loading courses_offered.json...")
 with open(COURSES_PATH, "r", encoding="utf-8") as f:
     courses = json.load(f)
 
+model_name = os.getenv("EMBEDDING_MODEL_NAME", "intfloat/multilingual-e5-small")
+is_e5 = "e5" in model_name.lower()
+
 print("Formatting texts...")
 texts = []
 for c in courses:
-    text = f"Q: {c['question']}\nA: {c['answer']}\nSection: {c.get('section', 'General')}"
+    text = f"passage: Q: {c['question']}\nA: {c['answer']}\nSection: {c.get('section', 'General')}" if is_e5 else f"Q: {c['question']}\nA: {c['answer']}\nSection: {c.get('section', 'General')}"
     texts.append(text)
     meta.append(c)
 
-print("Loading embedding model on CPU...")
-model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+print(f"Loading embedding model ({model_name}) on CPU...")
+model = SentenceTransformer(model_name, device="cpu")
 
 print("Embedding...")
 embeddings = model.encode(texts, convert_to_numpy=True).astype("float32")

@@ -14,15 +14,17 @@ import torch
 import numpy as np
 from sentence_transformers import SentenceTransformer
 
-# Maximize multi-core CPU throughput for indexing
-torch.set_num_threads(os.cpu_count() or 8)
+# Compute-bound transformer inference: use PHYSICAL cores only. On an HT chip,
+# threads = logical cores oversubscribes the siblings and thrashes (slower, not faster).
+torch.set_num_threads(max(1, (os.cpu_count() or 4) // 2))
 
 HERE     = os.path.dirname(__file__)
 DATA_DIR = os.path.join(os.path.dirname(HERE), "data")
 FAISS_DIR = os.path.join(HERE, "faiss_store")
 
-MODEL_NAME = "all-MiniLM-L6-v2"
+MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "intfloat/multilingual-e5-small")
 MODEL = SentenceTransformer(MODEL_NAME)
+IS_E5_MODEL = "e5" in MODEL_NAME.lower()
 MODEL.max_seq_length = 256
 
 
@@ -271,12 +273,12 @@ def load_all_faqs() -> list:
     all_faqs += load_flat_json("admission_process.json")# Sep 6  — latest admission procedure
 
     # De-duplicate: keep LAST occurrence of each question (authoritative wins)
-    seen_questions: list[str] = []
+    seen_questions = set()
     deduped: list[dict] = []
     for entry in reversed(all_faqs):
         q = entry.get("question", "").strip().lower()
         if q and q not in seen_questions:
-            seen_questions.append(q)
+            seen_questions.add(q)
             deduped.append(entry)
     all_faqs = list(reversed(deduped))  # restore original order
 
@@ -291,16 +293,25 @@ def load_all_faqs() -> list:
 def build_faiss_index():
     faqs = load_all_faqs()
 
+    def format_passage(t: str) -> str:
+        if IS_E5_MODEL:
+            return f"passage: {t}"
+        return t
+
     texts = [
-        f"Q: {f['question']}\nSection: {f['section']}"
+        format_passage(f"Q: {f['question']}\nSection: {f['section']}")
         for f in faqs
     ]
 
-    # Use CPU threads optimally and batch size 128 for good throughput
-    print(f"\nEmbedding {len(texts)} entries with {MODEL_NAME} (batch_size=128, {torch.get_num_threads()} threads, max_seq_length=128) ...")
-    MODEL.max_seq_length = 128
+    # Indexed text is just "Q: {question}\nSection: {section}" — short. p99 = 90 tokens,
+    # so 96 covers 99%+ with no meaningful truncation. Small batches beat big ones on CPU
+    # (batch 512 cache-thrashed at ~2 txt/s; batch 32 is far faster on varied-length text).
+    SEQ_LEN, BATCH = 96, 32
+    MODEL.max_seq_length = SEQ_LEN
+    print(f"\nEmbedding {len(texts)} entries with {MODEL_NAME} "
+          f"(batch_size={BATCH}, {torch.get_num_threads()} threads, max_seq_length={SEQ_LEN}) ...")
     with torch.inference_mode():
-        embeddings = MODEL.encode(texts, batch_size=128, convert_to_numpy=True, show_progress_bar=True)
+        embeddings = MODEL.encode(texts, batch_size=BATCH, convert_to_numpy=True, show_progress_bar=True)
     embeddings = embeddings.astype("float32")
     faiss.normalize_L2(embeddings)
 

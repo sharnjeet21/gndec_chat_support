@@ -9,14 +9,94 @@ from typing import List, Dict, Any, Tuple, Iterable
 from langchain.memory import ConversationBufferWindowMemory
 from langchain_community.chat_message_histories import RedisChatMessageHistory, ChatMessageHistory
 from openai import AsyncOpenAI
+import numpy as np
+from sklearn.metrics.pairwise import cosine_similarity
 
 from .vectorstore import get_retriever, encode_query, find_faculty_matches, find_fee_structure_matches
-from .llm.llm import client, LLM_MODEL, call_model_async, call_model_stream
+from .llm.llm import call_model_async, call_model_async_stream as call_model_stream
 from .chat_store import save_message
 from .db import REDIS_URL, SESSION_TTL
 from .domain_guard import is_out_of_domain
 from .cache import global_semantic_cache
-from .verify import check_sensitive_or_unanswerable, verify_groundedness, strip_scrape_leaks
+from .verify import check_sensitive_or_unanswerable, verify_groundedness, strip_scrape_leaks, ABSTENTION_MESSAGE
+
+
+async def detect_multihop(query: str) -> dict:
+    """
+    Use LLM to analyze if query requires multiple retrieval steps.
+    Example: "Who is the HOD of the department with highest placement?"
+    Returns: { is_multihop: bool, sub_queries: List[str], reasoning: str }
+    """
+    if not query:
+        return {"is_multihop": False, "sub_queries": [], "reasoning": ""}
+    
+    multihop_prompt = f"""Analyze if the following query requires multiple retrieval steps (multi-hop reasoning).
+
+Query: "{query}"
+
+A multi-hop query requires finding intermediate information first, then using that to answer the final question.
+Examples:
+- "Who is the HOD of the department with highest placement?" -> First find department with highest placement, then find its HOD
+- "What is the fee for the course with most students?" -> First find course with most students, then find its fee
+- "Who teaches in the department that has the most PhD faculty?" -> First find department with most PhD faculty, then find its teachers
+
+If multi-hop, return JSON:
+{{
+  "is_multihop": true,
+  "sub_queries": ["first sub-query to retrieve", "second sub-query using first result"],
+  "reasoning": "explanation of why this needs multiple steps"
+}}
+
+If single-hop, return:
+{{"is_multihop": false, "sub_queries": [], "reasoning": "single retrieval sufficient"}}
+
+Return ONLY valid JSON.
+"""
+    try:
+        response = await call_model_async(
+            messages=[{"role": "user", "content": multihop_prompt}],
+            model="llama-3.3-70b-versatile",
+            temperature=0.1,
+            max_tokens=300
+        )
+        import json
+        result = json.loads(response.strip())
+        return result
+    except Exception as e:
+        logging.warning(f"Multi-hop detection failed: {e}")
+        return {"is_multihop": False, "sub_queries": [], "reasoning": "detection error"}
+
+
+async def detect_followup(query: str, phone: str, session_id: str) -> dict:
+    """
+    Detect if the current query is a follow-up to the previous query based on cosine similarity of embeddings.
+    """
+    key = f"gndec:{phone}:{session_id}"
+    def get_messages():
+        history = RedisChatMessageHistory(url=REDIS_URL, session_id=key)
+        return history.messages
+    messages = await asyncio.to_thread(get_messages)
+    if not messages:
+        return {"is_followup": False}
+    # Find the last human message
+    last_user_message = None
+    for msg in reversed(messages):
+        if msg.type == "human":
+            last_user_message = msg.content
+            break
+    if last_user_message is None:
+        return {"is_followup": False}
+    current_embedding = encode_query(query)
+    previous_embedding = encode_query(last_user_message)
+    similarity = cosine_similarity([current_embedding], [previous_embedding])[0][0]
+    if similarity > 0.85:
+        return {
+            "is_followup": True,
+            "previous_query": last_user_message,
+            "similarity": float(similarity)
+        }
+    else:
+        return {"is_followup": False}
 
 BANNED_WORDS = [
     "fuck", "shit", "bitch", "asshole", "cunt", "dick", "pussy", "bastard", "slut", "whore",
@@ -91,7 +171,7 @@ def _get_memory(phone: str, session_id: str) -> ConversationBufferWindowMemory:
         memory_key="history",
         chat_memory=history,
         return_messages=True,
-        k=10
+        k=int(os.getenv("CHAT_HISTORY_WINDOW", "10"))
     )
 
 
@@ -419,6 +499,71 @@ Answer:
 # SYNC RESPONSE (NON-STREAM)
 # ============================
 async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto"):
+    # Multi-hop query detection (takes precedence over follow-up)
+    multihop = await detect_multihop(query)
+    if multihop.get("is_multihop"):
+        logging.info(f"Multi-hop query detected: {multihop}")
+        # Get conversation history for context
+        memory = _get_memory(phone, session_id)
+        hist_vars = memory.load_memory_variables({})
+        hist_msgs = hist_vars.get("history", [])
+        limited_history = hist_msgs[-10:]
+        history_text = "\n".join(f"{m.type}: {m.content}" for m in limited_history)
+        
+        # Execute sub-queries sequentially
+        combined_sources = []
+        sub_query_results = []
+        for i, sub_query in enumerate(multihop["sub_queries"]):
+            logging.info(f"Executing sub-query {i+1}: {sub_query}")
+            # Build prompt and retrieve for sub-query
+            prompt, sources, _ = await build_prompt(sub_query, phone, session_id, lang)
+            # Store results for potential use in next sub-query
+            sub_query_results.append({"query": sub_query, "sources": sources, "prompt": prompt})
+            combined_sources.extend(sources)
+        
+        # Build final prompt with all accumulated context
+        final_prompt = f"""{SYSTEM_PROMPT}
+Conversation history (last 10 messages):
+{history_text}
+Relevant knowledge about GNDEC (multi-hop retrieval):
+{chr(10).join([f"Sub-query: {r['query']}\nSources: {r['sources']}" for r in sub_query_results])}
+User question:
+{query}
+Instructions:
+- Answer the user's question directly using facts from the matching GNDEC documents.
+- Start immediately with the factual answer; do NOT start with conversational greetings, pleasantries, or preamble.
+- Be comprehensive and retain key specific entities, facilities, numbers, volumes, mess/hostel amenities, roles, titles, doctor/medical staff, qualifications, and contact details present in the context.
+- If the user asks for courses or branches, give a clear bulleted list of the course/branch names.
+- STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the knowledge context, state "I do not have information about that." and suggest visiting gndec.ac.in.
+- Use clean Markdown format (bullet points, bold text).
+- STRICT SINGLE-LANGUAGE RULE: Answer entirely in ONE language (the exact language the user typed). NEVER mix languages.
+- Give your answer directly without preamble, thinking process, or meta-comments.
+Answer:
+"""
+        
+        memory.chat_memory.add_user_message(query)
+        await save_message(phone, session_id, "user", query)
+        
+        # Call LLM with combined context
+        final_answer = await call_model_async(
+            messages=[{"role": "user", "content": final_prompt}],
+            model="llama-3.3-70b-versatile",
+            temperature=0.2,
+            max_tokens=1500
+        )
+        
+        memory.chat_memory.add_ai_message(final_answer)
+        await save_message(phone, session_id, "assistant", final_answer)
+        
+        return {"answer": final_answer, "sources": combined_sources, "multihop": True}
+
+    # Follow-up detection
+    followup = await detect_followup(query, phone, session_id)
+    retrieval_query = query
+    if followup["is_followup"]:
+        retrieval_query = f"{followup['previous_query']} {query}"
+        logging.info(f"Follow-up detected: {followup}. Expanded query: {retrieval_query}")
+
     logging.info(f"[SYNC] User({phone}:{session_id}) → {query!r}")
     memory = _get_memory(phone, session_id)
 
@@ -513,17 +658,20 @@ async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto
 
     logging.info(f"🟢🟢🟢 GNDEC PROMPT 🟢🟢🟢\n\n{prompt}\n\n🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢🟢")
 
-    ans = await call_model_async(prompt, max_tokens=768)
+    ans = await call_model_async(prompt)
 
     # Strip any reasoning-scratchpad leaks before further processing
     ans = strip_scrape_leaks(ans)
+
+    # Grounding verification against retrieved context
+    ans = verify_groundedness(ans, sources)
 
     # Toxicity check on output
     ai_toxic, _ = await check_toxicity(ans)
     final = WARNING_TEXT if ai_toxic else ans
 
-    # Store in semantic cache if not toxic/warning
-    if not ai_toxic and final != WARNING_TEXT:
+    # Store in semantic cache if not toxic/warning and not an abstention
+    if not ai_toxic and final != WARNING_TEXT and final != ABSTENTION_MESSAGE:
         try:
             global_semantic_cache.store(query, q_vec, {"answer": final, "sources": sources})
         except Exception:
@@ -539,6 +687,72 @@ async def answer_sync(query: str, phone: str, session_id: str, lang: str = "auto
 # STREAMING RESPONSE
 # ============================
 async def answer_stream(query: str, phone: str, session_id: str, lang: str = "auto"):
+    # Multi-hop query detection (takes precedence over follow-up)
+    multihop = await detect_multihop(query)
+    if multihop.get("is_multihop"):
+        logging.info(f"Multi-hop query detected: {multihop}")
+        # Get conversation history for context
+        memory = _get_memory(phone, session_id)
+        hist_vars = memory.load_memory_variables({})
+        hist_msgs = hist_vars.get("history", [])
+        limited_history = hist_msgs[-10:]
+        history_text = "
+".join(f"{m.type}: {m.content}" for m in limited_history)
+        
+        # Execute sub-queries sequentially
+        combined_sources = []
+        sub_query_results = []
+        for i, sub_query in enumerate(multihop["sub_queries"]):
+            logging.info(f"Executing sub-query {i+1}: {sub_query}")
+            prompt, sources, _ = await build_prompt(sub_query, phone, session_id, lang)
+            sub_query_results.append({"query": sub_query, "sources": sources, "prompt": prompt})
+            combined_sources.extend(sources)
+        
+        # Build final prompt with all accumulated context
+        final_prompt = f"""{SYSTEM_PROMPT}
+Conversation history (last 10 messages):
+{history_text}
+Relevant knowledge about GNDEC (multi-hop retrieval):
+{chr(10).join([f"Sub-query: {r['query']}
+Sources: {r['sources']}" for r in sub_query_results])}
+User question:
+{query}
+Instructions:
+- Answer the user's question directly using facts from the matching GNDEC documents.
+- Start immediately with the factual answer; do NOT start with conversational greetings, pleasantries, or preamble.
+- Be comprehensive and retain key specific entities, facilities, numbers, volumes, mess/hostel amenities, roles, titles, doctor/medical staff, qualifications, and contact details present in the context.
+- If the user asks for courses or branches, give a clear bulleted list of the course/branch names.
+- STRICTLY DO NOT GUESS OR HALLUCINATE. If the answer is not in the knowledge context, state "I do not have information about that." and suggest visiting gndec.ac.in.
+- Use clean Markdown format (bullet points, bold text).
+- STRICT SINGLE-LANGUAGE RULE: Answer entirely in ONE language (the exact language the user typed). NEVER mix languages.
+- Give your answer directly without preamble, thinking process, or meta-comments.
+Answer:
+"""
+        
+        memory.chat_memory.add_user_message(query)
+        await save_message(phone, session_id, "user", query)
+        
+        # Send sources first
+        yield json.dumps({"type": "sources", "sources": combined_sources}) + "
+"
+        
+        # Call LLM with combined context - stream the response
+        async for delta in call_model_stream(final_prompt):
+            yield json.dumps({"type": "content", "delta": delta}) + "
+"
+            await asyncio.sleep(0.002)
+        
+        memory.chat_memory.add_ai_message(final_prompt)
+        await save_message(phone, session_id, "assistant", final_prompt)
+        return
+
+    # Follow-up detection
+    followup = await detect_followup(query, phone, session_id)
+    retrieval_query = query
+    if followup["is_followup"]:
+        retrieval_query = f"{followup['previous_query']} {query}"
+        logging.info(f"Follow-up detected: {followup}. Expanded query: {retrieval_query}")
+
     logging.info(f"[STREAM] User({phone}:{session_id}) → {query!r}")
     memory = _get_memory(phone, session_id)
 
@@ -614,7 +828,7 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
         return
 
     acc = ""
-    async for delta in call_model_stream(prompt, max_tokens=768):
+    async for delta in call_model_stream(prompt):
         acc += delta
 
         # 🚀 CPU OPTIMIZATION: Only run toxicity check every 500 characters
@@ -639,8 +853,11 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
     # Strip any reasoning-scratchpad leaks before storing/caching
     acc = strip_scrape_leaks(acc)
 
-    # Store in semantic cache if not toxic/warning
-    if not ai_toxic and acc != WARNING_TEXT:
+    # Verify groundedness of streamed output before caching
+    acc_grounded = verify_groundedness(acc, sources)
+
+    # Store in semantic cache if not toxic/warning and grounded (not an abstention)
+    if not ai_toxic and acc != WARNING_TEXT and acc_grounded != ABSTENTION_MESSAGE:
         try:
             global_semantic_cache.store(query, q_vec, {"answer": acc, "sources": sources})
         except Exception:

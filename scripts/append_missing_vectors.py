@@ -31,9 +31,15 @@ def append_missing():
         print("Everything already indexed!")
         return
 
-    model = SentenceTransformer('all-MiniLM-L6-v2', device='cpu')
-    model.max_seq_length = 128
-    texts = [f"Q: {f['question']}\nSection: {f['section']}" for f in missing]
+    model_name = os.getenv("EMBEDDING_MODEL_NAME", "intfloat/multilingual-e5-small")
+    model = SentenceTransformer(model_name, device='cpu')
+    model.max_seq_length = 256
+    is_e5 = "e5" in model_name.lower()
+    texts = [
+        f"passage: Q: {f['question']}\nSection: {f['section']}" if is_e5
+        else f"Q: {f['question']}\nSection: {f['section']}"
+        for f in missing
+    ]
     print(f"Encoding {len(texts)} missing items (batch_size=128, threads={num_cpus})...")
     embeddings = model.encode(texts, batch_size=128, convert_to_numpy=True, show_progress_bar=True)
     embeddings = embeddings.astype(np.float32)

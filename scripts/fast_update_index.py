@@ -53,10 +53,16 @@ def fast_update():
     new_faculty_qa = load_faculty_json()
     print(f"Encoding {len(new_faculty_qa)} new faculty documents with full details...")
 
-    model = SentenceTransformer("all-MiniLM-L6-v2", device="cpu")
+    model_name = os.getenv("EMBEDDING_MODEL_NAME", "intfloat/multilingual-e5-small")
+    model = SentenceTransformer(model_name, device="cpu")
     model.max_seq_length = 256
+    is_e5 = "e5" in model_name.lower()
 
-    texts = [f"Q: {f['question']}\nA: {f['answer']}\nSection: {f['section']}" for f in new_faculty_qa]
+    texts = [
+        f"passage: Q: {f['question']}\nA: {f['answer']}\nSection: {f['section']}" if is_e5
+        else f"Q: {f['question']}\nA: {f['answer']}\nSection: {f['section']}"
+        for f in new_faculty_qa
+    ]
     new_embeddings = model.encode(texts, batch_size=32, convert_to_numpy=True, show_progress_bar=True)
     new_embeddings = new_embeddings.astype(np.float32)
     faiss.normalize_L2(new_embeddings)

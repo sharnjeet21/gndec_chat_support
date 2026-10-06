@@ -100,7 +100,20 @@ def _extract_numbers_and_entities(text: str) -> dict:
                       "details", "information", "including", "available", "provided", "please", "contact", "below"}
     for entity in words:
         if entity.lower() not in stopwords_lower and len(entity) > 1:
-            entities.add(entity)
+            entities.add(entity.lower())  # Store lowercase for case-insensitive comparison
+
+    # Also extract important domain-specific terms that may not be capitalized
+    # These are key entities in GNDEC context
+    domain_terms = {"fee", "fees", "hod", "cse", "ece", "ee", "me", "ce", "it", "mba", "mca", "bca", "btech", "mtech",
+                    "semester", "year", "branch", "program", "course", "admission", "placement", "package", "salary",
+                    "ctc", "lpa", "hostel", "mess", "library", "lab", "faculty", "professor", "director", "principal",
+                    "registrar", "controller", "examination", "result", "grade", "cgpa", "sgpa", "attendance",
+                    "civil", "mechanical", "electrical", "electronics", "computer", "science", "engineering",
+                    "applied", "physics", "chemistry", "mathematics", "humanities", "management"}
+    text_lower = text.lower()
+    for term in domain_terms:
+        if term in text_lower:
+            entities.add(term)
 
     return {
         "numbers": numbers,

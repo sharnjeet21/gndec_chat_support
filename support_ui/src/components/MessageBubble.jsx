@@ -88,7 +88,33 @@ export default function MessageBubble({ role, text }) {
               }
               return (
                 <div key={i} className="markdown-content">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{part}</ReactMarkdown>
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    components={{
+                      table: ({ node, ...props }) => (
+                        <div className="overflow-x-auto my-3 rounded-lg border border-gray-300 shadow-xs">
+                          <table className="min-w-full text-xs text-left border-collapse" {...props} />
+                        </div>
+                      ),
+                      thead: ({ node, ...props }) => (
+                        <thead className="bg-[#f1f5f7] border-b border-gray-300" {...props} />
+                      ),
+                      th: ({ node, ...props }) => (
+                        <th className="border-r border-gray-300 px-3 py-2 font-semibold text-gray-800 last:border-r-0 whitespace-nowrap" {...props} />
+                      ),
+                      td: ({ node, ...props }) => (
+                        <td className="border-b border-r border-gray-200 px-3 py-1.5 text-gray-700 last:border-r-0" {...props} />
+                      ),
+                      tr: ({ node, ...props }) => (
+                        <tr className="even:bg-gray-50/75 hover:bg-blue-50/50 transition-colors" {...props} />
+                      ),
+                      a: ({ node, ...props }) => (
+                        <a className="text-[#0066b3] underline font-medium hover:text-[#004f8a]" target="_blank" rel="noopener noreferrer" {...props} />
+                      ),
+                    }}
+                  >
+                    {part}
+                  </ReactMarkdown>
                 </div>
               );
             })}

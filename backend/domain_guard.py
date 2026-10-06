@@ -1,12 +1,13 @@
 # backend/domain_guard.py
+import os
 import re
 import logging
 import faiss
-from .vectorstore import embed_model, faiss_index, META
+from .vectorstore import embed_model, faiss_index, META, format_query_embedding_input
 
 logger = logging.getLogger(__name__)
 
-OUT_OF_DOMAIN_SIMILARITY_THRESHOLD = 0.38
+OUT_OF_DOMAIN_SIMILARITY_THRESHOLD = float(os.getenv("DOMAIN_GUARD_THRESHOLD", "0.38"))
 
 GREETINGS = {
     "hi", "hello", "hey", "namaste", "sat sri akal", "good morning",
@@ -98,7 +99,8 @@ def is_out_of_domain(query: str) -> bool:
         return False
 
     # 4. Dense semantic similarity fallback (faiss_index is IndexFlatIP -> Inner Product = Cosine Similarity)
-    vec = embed_model.encode([query], convert_to_numpy=True).astype("float32")
+    # Must use the same query-side prefix as indexing (e5 needs "query: "), or the cosine is meaningless.
+    vec = embed_model.encode([format_query_embedding_input(query)], convert_to_numpy=True).astype("float32")
     faiss.normalize_L2(vec)
     scores, ids = faiss_index.search(vec, 1)
 

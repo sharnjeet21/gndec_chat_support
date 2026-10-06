@@ -7,8 +7,9 @@ from sentence_transformers import SentenceTransformer
 HERE = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 FAISS_DIR = os.path.join(HERE, "backend", "faiss_store")
 DATA_DIR = os.path.join(HERE, "data")
-MODEL_NAME = "all-MiniLM-L6-v2"
-MODEL = SentenceTransformer(MODEL_NAME)
+MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "intfloat/multilingual-e5-small")
+MODEL = SentenceTransformer(MODEL_NAME, device="cpu")
+IS_E5 = "e5" in MODEL_NAME.lower()
 
 index_path = os.path.join(FAISS_DIR, "faq.index")
 meta_path  = os.path.join(FAISS_DIR, "meta.json")
@@ -24,7 +25,8 @@ with open(fee_path, "r", encoding="utf-8") as f:
     fee_data = json.load(f)
 
 texts = [
-    f"Q: {f['question']}\nA: {f['answer']}\nSection: {f['section']}"
+    f"passage: Q: {f['question']}\nA: {f['answer']}\nSection: {f['section']}" if IS_E5
+    else f"Q: {f['question']}\nA: {f['answer']}\nSection: {f['section']}"
     for f in fee_data
 ]
 
