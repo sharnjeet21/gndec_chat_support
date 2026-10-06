@@ -15,67 +15,54 @@ venv/
 env/
 mlx_env/
 
-# ── Environment ───────────────────────────────────────────────
+# ── Environment & Secrets ─────────────────────────────────────
 .env
 .env.*
 .env.bak
 .codex-run/
 .venv-win/
-data ex/
+"data ex/"
 
 # ── Data / Models (large files) ───────────────────────────────
 backend/faiss_store/faq.index
 backend/faiss_store/meta.json
 dump.rdb
+data.db
+*.sqlite3
+TECH_STACK.Modelsdata.db
+Placement_Brochure_2026.pdf
 
 # ── Frontend ──────────────────────────────────────────────────
 support_ui/node_modules/
 support_ui/dist/
 support_ui/.env
+support_ui/.env.*
 
-# ── macOS ─────────────────────────────────────────────────────
+# ── OS & IDE ──────────────────────────────────────────────────
 .DS_Store
 .AppleDouble
 .LSOverride
-
-# ── Logs ──────────────────────────────────────────────────────
-*.log
-/tmp/
-
-# ── IDE ───────────────────────────────────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# ── Documentation (exclude README.md) ─────────────────────────
-*.md
-!README.md
-
-TECH_STACK.Modelsdata.db
-Placement_Brochure_2026.pdf
-
-# ── Project Specific Auto Scripts & Binaries ──────────────────
-cloudflared
-*.db
-*.sqlite3
+# ── Logs & Temp ───────────────────────────────────────────────
+*.log
+/tmp/
 temp*.txt
-tests/
-test_*.py
-update_*.py
-fix_*.py
-get_*.py
-scrape_*.py
-replace*.py
-rewrite*.py
-TR_102/
-*.tex
+
+# ── Binary and large document formats ────────────────────────
+cloudflared
 *.pdf
+!data/documents/*.pdf
+*.tex
+TR_102/
 
-# graft's local graph cache — regenerable, not committed (run `graft build`).
-/graft/
-
-# Local AI agent cache & scratch
+# ── Local AI agent cache & scratch ────────────────────────────
 .claude/
 .firecrawl/
 .ignore
+/graft/
+!tests/
+!*.md

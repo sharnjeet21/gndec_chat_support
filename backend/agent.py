@@ -696,8 +696,7 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
         hist_vars = memory.load_memory_variables({})
         hist_msgs = hist_vars.get("history", [])
         limited_history = hist_msgs[-10:]
-        history_text = "
-".join(f"{m.type}: {m.content}" for m in limited_history)
+        history_text = "\n".join(f"{m.type}: {m.content}" for m in limited_history)
         
         # Execute sub-queries sequentially
         combined_sources = []
@@ -708,13 +707,17 @@ async def answer_stream(query: str, phone: str, session_id: str, lang: str = "au
             sub_query_results.append({"query": sub_query, "sources": sources, "prompt": prompt})
             combined_sources.extend(sources)
         
+        sub_queries_text = "\n".join([f"Sub-query: {r['query']}\nSources: {r['sources']}" for r in sub_query_results])
+
         # Build final prompt with all accumulated context
         final_prompt = f"""{SYSTEM_PROMPT}
+
 Conversation history (last 10 messages):
 {history_text}
+
 Relevant knowledge about GNDEC (multi-hop retrieval):
-{chr(10).join([f"Sub-query: {r['query']}
-Sources: {r['sources']}" for r in sub_query_results])}
+{sub_queries_text}
+
 User question:
 {query}
 Instructions:
@@ -733,13 +736,11 @@ Answer:
         await save_message(phone, session_id, "user", query)
         
         # Send sources first
-        yield json.dumps({"type": "sources", "sources": combined_sources}) + "
-"
+        yield json.dumps({"type": "sources", "sources": combined_sources}) + "\n"
         
         # Call LLM with combined context - stream the response
         async for delta in call_model_stream(final_prompt):
-            yield json.dumps({"type": "content", "delta": delta}) + "
-"
+            yield json.dumps({"type": "content", "delta": delta}) + "\n"
             await asyncio.sleep(0.002)
         
         memory.chat_memory.add_ai_message(final_prompt)
@@ -840,8 +841,7 @@ Answer:
                 yield json.dumps({"type": "blocked", "message": WARNING_TEXT}) + "\n"
                 return
 
-        yield json.dumps({"type": "content", "delta": delta}) + "\n"
-
+            yield json.dumps({"type": "content", "delta": delta}) + "\n"
     # 🚀 CPU OPTIMIZATION: Final toxicity check to catch trailing characters
     ai_toxic, _ = await check_toxicity(acc)
     if ai_toxic:
