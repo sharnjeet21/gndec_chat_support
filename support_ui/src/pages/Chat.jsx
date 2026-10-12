@@ -27,7 +27,7 @@ function TypingIndicator() {
     <div className="flex items-start mb-6">
       <OrbAvatar />
       <div className="flex flex-col flex-1">
-        <span className="text-[10px] font-bold text-[#666] mb-1">Ai-Assistant</span>
+        <span className="text-[10px] font-bold text-[#666] mb-1">AI-Assistant</span>
         <div className="flex gap-1.5 px-1 py-2">
           <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#0066b3]" />
           <span className="typing-dot block h-1.5 w-1.5 rounded-full bg-[#0066b3]" />
@@ -39,34 +39,85 @@ function TypingIndicator() {
 }
 
 function SourceCard({ s, index }) {
+  const rawFile = s.file_name || s.source_file || s.metadata?.source_file || "";
+  let fileName = rawFile;
+  if (!fileName || fileName === "unknown") {
+    fileName = s.metadata?.url ? "gndec.ac.in (Web)" : "knowledge_base.json";
+  } else if (fileName === "web_search") {
+    fileName = "gndec.ac.in (Live Web)";
+  } else if (fileName === "_structured_faculty" || fileName === "faculty") {
+    fileName = "faculty.json";
+  } else if (fileName === "_structured_fee" || fileName === "fee") {
+    fileName = "fee_structures.json";
+  } else if (fileName === "_structured_admission" || fileName === "admission") {
+    fileName = "admission_process.json";
+  } else if (fileName === "_structured_courses" || fileName === "courses") {
+    fileName = "courses_offered.json";
+  } else if (fileName === "_structured_principal" || fileName === "_structured_fdp") {
+    fileName = "external_facts.json";
+  } else if (fileName.includes("/")) {
+    fileName = fileName.split("/").pop();
+  }
+
+  const displayTitle = s.question || s.metadata?.question || s.title || s.metadata?.title || "";
+  const displaySection = s.section || s.metadata?.section || "";
+
   let link = "https://gndec.ac.in";
   if (s.doc_url && s.doc_url.startsWith("http")) {
     link = s.doc_url;
-  } else if (s.source_file === "faculty.json" || s.section?.toLowerCase().includes("faculty")) {
+  } else if (s.metadata?.url && s.metadata.url.startsWith("http")) {
+    link = s.metadata.url;
+  } else if (fileName === "faculty.json" || displayTitle.toLowerCase().includes("faculty")) {
     link = "https://gndec.ac.in/department";
-  } else if (s.source_file === "tnp_data.json" || s.section?.toLowerCase().includes("placement")) {
+  } else if (fileName === "tnp_data.json" || displayTitle.toLowerCase().includes("placement")) {
     link = "https://tpo.gndec.ac.in";
-  } else if (s.source_file === "syllabi.json") {
+  } else if (fileName === "syllabi.json") {
     link = "https://gndec.ac.in/syllabi";
-  } else if (s.section?.toLowerCase().includes("admission")) {
+  } else if (displayTitle.toLowerCase().includes("admission") || fileName.includes("admission") || fileName.includes("Fee")) {
     link = "https://admission.gndec.ac.in";
-  } else if (s.section?.toLowerCase().includes("alumni")) {
+  } else if (displayTitle.toLowerCase().includes("alumni")) {
     link = "https://alumni.gndec.ac.in";
-  } else if (s.source_file && s.source_file !== "web_search") {
-    link = s.source_file.startsWith("http") ? s.source_file : `https://${s.source_file}`;
+  } else if (rawFile && rawFile.startsWith("http")) {
+    link = rawFile;
   }
 
-  const isDoc = s.doc_url && (s.doc_url.endsWith(".pdf") || s.doc_url.endsWith(".docx") || s.doc_url.endsWith(".doc"));
+  const isDoc = link.endsWith(".pdf") || link.endsWith(".docx") || link.endsWith(".doc");
+
   return (
-    <div className="bg-[#ebf3f9] border border-[#0066b3] min-w-[200px] max-w-[240px] rounded-xl px-3 py-2.5 text-xs flex-shrink-0 shadow-sm">
-      <p className="truncate font-bold text-[#000]" title={s.question}>
-        <span className="mr-1.5 inline-flex bg-[#0066b3] px-1 py-0.5 text-[9px] text-[#fff] rounded">[{index}]</span>
-        {s.question?.slice(0, 40)}{s.question?.length > 40 ? "…" : ""}
-      </p>
-      {s.section && <p className="mt-1 flex items-center gap-1.5 truncate text-[10px] text-[#555]"><Folder className="h-3 w-3" />{s.section}</p>}
-      <a href={link} target="_blank" rel="noopener noreferrer" className="mt-1.5 flex items-center gap-1.5 truncate text-[10px] font-semibold text-[#f00] hover:text-[#900]">
-        {isDoc ? <FileText className="h-3 w-3" /> : <ExternalLink className="h-3 w-3" />}
-        {link.replace("https://", "").replace("http://", "").split("/")[0]}
+    <div className="bg-[#ebf3f9] border border-[#0066b3] min-w-[210px] max-w-[260px] rounded-xl px-3 py-2 text-xs flex-shrink-0 shadow-sm transition-all hover:shadow-md flex flex-col justify-between">
+      <div>
+        {/* File Name Header with Index Badge */}
+        <div className="flex items-center gap-1.5 font-bold text-[#0066b3] text-[11px] truncate" title={fileName}>
+          <span className="shrink-0 bg-[#0066b3] px-1.5 py-0.5 text-[9px] font-mono text-[#fff] rounded font-semibold">[{index}]</span>
+          <FileText className="h-3.5 w-3.5 shrink-0 text-[#0066b3]" />
+          <span className="truncate">{fileName}</span>
+        </div>
+
+        {/* Question or Section Description */}
+        {displayTitle ? (
+          <p className="mt-1 text-[10px] text-[#333] line-clamp-1 truncate font-medium" title={displayTitle}>
+            {displayTitle}
+          </p>
+        ) : null}
+
+        {displaySection && displaySection !== displayTitle && (
+          <p className="mt-0.5 flex items-center gap-1 truncate text-[9px] text-[#666]">
+            <Folder className="h-2.5 w-2.5 shrink-0" />
+            <span className="truncate">{displaySection}</span>
+          </p>
+        )}
+      </div>
+
+      {/* Link / URL */}
+      <a
+        href={link}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-1.5 flex items-center gap-1 truncate text-[10px] font-semibold text-[#c00] hover:text-[#900] hover:underline pt-1 border-t border-blue-100"
+        title={link}
+      >
+        {isDoc ? <FileText className="h-2.5 w-2.5 shrink-0" /> : <ExternalLink className="h-2.5 w-2.5 shrink-0" />}
+        <span className="truncate">{link.replace(/^https?:\/\//, "")}</span>
       </a>
     </div>
   );
@@ -235,8 +286,13 @@ export default function Chat({ phone, sessionId, onBack, onSelectSession }) {
             
             {/* Sources Row */}
             {sources.length > 0 && (
-              <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                {sources.map((s, i) => <SourceCard key={i} s={s} index={i+1}/>)}
+              <div className="flex flex-col gap-1">
+                <span className="text-[10px] font-bold text-[#0066b3] uppercase tracking-wider flex items-center gap-1">
+                  <FileText className="w-3 h-3" /> Referenced Sources & Files ({sources.length}):
+                </span>
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {sources.map((s, i) => <SourceCard key={i} s={s} index={i+1}/>)}
+                </div>
               </div>
             )}
 

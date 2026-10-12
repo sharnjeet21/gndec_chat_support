@@ -10,11 +10,12 @@ import re
 import time
 import asyncio
 import logging
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 from dotenv import load_dotenv
 from openai import AsyncOpenAI
 
-load_dotenv()
+# Always override with .env file variables to ensure priority settings in .env take effect
+load_dotenv(override=True)
 logger = logging.getLogger(__name__)
 
 # Temporary model cooldown tracker to skip rate-limited models instantly
@@ -28,28 +29,48 @@ _GROQ_MODELS_CACHE_TTL = float(os.getenv("GROQ_MODELS_CACHE_TTL", "21600"))  # 6
 
 # Fallback hardcoded Groq model list (used if API fails or cache is stale and refresh fails)
 GROQ_MODEL_FALLBACK = [
+    "qwen/qwen3.8-27b",
     "llama-3.3-70b-versatile",
-    "llama-3.1-8b-instant",
     "mixtral-8x7b-32768",
     "gemma-7b-it",
 ]
 
-MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "OLLAMA").upper()
+# Provider priority chain: GROQ → OMNIROUTE → NVIDIA → OLLAMA
+# When MODEL_PROVIDER is set to "MULTI" or not set, the chain tries each in order
+MODEL_PROVIDER = os.getenv("MODEL_PROVIDER", "OMNIROUTE").upper()
 OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 GROQ_API_BASE = os.getenv("GROQ_API_BASE", "https://api.groq.com/openai/v1")
-NVIDIA_NIM_API_KEY = os.getenv("NVIDIA_NIM_API_KEY")
+NVIDIA_NIM_API_KEY = os.getenv("NVIDIA_NIM_API_KEY") or os.getenv("OPENAI_API_KEY")
 NVIDIA_NIM_API_BASE = os.getenv("NVIDIA_NIM_API_BASE", "https://integrate.api.nvidia.com/v1")
+OMNIROUTE_BASE_URL = os.getenv("OMNIROUTE_BASE_URL", "http://localhost:20128/v1")
+OMNIROUTE_API_KEY = os.getenv("OMNIROUTE_API_KEY")
+
+# Automatically translate localhost to host.docker.internal inside Docker container
+if os.path.exists("/.dockerenv"):
+    if "localhost" in OMNIROUTE_BASE_URL:
+        OMNIROUTE_BASE_URL = OMNIROUTE_BASE_URL.replace("localhost", "host.docker.internal")
+    elif "127.0.0.1" in OMNIROUTE_BASE_URL:
+        OMNIROUTE_BASE_URL = OMNIROUTE_BASE_URL.replace("127.0.0.1", "host.docker.internal")
 
 # Provider-specific model lists (can be overridden by env)
 OLLAMA_MODELS = os.getenv("OLLAMA_MODELS", "llama3.1:8b,llama3:8b,phi3:mini").split(",")
 GROQ_MODEL_PRIORITY_ENV = os.getenv("GROQ_MODEL_PRIORITY")  # comma-separated override
-NVIDIA_MODELS = os.getenv("NVIDIA_MODELS", "nemotron-3-8b-instruct,nemotron-3-22b-instruct")
+NVIDIA_MODELS = os.getenv("NVIDIA_MODELS", "nvidia/nemotron-3-super-120b-a12b,nemotron-3-8b-instruct,nemotron-3-22b-instruct")
+OMNIROUTE_MODELS = [
+    m.strip()
+    for m in os.getenv(
+        "OMNIROUTE_MODELS",
+        "antigravity/gemini-3.8-flash-tiered,antigravity/gemini-3.7-flash-tiered",
+    ).split(",")
+    if m.strip()
+]
 
 # Initialize provider-specific clients
 groq_client: Optional[AsyncOpenAI] = None
 nim_client: Optional[AsyncOpenAI] = None
 ollama_client: Optional[AsyncOpenAI] = None
+omniroute_client: Optional[AsyncOpenAI] = None
 
 if GROQ_API_KEY:
     groq_client = AsyncOpenAI(
@@ -69,11 +90,17 @@ if OLLAMA_BASE_URL:
         base_url=f"{OLLAMA_BASE_URL}/v1",
     )
 
+if OMNIROUTE_BASE_URL:
+    omniroute_client = AsyncOpenAI(
+        api_key=OMNIROUTE_API_KEY or "omniroute",
+        base_url=OMNIROUTE_BASE_URL,
+    )
+
 # Embedding model (shared across providers)
 EMBEDDING_MODEL_NAME = os.getenv("EMBEDDING_MODEL_NAME", "intfloat/multilingual-e5-small")
 EMBEDDING_MODEL = None  # lazy-loaded on first use
 
-LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "1024"))
+LLM_MAX_TOKENS = int(os.getenv("LLM_MAX_TOKENS", "4096"))
 LLM_TEMPERATURE = float(os.getenv("LLM_TEMPERATURE", "0.1"))
 LLM_TOP_P = float(os.getenv("LLM_TOP_P", "0.9"))
 
@@ -210,7 +237,9 @@ def get_groq_model_priority() -> List[str]:
 
 def _get_fallback_models() -> List[str]:
     """Get fallback models for the current provider."""
-    if MODEL_PROVIDER == "GROQ":
+    if MODEL_PROVIDER == "OMNIROUTE":
+        return OMNIROUTE_MODELS.copy()
+    elif MODEL_PROVIDER == "GROQ":
         return GROQ_MODEL_FALLBACK.copy()
     elif MODEL_PROVIDER == "NVIDIA":
         return NVIDIA_MODELS.split(",")
@@ -220,9 +249,53 @@ def _get_fallback_models() -> List[str]:
         return []
 
 
+def _get_model_tiers() -> List[Tuple[str, AsyncOpenAI, str]]:
+    """
+    Build prioritized list of (provider_name, client, model_name) targets.
+    Priority requested:
+      1. GROQ (top priority)
+      2. OMNIROUTE (antigravity)
+      3. NVIDIA (nemotron)
+      4. OLLAMA (fallback)
+
+    Can be customized via env:
+      PROVIDER_PRIORITY="GROQ,OMNIROUTE,NVIDIA"
+      MODEL_PROVIDER (if set to a single provider name, only that provider is used)
+    """
+    provider_env = os.getenv("MODEL_PROVIDER", "").upper()
+    if provider_env and provider_env not in ("MULTI", "TIERED", "AUTO"):
+        # Explicit single provider specified by user
+        providers = [provider_env]
+    else:
+        # Default priority requested by user
+        priority_str = os.getenv("PROVIDER_PRIORITY", "GROQ,OMNIROUTE,NVIDIA,OLLAMA")
+        providers = [p.strip().upper() for p in priority_str.split(",") if p.strip()]
+
+    tiers: List[Tuple[str, AsyncOpenAI, str]] = []
+
+    for prov in providers:
+        if prov == "GROQ" and groq_client:
+            models = get_groq_model_priority()
+            for m in models:
+                tiers.append(("GROQ", groq_client, m))
+        elif prov == "OMNIROUTE" and omniroute_client:
+            for m in OMNIROUTE_MODELS:
+                tiers.append(("OMNIROUTE", omniroute_client, m))
+        elif prov == "NVIDIA" and nim_client:
+            for m in [x.strip() for x in NVIDIA_MODELS.split(",") if x.strip()]:
+                tiers.append(("NVIDIA", nim_client, m))
+        elif prov == "OLLAMA" and ollama_client:
+            for m in OLLAMA_MODELS:
+                tiers.append(("OLLAMA", ollama_client, m))
+
+    return tiers
+
+
 def _get_model_provider_client(provider: str) -> Optional[AsyncOpenAI]:
     """Get the initialized client for a provider."""
-    if provider == "GROQ":
+    if provider == "OMNIROUTE":
+        return omniroute_client
+    elif provider == "GROQ":
         return groq_client
     elif provider == "NVIDIA":
         return nim_client
@@ -238,38 +311,32 @@ async def call_model_async(
     top_p: float = LLM_TOP_P,
 ) -> str:
     """
-    Asynchronous inference call with automatic retries and model failover.
-    Tries models in priority order, skipping rate-limited or repeatedly failing models.
+    Asynchronous inference call with automatic retries and multi-tier provider failover.
+    Tries providers in configured priority order: GROQ → OMNIROUTE → NVIDIA → OLLAMA.
+    Skips rate-limited or repeatedly failing models.
     """
     global _GROQ_MODELS_CACHE_TIMESTAMP
     last_error: Optional[Exception] = None
     tried_models = set()
 
-    # Get the provider-specific model priority
-    if MODEL_PROVIDER == "GROQ":
-        model_priority = get_groq_model_priority()
-    elif MODEL_PROVIDER == "NVIDIA":
-        model_priority = NVIDIA_MODELS.split(",")
-    elif MODEL_PROVIDER == "OLLAMA":
-        model_priority = OLLAMA_MODELS
-    else:
-        model_priority = []
+    # Use unified tier list (GROQ → OMNIROUTE → NVIDIA → OLLAMA)
+    tier_list = _get_model_tiers()
 
-    client = _get_model_provider_client(MODEL_PROVIDER)
-    if not client:
-        error_msg = f"No client initialized for provider {MODEL_PROVIDER}"
+    if not tier_list:
+        error_msg = f"No model clients available. Check API keys for configured providers."
         logger.error(error_msg)
         raise RuntimeError(error_msg)
 
     logger.info(
-        f"Starting LLM call with provider {MODEL_PROVIDER}, trying models in order: {model_priority}"
+        f"Starting LLM call with tiers: {[(t[0], t[2]) for t in tier_list]}"
     )
 
-    for model_name in model_priority:
-        # Skip if we've already tried this model in this call (avoid loops)
-        if model_name in tried_models:
+    for provider_name, client, model_name in tier_list:
+        # Skip if we've already tried this provider+model combo in this call
+        tier_key = f"{provider_name}:{model_name}"
+        if tier_key in tried_models:
             continue
-        tried_models.add(model_name)
+        tried_models.add(tier_key)
 
         # Skip if model is on cooldown
         if _is_model_on_cooldown(model_name):
@@ -277,7 +344,7 @@ async def call_model_async(
             continue
 
         try:
-            logger.debug(f"Attempting model {model_name}")
+            logger.debug(f"Attempting with {provider_name}/{model_name}")
             completion = await client.chat.completions.create(
                 model=model_name,
                 messages=[{"role": "user", "content": prompt}],
@@ -292,99 +359,33 @@ async def call_model_async(
 
             # Reset failure count on success
             _reset_model_failure_count(model_name)
-            logger.info(f"Successfully used model {model_name}")
+            logger.info(f"Successfully used {provider_name}/{model_name}")
             return answer.strip()
 
         except Exception as e:
             last_error = e
             err_str = str(e)
-            logger.warning(f"Error on model {model_name} (attempt): {e}")
+            logger.warning(f"Error on {provider_name}/{model_name} (attempt): {e}")
 
-            # Check for specific error types that should trigger cooldown or model skip
+            # Check for specific error types
             if "TPD" in err_str or "tokens per day" in err_str.lower():
                 _mark_model_cooldown(model_name)
                 logger.warning(f"Model {model_name} marked cooldown due to TPD limit")
             elif "429" in err_str or "rate limit" in err_str.lower():
-                # Rate limit - wait briefly then try next model (cooldown will be set by _mark_model_cooldown if we had TPD)
-                # For pure rate limit without TPD, we'll still mark cooldown to avoid hammering
                 _mark_model_cooldown(model_name)
-                await asyncio.sleep(2.0)  # Brief wait before next model
+                await asyncio.sleep(2.0)
             elif "400" in err_str and ("model" in err_str.lower() or "not found" in err_str.lower()):
-                # Model not found or invalid model - this is important for our dynamic model list
-                # We should refresh the model list and try again with the updated list
-                logger.warning(f"Model {model_name} not found (400), will refresh Groq model list")
-                # Force refresh of Groq model cache on next call
-                global _GROQ_MODELS_CACHE_TIMESTAMP
-                _GROQ_MODELS_CACHE_TIMESTAMP = 0  # Invalidate cache
-                # Mark this model as failed so we don't try it again in this call
+                # Model not found - record failure and try next tier
                 _record_model_failure(model_name)
-                # If we are using Groq and we got a 400, we should break and retry with updated list
-                if MODEL_PROVIDER == "GROQ":
-                    logger.info("Breaking current model list iteration to refresh and retry with updated models")
-                    break  # Break out of the for loop to retry with updated model list
+                if provider_name == "GROQ":
+                    _GROQ_MODELS_CACHE_TIMESTAMP = 0
             else:
-                # Other errors - increment failure count
                 _record_model_failure(model_name)
 
-            # Wait briefly before trying next model to avoid hammering
+            # Wait briefly before trying next provider
             await asyncio.sleep(0.5)
 
-    # If we broke out of the loop due to a 400 (model not found) and we are using Groq,
-    # we should retry the entire process with an updated model list.
-    if MODEL_PROVIDER == "GROQ" and last_error and "400" in str(last_error) and "model" in str(last_error).lower():
-        logger.info("Retrying LLM call with refreshed Groq model list after 400 error")
-        # Clear the tried models set so we can try the updated list
-        tried_models.clear()
-        # Invalidate the Groq model cache to force refresh
-        _GROQ_MODELS_CACHE_TIMESTAMP = 0
-        # Get updated model priority
-        model_priority = get_groq_model_priority()
-        logger.info(f"Retrying with updated model list: {model_priority}")
-
-        for model_name in model_priority:
-            if model_name in tried_models:
-                continue
-            tried_models.add(model_name)
-
-            if _is_model_on_cooldown(model_name):
-                logger.debug(f"Skipping {model_name} (on cooldown) in retry")
-                continue
-
-            try:
-                logger.debug(f"Retry attempt with model {model_name}")
-                completion = await client.chat.completions.create(
-                    model=model_name,
-                    messages=[{"role": "user", "content": prompt}],
-                    max_tokens=max_tokens,
-                    temperature=temperature,
-                    top_p=top_p,
-                    stream=False,
-                )
-                answer = completion.choices[0].message.content
-                if answer is None:
-                    raise ValueError("Empty response from model")
-
-                _reset_model_failure_count(model_name)
-                logger.info(f"Successfully used model {model_name} on retry")
-                return answer.strip()
-
-            except Exception as e:
-                last_error = e
-                err_str = str(e)
-                logger.warning(f"Error on retry model {model_name}: {e}")
-                if "TPD" in err_str or "tokens per day" in err_str.lower():
-                    _mark_model_cooldown(model_name)
-                elif "429" in err_str or "rate limit" in err_str.lower():
-                    _mark_model_cooldown(model_name)
-                    await asyncio.sleep(2.0)
-                elif "400" in err_str and ("model" in err_str.lower() or "not found" in err_str.lower()):
-                    _record_model_failure(model_name)
-                    # Continue to next model in retry list
-                else:
-                    _record_model_failure(model_name)
-                await asyncio.sleep(0.5)
-
-    # If we get here, all models failed
+    # If we get here, all tiers failed
     logger.error(f"All model attempts exhausted. Last error: {last_error}")
     raise last_error
 
@@ -397,38 +398,27 @@ async def call_model_async_stream(
     top_p: float = LLM_TOP_P,
 ):
     """
-    Asynchronous streaming generator with model failover on start.
-    Note: If failover occurs mid-stream, the stream will be restarted from the beginning
-    with the new model (this is a limitation of the current approach).
+    Asynchronous streaming generator with multi-tier provider failover.
+    Tries providers in configured priority order: GROQ → OMNIROUTE → NVIDIA → OLLAMA.
     """
-    # Get the provider-specific model priority
-    if MODEL_PROVIDER == "GROQ":
-        model_priority = get_groq_model_priority()
-    elif MODEL_PROVIDER == "NVIDIA":
-        model_priority = NVIDIA_MODELS.split(",")
-    elif MODEL_PROVIDER == "OLLAMA":
-        model_priority = OLLAMA_MODELS
-    else:
-        model_priority = []
-
-    client = _get_model_provider_client(MODEL_PROVIDER)
-    if not client:
-        error_msg = f"No client initialized for provider {MODEL_PROVIDER}"
+    tier_list = _get_model_tiers()
+    if not tier_list:
+        error_msg = f"No model clients available for streaming."
         logger.error(error_msg)
         raise RuntimeError(error_msg)
 
     logger.info(
-        f"Starting LLM stream with provider {MODEL_PROVIDER}, trying models in order: {model_priority}"
+        f"Starting LLM stream with tiers: {[(t[0], t[2]) for t in tier_list]}"
     )
 
-    for model_name in model_priority:
+    for provider_name, client, model_name in tier_list:
         # Skip if model is on cooldown
         if _is_model_on_cooldown(model_name):
             logger.debug(f"Skipping {model_name} (on cooldown)")
             continue
 
         try:
-            logger.debug(f"Attempting stream with model {model_name}")
+            logger.debug(f"Attempting stream with {provider_name}/{model_name}")
             stream = await client.chat.completions.create(
                 model=model_name,
                 messages=[{"role": "user", "content": prompt}],
@@ -440,7 +430,7 @@ async def call_model_async_stream(
 
             # Reset failure count for this model as we're about to use it successfully
             _reset_model_failure_count(model_name)
-            logger.info(f"Successfully opened stream with model {model_name}")
+            logger.info(f"Successfully opened stream with {provider_name}/{model_name}")
 
             async for chunk in stream:
                 content = chunk.choices[0].delta.content
@@ -451,7 +441,7 @@ async def call_model_async_stream(
             return
 
         except Exception as e:
-            logger.warning(f"Stream error on model {model_name}: {e}. Trying next model...")
+            logger.warning(f"Stream error on {provider_name}/{model_name}: {e}. Trying next model...")
             if "TPD" in str(e) or "tokens per day" in str(e).lower():
                 _mark_model_cooldown(model_name)
             elif "429" in str(e) or "rate limit" in str(e).lower():
@@ -459,9 +449,9 @@ async def call_model_async_stream(
                 await asyncio.sleep(2.0)
             elif "400" in str(e) and ("model" in str(e).lower() or "not found" in str(e).lower()):
                 _record_model_failure(model_name)
-                # Force refresh Groq model list for next attempt
-                global _GROQ_MODELS_CACHE_TIMESTAMP
-                _GROQ_MODELS_CACHE_TIMESTAMP = 0
+                if provider_name == "GROQ":
+                    global _GROQ_MODELS_CACHE_TIMESTAMP
+                    _GROQ_MODELS_CACHE_TIMESTAMP = 0
             else:
                 _record_model_failure(model_name)
             await asyncio.sleep(0.5)

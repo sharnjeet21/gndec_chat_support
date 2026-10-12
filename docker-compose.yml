@@ -53,6 +53,8 @@ services:
       - ./backend:/app/backend
       - ./data:/app/data
       - ./scripts:/app/scripts
+      - ./support_ui/dist:/app/support_ui/dist
+      - ./.env:/app/.env:ro
       - model_cache:/root/.cache
 
 volumes:
