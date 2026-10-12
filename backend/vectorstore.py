@@ -666,14 +666,15 @@ def find_courses_matches(query: str) -> List[Document]:
 # ----------------------------------------------------
 ADMISSION_KEYWORDS = re.compile(
     r"\b("
-    r"how (to|do i|can i) (apply|register|get admission|take admission)|"
+    r"how (to|do i|can i) (get admission|take admission|enroll|join)|"
+    r"how (to|do i|can i) apply for (admission|b\.?tech|m\.?tech|mba|mca|bca|bba|leet|lateral|phd|course|college)|"
     r"admission (process|procedure|steps|criteria|rules|guidelines|schedule|notice)|"
     r"entrance (exam|exams|test|tests)|need (any )?(exam|jee|gate|cmat|nata)|"
     r"gate (score|exam|required)|jee main (required|needed)|"
     r"apply for admission|spot admission|spot counselling|seat allotment|"
-    r"admission.*counseling|counseling process|counseling|"
+    r"admission.*counseling|counseling process|"
     r"rural quota|rural reservation|rural category|rural area quota|rural students|"
-    r"sikh minority quota|quota|quotas|reservation|eligibility for admission"
+    r"sikh minority quota|eligibility for admission"
     r")\b",
     re.IGNORECASE,
 )
@@ -686,6 +687,10 @@ def find_admission_matches(query: str) -> List[Document]:
         return []
 
     q_lower = query.lower()
+
+    # Guard against non-admission queries (bus pass, railway concession, hostel, certificates)
+    if re.search(r"\b(bus pass|buss pass|railway|concession|hostel|transport|no[- ]dues)\b", q_lower):
+        return []
 
     # If specifically asking about rural quota / reservation
     if re.search(r"\b(rural|rural quota|rural reservation|rural category|rural area)\b", q_lower):
@@ -830,6 +835,49 @@ def find_fdp_matches(query: str) -> List[Document]:
 
 
 # ----------------------------------------------------
+# Structured Student Services & Amenities Matcher
+# ----------------------------------------------------
+STUDENT_SERVICES_PATTERNS = re.compile(
+    r"\b("
+    r"bus pass|buss pass|bus form|buss pass form|how to apply for bus pass|"
+    r"railway concession|railway form|"
+    r"hostel (facility|facilities|accommodation|room|admission|fee)|"
+    r"bonafide certificate|character certificate|migration (form|application|certificate)|"
+    r"duplicate id card|new identity card|id card form|college identity card|"
+    r"no[- ]dues form|no dues certificate"
+    r")\b",
+    re.IGNORECASE,
+)
+
+def find_student_services_matches(query: str) -> List[Document]:
+    """Returns verified student amenities and download proforma facts (bus pass, railway, hostels, certificates)."""
+    if not STUDENT_SERVICES_PATTERNS.search(query):
+        return []
+
+    q_lower = query.lower()
+    matched_facts = []
+
+    if os.path.exists(EXTERNAL_PATH):
+        try:
+            with open(EXTERNAL_PATH, "r", encoding="utf-8") as f:
+                facts = json.load(f)
+                for it in facts:
+                    it_q = it.get("question", "").lower()
+                    if ("bus pass" in q_lower or "buss pass" in q_lower) and "bus pass" in it_q:
+                        matched_facts.append(it)
+                    elif "railway" in q_lower and "railway" in it_q:
+                        matched_facts.append(it)
+                    elif "hostel" in q_lower and "hostel" in it_q:
+                        matched_facts.append(it)
+                    elif ("certificate" in q_lower or "migration" in q_lower) and ("certificate" in it_q or "migration" in it_q):
+                        matched_facts.append(it)
+        except Exception as e:
+            logger.warning(f"Could not load external facts for student services: {e}")
+
+    return [metadata_to_doc(it) for it in matched_facts]
+
+
+# ----------------------------------------------------
 # Hybrid Retrieval with Cross-Encoder Re-ranking
 # ----------------------------------------------------
 def reciprocal_rank_fusion(dense_ids: List[int], sparse_ids: List[int], k: int = 60) -> List[int]:
@@ -865,6 +913,11 @@ def retrieve(query: str, k: int = RETRIEVAL_K, min_score: float = RERANK_MIN_SCO
     if fdp_docs:
         logger.info(f"[RAG] Returning {len(fdp_docs)} structured FDP documents.")
         return fdp_docs
+
+    student_services_docs = find_student_services_matches(query)
+    if student_services_docs:
+        logger.info(f"[RAG] Returning {len(student_services_docs)} structured student services documents.")
+        return student_services_docs
 
     faculty_docs = find_faculty_matches(query)
     fee_docs = find_fee_structure_matches(query)

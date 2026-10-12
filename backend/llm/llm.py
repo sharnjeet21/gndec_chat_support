@@ -76,24 +76,32 @@ if GROQ_API_KEY:
     groq_client = AsyncOpenAI(
         api_key=GROQ_API_KEY,
         base_url=GROQ_API_BASE,
+        max_retries=0,
+        timeout=15.0,
     )
 
 if NVIDIA_NIM_API_KEY:
     nim_client = AsyncOpenAI(
         api_key=NVIDIA_NIM_API_KEY,
         base_url=NVIDIA_NIM_API_BASE,
+        max_retries=0,
+        timeout=15.0,
     )
 
 if OLLAMA_BASE_URL:
     ollama_client = AsyncOpenAI(
         api_key="ollama",  # Ollama doesn't check the key
         base_url=f"{OLLAMA_BASE_URL}/v1",
+        max_retries=0,
+        timeout=15.0,
     )
 
 if OMNIROUTE_BASE_URL:
     omniroute_client = AsyncOpenAI(
         api_key=OMNIROUTE_API_KEY or "omniroute",
         base_url=OMNIROUTE_BASE_URL,
+        max_retries=0,
+        timeout=15.0,
     )
 
 # Embedding model (shared across providers)

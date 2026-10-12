@@ -213,9 +213,13 @@ class RAGPipeline:
                 metadata={"policy_decision": ctx.policy.decision.value},
             )
         elif ctx.policy.decision == PolicyDecision.REDIRECT:
+            target = ctx.policy.redirect_target or "https://gndec.ac.in"
             ctx.generation = GenerationOutput(
-                answer=f"Please visit {ctx.policy.redirect_target} for this information.",
-                metadata={"policy_decision": ctx.policy.decision.value, "redirect": ctx.policy.redirect_target},
+                answer=(
+                    f"I am the official information assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana, "
+                    f"and only provide assistance with GNDEC college inquiries. Please visit {target} for official information."
+                ),
+                metadata={"policy_decision": ctx.policy.decision.value, "redirect": target},
             )
         elif ctx.policy.decision == PolicyDecision.CLARIFY:
             ctx.generation = GenerationOutput(

@@ -20,10 +20,15 @@ async def evaluate(input_: PolicyInput) -> PolicyOutput:
 
     # Sensitive content patterns
     sensitive_patterns = [
-        "password", "credential", "api key", "secret", "token",
+        "credential", "api key", "secret", "token",
         "ssn", "social security", "credit card", "bank account",
         "personal email", "personal phone number", "private phone number", "personal address",
     ]
+
+    # Only treat 'password' as sensitive if not asking about a self-service or official reset procedure
+    is_password_procedural = any(kw in query for kw in ["reset", "change", "forgot", "proforma", "procedure", "form", "letter", "how to", "internet", "wifi"])
+    if "password" in query and not is_password_procedural:
+        sensitive_patterns.append("password")
 
     for pattern in sensitive_patterns:
         if pattern in query:
