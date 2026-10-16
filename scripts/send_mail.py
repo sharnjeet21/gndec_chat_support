@@ -21,14 +21,16 @@ if not EMAIL_PASSWORD:
 msg = EmailMessage()
 msg.set_content(f"Your GNDEC AI Assistant is running!\n\nAccess it from anywhere using this Cloudflare link:\n{link}")
 
+RECIPIENTS = ['sharn.ss123@gmail.com', 'taranpreetkaur0605@gmail.com']
+
 msg['Subject'] = 'GNDEC AI RAG System is Online'
 msg['From'] = EMAIL_ADDRESS
-msg['To'] = 'sharn.ss123@gmail.com'
+msg['To'] = ', '.join(RECIPIENTS)
 
 try:
     with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
         smtp.login(EMAIL_ADDRESS, EMAIL_PASSWORD)
         smtp.send_message(msg)
-    print("✅ Email sent successfully to sharn.ss123@gmail.com")
+    print(f"✅ Email sent successfully to {', '.join(RECIPIENTS)}")
 except Exception as e:
     print(f"❌ Failed to send email: {e}")

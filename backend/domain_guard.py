@@ -48,9 +48,29 @@ EXTERNAL_INSTITUTIONS_PATTERNS = [
     r"\b(thapar\s+(?:university|institute|college|patiala|tiet|campus|admission|cutoff|fees?|placements?)|chitkara\s+(?:university|campus|admission|cutoff|fees?)|amity\s+(?:university|campus|admission|cutoff|fees?))\b",
     r"\b(iit\s+(bombay|delhi|madras|kanpur|kharagpur|roorkee|guwahati|hyderabad|indore|varanasi|ropar|patna|gandhinagar|bhubaneswar))\b",
     r"\b(nit\s+(jalandhar|kurukshetra|trichy|surathkal|warangal|calicut|rourkela|silchar|hamirpur|durgapur))\b",
+    # Guru Nanak Dev University (GNDU) & Constituent/Affiliated Colleges & Regional Campuses
+    r"\b(gndu|guru nanak dev university|g\.n\.d\.u)\b",
+    r"\b(?:gndu|guru nanak dev university)\s+(?:college|campus|constituent|regional campus|rc|amritsar|jalandhar|gurdaspur|sathiala|firozpur|muktsar)\b",
+    r"\b(?:gndu|guru nanak dev university)\s+(?:college\s+)?(?:at\s+|in\s+)?(nakodar|narot jaimal singh|pathankot|patti|phillaur|sujjanpur|verka|chung|muktsar|jalandhar|gurdaspur|sathiala)\b",
+    r"\b(gndu\s+college\s+(?:nakodar|narot jaimal singh|pathankot|patti|phillaur|sujjanpur|verka|chung|muktsar|jalandhar))\b",
+    r"\b(?:constituent\s+colleges?\s+of\s+gndu|affiliated\s+to\s+gndu|gndu\s+affiliated)\b",
+    # Guru Nanak Dev Polytechnic College (GNDPC), Ludhiana
+    r"\b(gndpc|guru nanak dev polytechnic|gnd polytechnic|polytechnic college ludhiana|gndec polytechnic)\b",
+    # Other Notable Engineering, Technology & Professional Institutes named after Guru Nanak
+    r"\b(guru nanak dev institute of technology|gndit)\b",
+    r"\b(guru nanak institute of engineering\s*(?:&|and)\s*technology|gniet)\b",
+    r"\b(guru nanak institute of technology|gnit)\b",
+    r"\b(guru nanak institute of management|gnim)\b",
+    r"\b(guru nanak college of education)\b",
+    # Arts, Science, Commerce & Khalsa Colleges named after Guru Nanak / Guru Nanak Dev
+    r"\b(?:sri\s+)?guru nanak dev khalsa college\b|\bsgnd\s*khalsa\b",
+    r"\b(guru nanak khalsa college|gnkc|ggn khalsa|ggnkc)\b",
+    r"\b(guru nanak college\s+(?:of\s+)?(?:chennai|firozpur|budhlada|moga|muktsar|killianwali|batala|yamuna nagar|yamunanagar|dhanbad))\b",
+    r"\b(guru nanak\s+(?:dental|ayurvedic|medical|nursing|pharmacy)\s+college)\b",
+    r"\bguru nanak (?:dev )?(?:university|polytechnic|degree college|institute of management|college of education|institute of technology|khalsa college)\b",
 ]
 EXTERNAL_INSTITUTION_REGEX = re.compile("|".join(EXTERNAL_INSTITUTIONS_PATTERNS), flags=re.IGNORECASE)
-GNDEC_REGEX = re.compile(r"\b(gndec|gne|guru nanak dev engineering college|guru nanak dev engg college|here|our college)\b", flags=re.IGNORECASE)
+GNDEC_REGEX = re.compile(r"\b(gndec|gne|guru nanak dev engineering college|guru nanak dev engg college|gne ludhiana|gndec ludhiana|here|our college)\b", flags=re.IGNORECASE)
 
 OOD_PATTERNS = [
     r"\b(prime minister|president of|capital of|capital city|weather in|crypto|bitcoin|stock market|ipl score|cricket score|olympics|fifa world cup)\b",

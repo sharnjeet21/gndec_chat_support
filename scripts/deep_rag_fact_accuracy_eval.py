@@ -163,6 +163,36 @@ TEST_SUITE: List[Dict[str, Any]] = [
             "prohibited": []
         }
     },
+    {
+        "id": "FAC-06",
+        "category": "Faculty & Staff",
+        "query": "tell me the list faculties according to the subjects they teach",
+        "ground_truth": {
+            "key_facts": [
+                ["Computer Science", "CSE"],
+                ["Information Technology", "IT"],
+                ["Mechanical", "Mechanical Engineering"],
+                ["Civil", "Civil Engineering"],
+                ["Electrical", "Electrical Engineering"],
+            ],
+            "must_contain_tables": True,
+            "prohibited": ["I do not have information"]
+        }
+    },
+    {
+        "id": "FAC-07",
+        "category": "Faculty & Staff",
+        "query": "Who teaches surveying in Civil Engineering at GNDEC?",
+        "ground_truth": {
+            "key_facts": [
+                "Amandeep Singh",
+                "Surveying",
+                ["Civil", "Civil Engineering"],
+            ],
+            "must_contain_tables": True,
+            "prohibited": ["I do not have information"]
+        }
+    },
 
     # ---------------------------------------------------------
     # 3. Admissions & Eligibility (Verified against GNDEC Prospectus / IKGPTU)
@@ -469,6 +499,66 @@ TEST_SUITE: List[Dict[str, Any]] = [
             ],
             "must_contain_tables": False,
             "prohibited": ["E=mc^2", "spacetime curvature", "speed of light"]
+        }
+    },
+    {
+        "id": "OOD-04",
+        "category": "Domain Guardrails",
+        "query": "What is the fee for B.Tech in Guru Nanak Dev University?",
+        "ground_truth": {
+            "key_facts": [
+                ["only have knowledge about GNDEC", "only answer questions about GNDEC", "strictly for Guru Nanak Dev Engineering College"],
+            ],
+            "must_contain_tables": False,
+            "prohibited": ["68429", "88729", "20300"]
+        }
+    },
+    {
+        "id": "OOD-05",
+        "category": "Domain Guardrails",
+        "query": "Tell me about admission in Guru Nanak Dev Polytechnic College Ludhiana",
+        "ground_truth": {
+            "key_facts": [
+                ["only have knowledge about GNDEC", "only answer questions about GNDEC", "strictly for Guru Nanak Dev Engineering College"],
+            ],
+            "must_contain_tables": False,
+            "prohibited": ["JEE Main", "IKGPTU", "B.Tech"]
+        }
+    },
+    {
+        "id": "OOD-06",
+        "category": "Domain Guardrails",
+        "query": "What courses are offered at Guru Nanak Institute of Technology in Telangana?",
+        "ground_truth": {
+            "key_facts": [
+                ["only have knowledge about GNDEC", "only answer questions about GNDEC", "strictly for Guru Nanak Dev Engineering College"],
+            ],
+            "must_contain_tables": False,
+            "prohibited": ["B.Tech in Civil Engineering", "GNDEC offers"]
+        }
+    },
+    {
+        "id": "OOD-07",
+        "category": "Domain Guardrails",
+        "query": "Who is the principal of Sri Guru Nanak Dev Khalsa College New Delhi?",
+        "ground_truth": {
+            "key_facts": [
+                ["only have knowledge about GNDEC", "only answer questions about GNDEC", "strictly for Guru Nanak Dev Engineering College"],
+            ],
+            "must_contain_tables": False,
+            "prohibited": ["Sehijpal Singh", "Dr. Sehijpal"]
+        }
+    },
+    {
+        "id": "OOD-08",
+        "category": "Domain Guardrails",
+        "query": "What is the placement record of Guru Nanak College Chennai?",
+        "ground_truth": {
+            "key_facts": [
+                ["only have knowledge about GNDEC", "only answer questions about GNDEC", "strictly for Guru Nanak Dev Engineering College"],
+            ],
+            "must_contain_tables": False,
+            "prohibited": ["highest package", "T&P GNDEC"]
         }
     },
 ]

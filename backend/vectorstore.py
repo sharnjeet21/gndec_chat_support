@@ -399,9 +399,57 @@ def _format_faculty_table(members: List[Dict[str, Any]], title: str, include_dep
     return "\n".join(lines)
 
 
+def _format_faculty_subject_table(members: List[Dict[str, Any]], title: str, include_dept: bool = False) -> str:
+    lines = [f"### {title}\n"]
+    if include_dept:
+        lines.append("| Sr No. | Name | Designation | Department | Subjects Taught / Areas of Specialization | Email |")
+        lines.append("| :---: | :--- | :--- | :--- | :--- | :--- |")
+        for i, m in enumerate(members, 1):
+            ri = m.get("research_interest", "").strip()
+            if not ri or ri in ["-", "N.A.", "Nil"]:
+                ri = m.get("qualification", "").strip() or m.get("department", "")
+            ri = ri.replace("\n", " ").replace("|", "/")
+            if len(ri) > 95:
+                ri = ri[:92] + "..."
+            lines.append(f"| {i} | {m['name']} | {m['designation']} | {m['department']} | {ri} | {m['email']} |")
+    else:
+        lines.append("| Sr No. | Name | Designation | Subjects Taught / Areas of Specialization | Email |")
+        lines.append("| :---: | :--- | :--- | :--- | :--- |")
+        for i, m in enumerate(members, 1):
+            ri = m.get("research_interest", "").strip()
+            if not ri or ri in ["-", "N.A.", "Nil"]:
+                ri = m.get("qualification", "").strip() or m.get("department", "")
+            ri = ri.replace("\n", " ").replace("|", "/")
+            if len(ri) > 95:
+                ri = ri[:92] + "..."
+            lines.append(f"| {i} | {m['name']} | {m['designation']} | {ri} | {m['email']} |")
+    return "\n".join(lines)
+
+
+SUBJECT_FACULTY_PATTERNS = re.compile(
+    r"\b("
+    r"(?:list|tell me|who are|names? of)\s+(?:the\s+)?(?:all\s+)?facult(?:y|ies| members?)\s+(?:according to|by|based on|with)\s+(?:the\s+)?(?:subjects?|topics?|courses?|specializations?|areas?)(?:\s+(?:they\s+)?teach|\s+taught|\s+specialization)?|"
+    r"facult(?:y|ies| members?)\s+(?:according to|by|based on|with)\s+(?:the\s+)?(?:subjects?|topics?|courses?|specializations?|areas?)|"
+    r"(?:subjects?|courses?)\s+(?:taught by|handled by|allotted to)\s+(?:the\s+)?facult(?:y|ies| members?)|"
+    r"who teaches (?:what|which subject|which course)|"
+    r"(?:which|what) facult(?:y|ies| professor| teacher)\s+teaches?\b|"
+    r"facult(?:y|ies)\s+(?:teaching\s+subjects?|specializations?|research interests?)|"
+    r"who teaches\s+[a-zA-Z\s]+"
+    r")\b",
+    re.IGNORECASE,
+)
+
+
 def find_faculty_matches(query: str) -> List[Document]:
     """Finds exact or aggregate faculty matches from structured records."""
     if not FACULTY_LIST:
+        return []
+
+    q_lower = query.lower()
+    ext_matches = [
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford|gndu|guru nanak dev university|gndpc|guru nanak dev polytechnic|gndit|gniet|gnit|sgnd khalsa|guru nanak khalsa|gnkc|ggn khalsa|guru nanak college of education|guru nanak institute of management|gnim)\b"
+    ]
+    if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
         return []
 
     matched_dept = None
@@ -409,6 +457,83 @@ def find_faculty_matches(query: str) -> List[Document]:
         if pat.search(query):
             matched_dept = dept
             break
+
+    # 1. Faculty by Subjects Taught & Specialization Query
+    if SUBJECT_FACULTY_PATTERNS.search(query):
+        if matched_dept:
+            dept_fac = [m for m in FACULTY_LIST if m.get("department") == matched_dept]
+            table_md = _format_faculty_subject_table(dept_fac, f"Faculty Directory by Subjects Taught & Specialization - {matched_dept}")
+            doc_data = {
+                "question": f"What is the list of faculty members in {matched_dept} according to the subjects they teach at GNDEC?",
+                "answer": table_md,
+                "section": f"Faculty Directory - Subjects in {matched_dept}",
+                "source_file": "faculty.json",
+                "is_aggregate": True
+            }
+            return [metadata_to_doc(doc_data)]
+        else:
+            # Check if asking about a specific subject/area (e.g. "who teaches machine learning" or "who teaches surveying")
+            q_clean = re.sub(
+                r"\b(who|which|what|tell|me|list|all|faculty|faculties|members?|professors?|teachers?|according|to|based|on|the|subjects?|courses?|topics?|teach|teaches|taught|at|in|of|gndec|gne|college)\b",
+                "",
+                q_lower,
+            )
+            candidate_tokens = [w for w in re.findall(r"[a-zA-Z]+", q_clean) if len(w) >= 3]
+            specific_matches = []
+            if candidate_tokens and len(candidate_tokens) <= 4:
+                phrase = " ".join(candidate_tokens)
+                for m in FACULTY_LIST:
+                    ri = (m.get("research_interest", "") + " " + m.get("qualification", "")).lower()
+                    if phrase in ri or (len(candidate_tokens) == 1 and candidate_tokens[0] in ri):
+                        specific_matches.append(m)
+
+            if specific_matches:
+                subj_title = " ".join(candidate_tokens).title()
+                table_md = _format_faculty_subject_table(
+                    specific_matches,
+                    f"Faculty Members Specializing in / Teaching {subj_title} at GNDEC",
+                    include_dept=True,
+                )
+                doc_data = {
+                    "question": f"Which faculty members teach or specialize in {subj_title} at Guru Nanak Dev Engineering College (GNDEC)?",
+                    "answer": table_md,
+                    "section": f"Faculty Directory - {subj_title}",
+                    "source_file": "faculty.json",
+                    "is_aggregate": True,
+                }
+                return [metadata_to_doc(doc_data)]
+            else:
+                # General query across all departments: build comprehensive departmental directory
+                by_dept = {}
+                for m in FACULTY_LIST:
+                    d = m.get("department", "Other")
+                    by_dept.setdefault(d, []).append(m)
+
+                lines = [
+                    "Guru Nanak Dev Engineering College (GNDEC), Ludhiana has over 270 distinguished faculty members across its academic departments.\n",
+                    "Here is the directory of faculty members according to the subjects and academic specializations they teach across the departments:\n"
+                ]
+                academic_depts = [
+                    "Computer Science & Engg.", "Information Technology", "Mechanical Engineering",
+                    "Civil Engineering", "Electrical Engineering", "Electronics & Communication Engineering",
+                    "Business Administration", "Computer Applications", "Applied Science",
+                    "Production Engineering", "School of Architecture"
+                ]
+                for d in academic_depts:
+                    members = by_dept.get(d, [])
+                    if members:
+                        lines.append(_format_faculty_subject_table(members, d, include_dept=False))
+                        lines.append("")
+
+                full_md = "\n".join(lines)
+                doc_data = {
+                    "question": "What is the list of faculty members at Guru Nanak Dev Engineering College (GNDEC) according to the subjects they teach and their areas of specialization?",
+                    "answer": full_md,
+                    "section": "Faculty Directory - Subjects Taught",
+                    "source_file": "faculty.json",
+                    "is_aggregate": True,
+                }
+                return [metadata_to_doc(doc_data)]
 
     # 1. PhD / Doctorate Query
     if PHD_PATTERNS.search(query):
@@ -575,7 +700,7 @@ def find_fee_structure_matches(query: str) -> List[Document]:
     q_lower = query.lower()
     # If the user is asking about fees of another college/institution, do not route to GNDEC fee tables
     ext_matches = [
-        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford)\b"
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford|gndu|guru nanak dev university|gndpc|guru nanak dev polytechnic|gndit|gniet|gnit|sgnd khalsa|guru nanak khalsa|gnkc|ggn khalsa|guru nanak college of education|guru nanak institute of management|gnim)\b"
     ]
     if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
         return []
@@ -638,6 +763,11 @@ def find_courses_matches(query: str) -> List[Document]:
         return []
 
     q_lower = query.lower()
+    ext_matches = [
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford|gndu|guru nanak dev university|gndpc|guru nanak dev polytechnic|gndit|gniet|gnit|sgnd khalsa|guru nanak khalsa|gnkc|ggn khalsa|guru nanak college of education|guru nanak institute of management|gnim)\b"
+    ]
+    if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
+        return []
 
     # Exclude facility/sports/library/hostel/fee/placement queries from course routing
     facility_keywords = {"facility", "facilities", "library", "sports", "gym", "gymnasium", "hostel", "mess", "canteen", "medical", "hospital", "dispensary", "fee", "fees", "placement", "faculty", "hod"}
@@ -683,10 +813,25 @@ def find_admission_matches(query: str) -> List[Document]:
     """Returns verified admission-process data when the query asks about application, quotas, or entrance exam procedures."""
     if not ADMISSION_LIST:
         return []
+
+    q_lower = query.lower()
+
+    # If the user is asking about admissions of another college/institution, do not route to GNDEC admission data
+    ext_matches = [
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford|gndu|guru nanak dev university|gndpc|guru nanak dev polytechnic|gndit|gniet|gnit|sgnd khalsa|guru nanak khalsa|gnkc|ggn khalsa|guru nanak college of education|guru nanak institute of management|gnim)\b"
+    ]
+    if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
+        return []
+
     if not ADMISSION_KEYWORDS.search(query):
         return []
 
-    q_lower = query.lower()
+    # If the user is asking about admission to another college/institution, do not route to GNDEC admission records
+    ext_matches = [
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford|gndu|guru nanak dev university|gndpc|guru nanak dev polytechnic|gndit|gniet|gnit|sgnd khalsa|guru nanak khalsa|gnkc|ggn khalsa|guru nanak college of education|guru nanak institute of management|gnim)\b"
+    ]
+    if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
+        return []
 
     # Guard against non-admission queries (bus pass, railway concession, hostel, certificates)
     if re.search(r"\b(bus pass|buss pass|railway|concession|hostel|transport|no[- ]dues)\b", q_lower):
@@ -754,7 +899,21 @@ PRINCIPAL_PATTERNS = re.compile(
 
 def find_principal_matches(query: str) -> List[Document]:
     """Returns verified succession of principals from 1956 to present."""
+    q_lower = query.lower()
+    ext_matches = [
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford|gndu|guru nanak dev university|gndpc|guru nanak dev polytechnic|gndit|gniet|gnit|sgnd khalsa|guru nanak khalsa|gnkc|ggn khalsa|guru nanak college of education|guru nanak institute of management|gnim)\b"
+    ]
+    if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
+        return []
+
     if not PRINCIPAL_PATTERNS.search(query):
+        return []
+
+    q_lower = query.lower()
+    ext_matches = [
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford|gndu|guru nanak dev university|gndpc|guru nanak dev polytechnic|gndit|gniet|gnit|sgnd khalsa|guru nanak khalsa|gnkc|ggn khalsa|guru nanak college of education|guru nanak institute of management|gnim)\b"
+    ]
+    if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
         return []
 
     doc_data = {
