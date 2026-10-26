@@ -29,9 +29,9 @@ rm -f cloudflare_startup.log
 ./cloudflared tunnel --url http://localhost:5173 > cloudflare_startup.log 2>&1 &
 CF_PID=$!
 
-# 4. Wait for Cloudflare to generate the link
+# 4. Wait for Cloudflare to generate the link (up to 60s for cold boot network)
 CF_URL=""
-for i in {1..30}; do
+for i in {1..60}; do
     CF_URL=$(grep -o 'https://[-a-zA-Z0-9]*\.trycloudflare.com' cloudflare_startup.log | head -n 1)
     if [ -n "$CF_URL" ]; then
         break
