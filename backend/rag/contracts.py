@@ -52,8 +52,8 @@ class VerificationStatus(str, Enum):
 class PolicyInput:
     """Input to policy evaluation."""
     query: str
-    phone: str
-    session_id: str
+    phone: str = ""
+    session_id: str = ""
     language: str = "en"
     metadata: dict[str, Any] = field(default_factory=dict)
 

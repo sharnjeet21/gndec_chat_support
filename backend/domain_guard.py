@@ -29,7 +29,9 @@ COLLEGE_KEYWORDS = {
     "holidays", "timing", "bus", "library", "sports", "canteen", "scholarship", "pms", "tfw",
     "sc/st", "reappear", "backlog", "degree", "ptu", "ikgptu", "curriculum", "credits",
     "kado", "kinni", "kithe", "dakhla", "admit", "form", "contact", "email", "phone",
-    "address", "location", "uniform", "dress", "gurdwara", "punjabi", "hindi", "course", "courses"
+    "address", "location", "uniform", "dress", "gurdwara", "punjabi", "hindi", "course", "courses",
+    "event", "events", "fest", "fests", "festival", "festivals", "apex", "causmic", "genesis", "anand utsav",
+    "workshop", "workshops", "seminar", "seminars", "conference", "hackathon", "fdp"
 }
 
 # Gurmukhi / Devanagari college terms — checked as substrings since the ASCII
@@ -73,7 +75,7 @@ EXTERNAL_INSTITUTION_REGEX = re.compile("|".join(EXTERNAL_INSTITUTIONS_PATTERNS)
 GNDEC_REGEX = re.compile(r"\b(gndec|gne|guru nanak dev engineering college|guru nanak dev engg college|gne ludhiana|gndec ludhiana|here|our college)\b", flags=re.IGNORECASE)
 
 OOD_PATTERNS = [
-    r"\b(prime minister|president of|capital of|capital city|weather in|crypto|bitcoin|stock market|ipl score|cricket score|olympics|fifa world cup)\b",
+    r"\b(prime minister|president of|capital of|capital city|weather in|crypto|cryptocurrency|bitcoin|ethereum|stock|stocks|stock price|stock market|share price|shares|market cap|ipl score|cricket score|olympics|fifa world cup)\b",
     r"\b(write|create|implement|debug|code|generate|give me|show me)\b.*?\b(program|script|code|algorithm|function|class|method|loop|quicksort|sorting|binary search|bubble sort|merge sort|linked list|binary tree|stack|queue|sql query|html|css|javascript|python|c\+\+|java|cpp)\b",
     r"\b(solve the equation|math problem|differentiate|integrate|calculate derivative|theory of relativity|albert einstein|quantum mechanics|quantum entanglement|quantum computing|speed of light|black hole|photosynthesis|mitochondria|gravitation|thermodynamics|nuclear fission|periodic table)\b",
     r"\b(movie review|recipe for|lyrics of|translate to french|translate to spanish|who won the match|write an essay|tell me a joke|tell me a story)\b"

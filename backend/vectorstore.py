@@ -401,8 +401,9 @@ def _format_faculty_table(members: List[Dict[str, Any]], title: str, include_dep
 
 def _format_faculty_subject_table(members: List[Dict[str, Any]], title: str, include_dept: bool = False) -> str:
     lines = [f"### {title}\n"]
+    lines.append("> **Note:** The subjects/areas listed below are based on faculty *research interests* and *qualifications* as per the official GNDEC faculty directory. **Actual teaching assignments (which subject a faculty member teaches in the current semester) are determined by the official GNDEC timetable and may differ.** For current semester teaching allotments, please refer to the department timetable or contact the department office.\n")
     if include_dept:
-        lines.append("| Sr No. | Name | Designation | Department | Subjects Taught / Areas of Specialization | Email |")
+        lines.append("| Sr No. | Name | Designation | Department | Research Interests / Areas of Specialization | Email |")
         lines.append("| :---: | :--- | :--- | :--- | :--- | :--- |")
         for i, m in enumerate(members, 1):
             ri = m.get("research_interest", "").strip()
@@ -413,7 +414,7 @@ def _format_faculty_subject_table(members: List[Dict[str, Any]], title: str, inc
                 ri = ri[:92] + "..."
             lines.append(f"| {i} | {m['name']} | {m['designation']} | {m['department']} | {ri} | {m['email']} |")
     else:
-        lines.append("| Sr No. | Name | Designation | Subjects Taught / Areas of Specialization | Email |")
+        lines.append("| Sr No. | Name | Designation | Research Interests / Areas of Specialization | Email |")
         lines.append("| :---: | :--- | :--- | :--- | :--- |")
         for i, m in enumerate(members, 1):
             ri = m.get("research_interest", "").strip()
@@ -462,11 +463,11 @@ def find_faculty_matches(query: str) -> List[Document]:
     if SUBJECT_FACULTY_PATTERNS.search(query):
         if matched_dept:
             dept_fac = [m for m in FACULTY_LIST if m.get("department") == matched_dept]
-            table_md = _format_faculty_subject_table(dept_fac, f"Faculty Directory by Subjects Taught & Specialization - {matched_dept}")
+            table_md = _format_faculty_subject_table(dept_fac, f"Faculty Directory by Research Interests & Specialization - {matched_dept}")
             doc_data = {
-                "question": f"What is the list of faculty members in {matched_dept} according to the subjects they teach at GNDEC?",
+                "question": f"What is the list of faculty members in {matched_dept} with their research interests and specializations at GNDEC?",
                 "answer": table_md,
-                "section": f"Faculty Directory - Subjects in {matched_dept}",
+                "section": f"Faculty Directory - Research Interests in {matched_dept}",
                 "source_file": "faculty.json",
                 "is_aggregate": True
             }
@@ -491,11 +492,11 @@ def find_faculty_matches(query: str) -> List[Document]:
                 subj_title = " ".join(candidate_tokens).title()
                 table_md = _format_faculty_subject_table(
                     specific_matches,
-                    f"Faculty Members Specializing in / Teaching {subj_title} at GNDEC",
+                    f"Faculty Members Specializing in {subj_title} at GNDEC",
                     include_dept=True,
                 )
                 doc_data = {
-                    "question": f"Which faculty members teach or specialize in {subj_title} at Guru Nanak Dev Engineering College (GNDEC)?",
+                    "question": f"Which faculty members specialize in {subj_title} at Guru Nanak Dev Engineering College (GNDEC)?",
                     "answer": table_md,
                     "section": f"Faculty Directory - {subj_title}",
                     "source_file": "faculty.json",
@@ -503,15 +504,29 @@ def find_faculty_matches(query: str) -> List[Document]:
                 }
                 return [metadata_to_doc(doc_data)]
             else:
-                # General query across all departments: build comprehensive departmental directory
+                # General query across all departments: build summarized departmental directory
+                # Show only HOD + top 2 senior professors per department to stay within token limits
                 by_dept = {}
                 for m in FACULTY_LIST:
                     d = m.get("department", "Other")
                     by_dept.setdefault(d, []).append(m)
 
+                def sort_key(fac):
+                    desig = fac.get("designation", "").lower()
+                    if "professor and head" in desig or "hod" in desig or "head of" in desig:
+                        return (0, "")
+                    elif "professor" in desig and "associate" not in desig and "assistant" not in desig:
+                        return (1, fac.get("name", ""))
+                    elif "associate professor" in desig:
+                        return (2, fac.get("name", ""))
+                    elif "assistant professor" in desig:
+                        return (3, fac.get("name", ""))
+                    else:
+                        return (4, fac.get("name", ""))
+
                 lines = [
                     "Guru Nanak Dev Engineering College (GNDEC), Ludhiana has over 270 distinguished faculty members across its academic departments.\n",
-                    "Here is the directory of faculty members according to the subjects and academic specializations they teach across the departments:\n"
+                    "Below is a summary of each department's Head (HOD) and two senior faculty members by rank. For the full directory, please specify a department.\n"
                 ]
                 academic_depts = [
                     "Computer Science & Engg.", "Information Technology", "Mechanical Engineering",
@@ -522,7 +537,10 @@ def find_faculty_matches(query: str) -> List[Document]:
                 for d in academic_depts:
                     members = by_dept.get(d, [])
                     if members:
-                        lines.append(_format_faculty_subject_table(members, d, include_dept=False))
+                        sorted_members = sorted(members, key=sort_key)
+                        top_members = sorted_members[:3]  # HOD + 2 senior
+                        lines.append(_format_faculty_subject_table(top_members, d, include_dept=False))
+                        lines.append(f"*Showing 3 of {len(members)} faculty in {d}.*")
                         lines.append("")
 
                 full_md = "\n".join(lines)
@@ -994,6 +1012,63 @@ def find_fdp_matches(query: str) -> List[Document]:
 
 
 # ----------------------------------------------------
+# Structured Campus Events & Festivals Matcher
+# ----------------------------------------------------
+EVENT_PATTERNS = re.compile(
+    r"\b("
+    r"apex|apex\s*2026|apex\s*2025|gne['\s]*s\s*apex|causmic|causmic\s*club|"
+    r"recent(?:ly)?\s+(?:organi[sz]ed|conducted|held)\s+events?|"
+    r"recent\s+events?|latest\s+events?|past\s+events?|college\s+events?|campus\s+events?|"
+    r"events?\s+(?:in|at|by)\s+(?:gndec|gne|college)|"
+    r"events?\s+(?:organi[sz]ed|conducted|held)|"
+    r"technical\s+fest|cultural\s+fest|anand\s+utsav|genesis|annual\s+fest|"
+    r"athletic\s+meet|sports\s+meet"
+    r")\b",
+    re.IGNORECASE,
+)
+
+def find_event_matches(query: str) -> List[Document]:
+    """Returns verified facts for APEX 2026, recent college events, and annual festivals at GNDEC."""
+    ext_matches = [
+        r"\b(iit|iits|nit|nits|iiit|bits|thapar|lpu|cu|chitkara|amity|cgc|sliet|mrsptu|panjab university|pu chd|delhi university|du|harvard|mit|stanford|gndu|guru nanak dev university|gndpc|guru nanak dev polytechnic|gndit|gniet|gnit|sgnd khalsa|guru nanak khalsa|gnkc|ggn khalsa|guru nanak college of education|guru nanak institute of management|gnim)\b"
+    ]
+    q_lower = query.lower()
+    if any(re.search(pat, q_lower) for pat in ext_matches) and not re.search(r"\b(gndec|gne|here|our)\b", q_lower):
+        return []
+
+    if not EVENT_PATTERNS.search(query):
+        return []
+
+    doc_data = {
+        "question": "What is APEX 2026 at GNDEC? What are the recently organised events, fests, and student activities at Guru Nanak Dev Engineering College (GNDEC), Ludhiana?",
+        "answer": (
+            "Guru Nanak Dev Engineering College (GNDEC), Ludhiana hosts vibrant student-led technical, cultural, and sports events throughout the academic year:\n\n"
+            "### 1. GNE's APEX 2026 (Recent Flagship Inter-School Techno-Cultural Festival):\n"
+            "- **Date & Timing**: Held in late October 2026 (annual flagship event organized 4–5 days ago).\n"
+            "- **Organizers**: Organized by the **Causmic Club** (official student media & event society) in coordination with the Student Council, Computer Society of India (CSI) student chapter, and college administration.\n"
+            "- **Scope & Scale**: Premier inter-school and intra-college mega competition with hundreds of student participants representing schools and colleges from across the region.\n"
+            "- **Key Segments & Highlights**:\n"
+            "  * **Apex Live Project Display**: Live engineering project exhibition showcasing student inventions, software systems, IoT prototypes, and robotics displays judged by industry experts and senior professors.\n"
+            "  * **Technical Contests**: 'Web Wizards' (web design & development challenge), algorithmic coding sprints, technical quizzes, and digital circuit challenges.\n"
+            "  * **Cultural & Literary Events**: Inter-school debates, declamation contests, photography competitions, graphic design showcase, street theatre (Nukkad Natak), musical jams, and open mic performances.\n"
+            "  * **Student Organization**: Organizing committees are selected through the annual Causmic Club student recruitment drives.\n\n"
+            "### 2. Major Annual Festivals & Campus Traditions at GNDEC:\n"
+            "- **Anand Utsav**: The annual college-wide cultural festival showcasing rich Punjabi folklore, Giddha, Bhangra, theatre, fine arts, classical music, and creative competitions.\n"
+            "- **Genesis / ISTE Convention**: The annual national technical symposium featuring hackathons, technical paper presentations, robotics combats, and coding marathons.\n"
+            "- **Annual Athletic Meet**: Flagship two-day sports championship hosted at the GNDEC Sports Stadium (featuring track and field events, sprints, shot put, long jump, and march past).\n"
+            "- **Foundation Day & Alumni Meet**: Celebrated annually (commemorating the foundation laid on April 8, 1956) with alumni reunions held in November felicitating jubilee batches and awarding academic medals.\n"
+            "- **Academic FDPs & Workshops**: Recent AICTE ATAL sponsored Faculty Development Programmes on 'Generative AI Unveiled' and 'Design Thinking' for engineering educators.\n\n"
+            "For event schedules, notices, and registration results, visit the official college portal at **https://gndec.ac.in** and Causmic Club portal at **https://causmic.gndec.ac.in**."
+        ),
+        "section": "Campus Events & Festivals",
+        "source_file": "gndec.ac.in/events",
+        "doc_url": "https://gndec.ac.in",
+        "is_aggregate": True,
+    }
+    return [metadata_to_doc(doc_data)]
+
+
+# ----------------------------------------------------
 # Structured Student Services & Amenities Matcher
 # ----------------------------------------------------
 STUDENT_SERVICES_PATTERNS = re.compile(
@@ -1072,6 +1147,11 @@ def retrieve(query: str, k: int = RETRIEVAL_K, min_score: float = RERANK_MIN_SCO
     if fdp_docs:
         logger.info(f"[RAG] Returning {len(fdp_docs)} structured FDP documents.")
         return fdp_docs
+
+    event_docs = find_event_matches(query)
+    if event_docs:
+        logger.info(f"[RAG] Returning {len(event_docs)} structured event documents.")
+        return event_docs
 
     student_services_docs = find_student_services_matches(query)
     if student_services_docs:

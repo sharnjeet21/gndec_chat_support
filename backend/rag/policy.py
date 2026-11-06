@@ -50,6 +50,8 @@ async def evaluate(input_: PolicyInput) -> PolicyOutput:
         "guru nanak college of education", "guru nanak institute of management", "gnim",
         "programming", "coding", "python", "java", "c++", "javascript",
         "homework", "assignment", "exam solution", "write code",
+        "stock price", "stock market", "crypto", "bitcoin", "weather in", "capital of",
+        "stock price", "stock market", "stocks", "crypto", "bitcoin",
     ]
 
     has_gndec_context = any(kw in query for kw in ["gndec", "gne", "guru nanak dev engineering college", "guru nanak dev engg college", "ludhiana"])

@@ -122,5 +122,21 @@
     "source_file": "faculty.json",
     "doc_url": "https://gndec.ac.in/?q=node/10",
     "is_aggregate": true
+  },
+  {
+    "question": "What is APEX 2026 at GNDEC? What details and events are associated with GNE'S APEX?",
+    "answer": "Guru Nanak Dev Engineering College (GNDEC), Ludhiana organized GNE'S APEX 2026 in late October 2026. APEX is the flagship annual inter-school and college techno-cultural festival organized by the Causmic Club in collaboration with the Student Council and CSI Committee. Key highlights include the Apex Live Project Display (engineering and software models judged by faculty and industry juries), Web Wizards web development challenge, technical quizzes, robotics arena, and cultural competitions such as debates, photography, and open mic.",
+    "section": "Campus Events & Festivals",
+    "source_file": "causmic.gndec.ac.in",
+    "doc_url": "https://causmic.gndec.ac.in",
+    "is_aggregate": true
+  },
+  {
+    "question": "What are the recently organised events, annual festivals, and student activities at GNDEC?",
+    "answer": "Recent and annual events at Guru Nanak Dev Engineering College (GNDEC), Ludhiana include: 1. GNE'S APEX 2026 (held late October 2026 by Causmic Club, featuring Apex Live Project Display and technical/cultural contests); 2. Anand Utsav (annual socio-cultural youth festival celebrating Punjabi culture, dance, and music); 3. Genesis (national technical fest featuring hackathons and robotics); 4. Annual Athletic Meet (sports competition held at GNDEC Sports Stadium); 5. Foundation Day & Alumni Meet (celebrated every November felicitating jubilee batches and outstanding students); and 6. AICTE ATAL Faculty Development Programs (FDPs) on Generative AI and Design Thinking.",
+    "section": "Campus Events & Festivals",
+    "source_file": "gndec.ac.in/events",
+    "doc_url": "https://gndec.ac.in",
+    "is_aggregate": true
   }
 ]
