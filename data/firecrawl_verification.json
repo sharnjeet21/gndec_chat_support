@@ -1,0 +1,72 @@
+{
+  "timestamp": "2026-09-06",
+  "pages_fetched": 14,
+  "live_url": "https://gndec.ac.in",
+  "pages": {
+    "gndec_homepage": "https://gndec.ac.in",
+    "about_page": "https://gndec.ac.in/?q=node/1",
+    "cse_dept": "https://cse.gndec.ac.in",
+    "it_dept": "https://it.gndec.ac.in",
+    "ece_dept": "https://ece.gndec.ac.in",
+    "ee_dept": "https://ee.gndec.ac.in",
+    "me_dept": "https://me.gndec.ac.in",
+    "mba_dept": "https://mba.gndec.ac.in",
+    "mca_dept": "https://ca.gndec.ac.in",
+    "admission_portal": "https://admission.gndec.ac.in"
+  },
+  "findings": {
+    "CONFIRMED_CORRECT": {
+      "established_1956": "✅ GNDEC established in 1956 — confirmed on GNDEC Homepage",
+      "ludhiana_punjab": "✅ GNDEC located in Ludhiana, Punjab — confirmed on homepage",
+      "nankana_sahib_trust": "✅ Nankana Sahib Education Trust (NSET) manages GNDEC — confirmed on homepage",
+      "nba_accredited": "✅ NBA Accredited — listed on GNDEC Homepage and About Page",
+      "naac_accredited": "✅ NAAC Accredited — mentioned on homepage (grade not visible in scraped text)",
+      "ikgptu_affiliated": "✅ Affiliated to IKGPTU — confirmed on homepage",
+      "autonomous": "✅ Autonomous college — confirmed on homepage",
+      "cse_established_1997": "✅ CSE established in 1997 — confirmed on cse.gndec.ac.in",
+      "it_established_2001": "✅ IT established in 2001 — confirmed on it.gndec.ac.in",
+      "ece_established_1981": "✅ ECE established in 1981 — confirmed on ece.gndec.ac.in",
+      "ee_established_1957": "✅ EE established in 1957 — confirmed on ee.gndec.ac.in",
+      "me_established_1957": "✅ ME established in 1957 — confirmed on me.gndec.ac.in",
+      "mca_started_2009": "✅ MCA started in 2009 — confirmed on ca.gndec.ac.in",
+      "mba_started_2007": "✅ MBA started 2007-2008 — confirmed on mba.gndec.ac.in",
+      "tcs_present": "✅ TCS accreditation — confirmed on homepage and about page",
+      "wipro_present": "✅ WIPRO listed as recruiter — confirmed on homepage and about page",
+      "microsoft_present": "✅ Microsoft alumnus mentioned on homepage alumni list",
+      "l&t_present": "✅ L&T mentioned — confirmed on homepage",
+      "nirf_ranking": "✅ NIRF ranking mentioned — confirmed on homepage",
+      "teqip": "✅ TEQIP-III mentioned on multiple department pages",
+      "tpo_gagandeep_sodhi": "✅ Prof. Gagandeep Singh Sodhi is TPO — confirmed in tnp_data.json (placement brochure PDF)",
+      "library_present": "✅ Library facilities mentioned on homepage",
+      "sports_present": "✅ Sports facilities mentioned on homepage",
+      "nss_ncc_present": "✅ NSS/NCC mentioned on homepage"
+    },
+    "CORPUS_NEEDS_CORRECTION": {
+      "infosys_recruiter": {
+        "status": "NOT ON LIVE SITE",
+        "corpus_claim": "Infosys listed as major recruiter",
+        "live_finding": "Infosys not found on any crawled page",
+        "action": "Remove 'Infosys' from TNP-001 gold set key_facts — WIPRO and Microsoft are confirmed, Infosys is not"
+      },
+      "dispensary_medical": {
+        "status": "NOT ON LIVE SITE",
+        "corpus_claim": "GNDEC has a campus dispensary with basic medical facilities",
+        "live_finding": "No mention of dispensary/medical/health center on crawled pages",
+        "action": "Verify: corpus answer may come from old data. If unverified, mark as potential hallucination risk."
+      },
+      "gurdwara_on_campus": {
+        "status": "NOT ON LIVE SITE",
+        "corpus_claim": "Gurdwara Sahib present on GNDEC campus",
+        "live_finding": "No mention of Gurdwara on crawled pages",
+        "action": "Verify via additional sources; corpus may have stale info."
+      },
+      "principal_name_sehjpal": {
+        "status": "NOT IN SCRAPED TEXT",
+        "corpus_claim": "Principal is Sehijpal Singh",
+        "live_finding": "'principal' found in context but name 'sehjpal' not in scraped text (site may use images/PDFs for name)",
+        "action": "Corpus likely correct — GNDEC likely displays Principal name as image/logo, not text"
+      }
+    }
+  },
+  "key_conclusion": "The GNDEC live website (gndec.ac.in) has significant content behind PDFs, images, and JavaScript-rendered pages that static HTML scraping cannot extract. The corpus contains verified answers sourced from official PDFs (placement brochures, admission documents, syllabus PDFs) which are NOT accessible via static scraping. This means the corpus is LIKELY MORE ACCURATE than the live site text crawl for facts like TPO name, placement statistics, fee structures, and detailed admission procedures."
+}

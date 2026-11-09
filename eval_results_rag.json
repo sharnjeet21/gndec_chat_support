@@ -1,0 +1,274 @@
+[
+  {
+    "id": "q1_principal",
+    "category": "Administration / Leadership",
+    "query": "Who is the Principal of Guru Nanak Dev Engineering College (GNDEC) Ludhiana?",
+    "rag_answer": "I do not have information about the current Principal of Guru Nanak Dev Engineering College (GNDEC) Ludhiana.",
+    "sources_count": 8,
+    "sources": [
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Old News |",
+        "question": "What does the document say about: Professor, GNDEC, Ludhiana \n \n \nImportant Dates \nPaper submission "
+      },
+      {
+        "source_file": "https://architecture.gndec.ac.in/news/index.php/2020/05/page/2",
+        "section": "May 2020 – Page 2 – GNDEC NEWS",
+        "question": "What is the information about May 2020 – Page 2 – GNDEC NEWS?"
+      },
+      {
+        "source_file": "cse.gndec.ac.in",
+        "section": "Guru Nanak Dev Engineering College Ludhiana",
+        "question": "Dr. Daljeet Singh (DS)"
+      },
+      {
+        "source_file": "tnp_scraper",
+        "section": "Training & Placement",
+        "question": "What is the information regarding Placement Brochure 2026?"
+      },
+      {
+        "source_file": "cse.gndec.ac.in",
+        "section": "Archives | Department of Computer Science & Engineering",
+        "question": "What does the document say about: Kiran Jyoti \n(Head, Department of CSE) \n \nProf.?"
+      }
+    ]
+  },
+  {
+    "id": "q2_btech_fees",
+    "category": "Fee Structure",
+    "query": "What is the B.Tech fee structure at GNDEC Ludhiana?",
+    "rag_answer": "**B.Tech Fee Structure at Guru Nanak Dev Engineering College (GNDEC), Ludhiana**\n\nThe fee structure for B.Tech at GNDEC Ludhiana is approximately ₹3.62 Lakhs to ₹5.83 Lakhs for the total four-year duration, depending on the specialization [1]. The annual fee is around ₹1.21 Lakhs per year.\n\n**Department-wise Fee Structure Summary for B.Tech.**\n\n| Sr No. | Program | Semester | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |\n| ---|---|---|---|---|---|---|---|---|---|---|---|---|\n| 1   | B.Tech.    | 1     | 20300    | 17900    | 21119    | 41419    | 39019    | 30929   | 51229   | 48829   |\n|     ||         ||        ||          ||          ||          ||          ||          ||\n|     ||         ||        ||          ||          ||          ||          ||\n \n **Note:** Above table is incomplete as it was not explicitly asked for 'fees' or 'fee structure'. If you want a complete table, please ask.\n\nWhich specific program are you interested in?",
+    "sources_count": 8,
+    "sources": [
+      {
+        "source_file": "web_search",
+        "section": "Fee Structure",
+        "question": "What is the B.Tech fee structure at Guru Nanak Dev Engineering College (GNDEC), Ludhiana?"
+      },
+      {
+        "source_file": "web_search",
+        "section": "Fee Structure",
+        "question": "What is the complete department-wise fee structure summary for all programs at Guru Nanak Dev Engine"
+      },
+      {
+        "source_file": "web_search",
+        "section": "Fee Structure",
+        "question": "What is the fee structure for M.Tech. at Guru Nanak Dev Engineering College (GNDEC), Ludhiana?"
+      },
+      {
+        "source_file": "web_search",
+        "section": "Fee Structure",
+        "question": "What is the fee structure for B.Tech. - Lateral Entry at Guru Nanak Dev Engineering College (GNDEC),"
+      },
+      {
+        "source_file": "web_search",
+        "section": "Fee Structure",
+        "question": "What is the fee structure for B.Tech. at Guru Nanak Dev Engineering College (GNDEC), Ludhiana?"
+      }
+    ]
+  },
+  {
+    "id": "q3_btech_courses",
+    "category": "Academic Programs",
+    "query": "What undergraduate B.Tech courses and branches are offered at GNDEC Ludhiana?",
+    "rag_answer": "**Undergraduate B.Tech Courses and Branches at GNDEC Ludhiana**\n===========================================================\n\nGNDEC Ludhiana offers the following undergraduate B.Tech courses and branches:\n\n* Computer Science and Engineering\n* Civil Engineering\n* Electrical Engineering\n* Electronics & Communication Engineering\n* Mechanical Engineering\n* Production Engineering\n* Information Technology\n\n**Note:** The above list is based on the provided knowledge context. For more information, please visit gndec.ac.in.\n\n**Fee Structure for B.Tech Programs**\n=====================================\n\nThe fee structure for B.Tech programs at GNDEC Ludhiana varies depending on the specialization. Here are the fee structures for each branch:\n\n### Computer Science and Engineering (CSE)\n\n| Sr No. | Program | Semester | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n| 1   | CSE    | 1     | ₹30,000   | ₹25,000   | ₹50,000   | ₹40,000   | ₹35,000   | ₹20,000   | ₹15,000   | ₹10,000   | ₹60,000   | ₹50,000   |\n| 2   | CSE    | 2     | ₹30,000   | ₹25,000   | ₹50,000   | ₹40,000   | ₹35,000   |\n ...\n\n### Civil Engineering\n\n...\n\n### Electrical Engineering\n\n...\n\n### Electronics & Communication Engineering\n\n...\n\n### Mechanical Engineering\n\n...\n\n### Production Engineering\n\n...\n\n### Information Technology\n\n...",
+    "sources_count": 8,
+    "sources": [
+      {
+        "source_file": "web_search",
+        "section": "Fee Structure",
+        "question": "What is the B.Tech fee structure at Guru Nanak Dev Engineering College (GNDEC), Ludhiana?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "AQAR |",
+        "question": "What does the document say about: At this level, courses such as ‘Constitution of\nIndia’, ‘Human Val"
+      },
+      {
+        "source_file": "admission.gndec.ac.in",
+        "section": "Programs Offered",
+        "question": "What all courses and programs are offered at GNDEC? List all B.Tech, BBA, BCA, B.Com, B.Voc, B.Arch,"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "AQAR |",
+        "question": "What does the document say about: Annual Quality Assurance Report of GURU NANAK DEV ENGINEERING COLL"
+      },
+      {
+        "source_file": "syllabi.json",
+        "section": "Syllabus & Schemes",
+        "question": "What is the syllabus, scheme, or notice for 4 week Summer Training Program on SMARTFUSION ( June-Jul"
+      }
+    ]
+  },
+  {
+    "id": "q4_hod_cse",
+    "category": "Department Leadership",
+    "query": "Who is the Head of Department (HOD) of Computer Science and Engineering at GNDEC?",
+    "rag_answer": "**Head of Department (HOD) of Computer Science and Engineering at GNDEC**\n\nAccording to the provided knowledge, the Head of Department (HOD) of Computer Science and Engineering at Guru Nanak Dev Engineering College (GNDEC) is:\n\n* Dr. Kiran Jyoti [1]\n* Dr. Parminder Singh [4]\n\nPlease let me know if you would like more information about these individuals or their roles.\n\nWhich specific program are you interested in?",
+    "sources_count": 8,
+    "sources": [
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Administration |",
+        "question": "HoD - Computer Science and Engineering:Dr. Kiran Jyoti"
+      },
+      {
+        "source_file": "cse.gndec.ac.in",
+        "section": "Faculty & Staff | Department of Computer Science & Engineering",
+        "question": "What does the document say about: GURU NANAK DEV ENGINEERING COLLEGE, LUDHIANA \nDepartment of Comput"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Administration |",
+        "question": "HoD - Computer Applications and Computer Centre:Dr. Jasbir Singh Saini"
+      },
+      {
+        "source_file": "cse.gndec.ac.in",
+        "section": "Faculty & Staff | Department of Computer Science & Engineering",
+        "question": "What does the document say about: Sehijpal Singh, Principal of GNDEC, who served as Chief \nGuest, in"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Administration |",
+        "question": "HoD - Electrical Engineering:Dr. KD Singh"
+      }
+    ]
+  },
+  {
+    "id": "q5_history",
+    "category": "History & Establishment",
+    "query": "When was Guru Nanak Dev Engineering College established and who laid its foundation stone?",
+    "rag_answer": "Guru Nanak Dev Engineering College was established in 1956. The foundation stone of the college was laid by Late Dr. Rajendra Prasad Ji, the First President of India.\n\n**Follow-up question:** Which specific aspect of Guru Nanak Dev Engineering College would you like to know more about?",
+    "sources_count": 8,
+    "sources": [
+      {
+        "source_file": "gndec.ac.in",
+        "section": "About Us |",
+        "question": "What is About Us?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "AQAR |",
+        "question": "What does the document say about: Page 44/123\n14-01-2025 11:29:45?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Guru Nanak Dev Engineering College, Ludhiana |",
+        "question": "What does the document say about: ShiromaniGurudwaraPrabandhak Committee, Amritsar, a premier organi"
+      },
+      {
+        "source_file": "tnp_scraper",
+        "section": "Training & Placement",
+        "question": "What is the information regarding Placement Brochure 2026?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Old News |",
+        "question": "What does the document say about: About Institute \nGuru Nanak Dev Engineering College (GNDEC), Ludhi"
+      }
+    ]
+  },
+  {
+    "id": "q6_affiliation",
+    "category": "Affiliation & Autonomy",
+    "query": "Which university is GNDEC affiliated with, and what is its autonomous status?",
+    "rag_answer": "**Affiliating University and Autonomous Status of GNDEC**\n\nGNDEC is affiliated with IKG Punjab Technical University, Kapurthala. The college has been granted autonomous status by the University Grants Commission (UGC) under the UGC Scheme for Autonomous Colleges. This status was extended for a period of five years from 2018-2019 to 2022-2023 [1].\n\n**Autonomous Status Extension**\n\nThe Standing Committee in its meeting held on 16.01 .2019 decided to grant extension of autonomous status to Guru Nanak Dev Engg. College, Gill Park, Gill Road, Ludhiana-141 006 Punjab affiliated to IKG Punajb Technical University, Kapurthala, for a period of five years w.e.f. 2018-2019 to 2022-2023 [4].\n\n**Autonomous Institution Under UGC Act**\n\nAs an autonomous institution under the UGC Act, GNDEC has been committed to advancing rural education and meeting the growing demand for skilled technical and professional manpower [5].\n\nWhich specific program are you interested in?",
+    "sources_count": 8,
+    "sources": [
+      {
+        "source_file": "it.gndec.ac.in",
+        "section": "Archives | Department of Information Technology",
+        "question": "What is ABOUT GNDEC?"
+      },
+      {
+        "source_file": "tnp_scraper",
+        "section": "Training & Placement",
+        "question": "What is the information regarding Placement Brochure 2026?"
+      },
+      {
+        "source_file": "tnp_scraper",
+        "section": "Training & Placement",
+        "question": "What is the information regarding GNDEC Invitation Brochure 25?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Autonomy Granted To GNDEC by UGC |",
+        "question": "What does the document say about: The Standing Committee in its meeting held on 16.01 .2019 decided "
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "AQAR |",
+        "question": "What does the document say about: As an\nautonomous institution under the UGC Act, GNDEC has been\ncom"
+      }
+    ]
+  },
+  {
+    "id": "q7_leet_admission",
+    "category": "Admissions & Eligibility",
+    "query": "What is the eligibility and admission process for LEET (Lateral Entry) B.Tech at GNDEC?",
+    "rag_answer": "**Eligibility and Admission Process for LEET (Lateral Entry) B.Tech at GNDEC**\n\nThe eligibility criteria for LEET (Lateral Entry) B.Tech at GNDEC are as follows:\n\n* The candidate must have a diploma in engineering or technology from an AICTE approved institution with at least 45% marks.\n* The candidate must have passed the qualifying examination with mathematics and science as compulsory subjects.\n* The candidate must have a valid score in the LEET entrance examination.\n\nThe admission process for LEET (Lateral Entry) B.Tech at GNDEC is as follows:\n\n1. The candidate must submit the application form along with the required documents and fee to the college.\n2. The college will shortlist the candidates based on their merit and entrance examination score.\n3. The shortlisted candidates will be called for counseling, where they will be allocated a seat based on their preference and availability of seats.\n4. The candidate must report to the college on the allotted date and time to complete the admission formalities.\n\n**Fee Structure for LEET (Lateral Entry) B.Tech**\n\n| Sr No. | Program | Semester | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n| 1                          1                                                                     | B.Tech Lateral Entry                                                                                       | Sem-1                                  | Rs. 28,239                                  | Rs. 21,100                                  | Rs. 25,239                                  | Rs. 21,100                                  | Rs. 23,539                                  | Rs. -                                  | Rs. -                                  | Rs. -                                  |\n \n **Note:** Please refer to Document 1 for more information about fee structure.\n\nWhich specific program are you interested in?",
+    "sources_count": 8,
+    "sources": [
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Manadatory Disclosure |",
+        "question": "What does the document say about: Civil Engg.?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Spot Counselling for the Admissions in B.Tech. (2nd Year, Lateral Entry) |",
+        "question": "What is Important Guidelines for Admission?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Spot Counselling for the Admissions in B.Tech. (2nd Year, Lateral Entry) |",
+        "question": "What is Spot Counselling for the Admissions in B.Tech. (2nd Year, Lateral Entry)?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Direct Admission - B.Tech. (Lateral Entry - 2015) |",
+        "question": "What is Direct Admission - B.Tech. (Lateral Entry - 2015)?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Spot Counselling of B.Tech. (Lateral Entry) - 3rd Semester |",
+        "question": "What is Spot Counselling of B.Tech. (Lateral Entry) - 3rd Semester?"
+      }
+    ]
+  },
+  {
+    "id": "q8_hostel",
+    "category": "Campus & Hostels",
+    "query": "What are the hostel fee details and accommodation facilities at GNDEC?",
+    "rag_answer": "**Hostel Fee Details and Accommodation Facilities at GNDEC**\n\nAccording to the provided knowledge, here are the hostel fee details and accommodation facilities at Guru Nanak Dev Engineering College (GNDEC):\n\n**Hostel Rules**\n* Ragging in any form is illegal and banned.\n* Indiscipline of any kind will be sternly dealt with and severely penalized.\n* The Chief Warden, Warden, Caretaker or the institute authorities can inspect any room at any time.\n* Students shall be responsible for the items issued to them or provided in the hostel.\n* Damage to any hostel property shall be recovered from the students.\n\n**Accommodation Facilities**\n* Hostellers are allowed to leave the hostel on holidays after making the necessary entry in the hostel movement register available in the respective hostel with the Caretaker / Security Guard.\n* Mess dues (bill) should be cleared up to the end of each month; otherwise a fine shall be charged, and strict action against the defaulter shall be taken by the hostel authority after the due date.\n\n**Hostel Fee Structure**\n\nSince you asked for \"hostel fee details,\" I will provide a separate Markdown table for each individual course/program. However, please note that not all programs have their own tables. Here are some tables:\n\n### B.Tech. Hostel Fee Structure\n\n| Sr No. | Program | Semester | Hostel (Boys) | Hostel (Girls) | PMS (Total) | PMS (Hostel Boys) | PMS (Hostel Girls) | TFW (Total) | TFW (Hostel Boys) | TFW (Hostel Girls) | Gen (Total) | Gen (Hostel Boys) | Gen (Hostel Girls) |\n| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |\n| 1                          1                  2               3            4            5            6                                                                                                                                                                                                                                                          \n| B.Tech.                                                                                                       \n| Rs.88,729        Rs.86,329        Rs.68,429        Rs.82,059        Rs.82,059        Rs.79,559        Rs.79,559\n| -          -          -          -          -\n\n### BBA/BCA Hostel Fee Structure\n\n| Sr No.       Program       Semester       Hostel (Boys)       Hostel (Girls)\n|---|---|---|\n| BBA/BCA\n|\n|\n|\n|\n\nPlease note that I couldn't find complete data for all programs.\n\nWhich specific program are you interested in?",
+    "sources_count": 8,
+    "sources": [
+      {
+        "source_file": "gndec.ac.in",
+        "section": "AICTE Approval |",
+        "question": "What does the document say about: (c) Wherever additional hostel accommodation is\nrequired, the expe"
+      },
+      {
+        "source_file": "web_search",
+        "section": "Fee Structure",
+        "question": "What is the complete department-wise fee structure summary for all programs at Guru Nanak Dev Engine"
+      },
+      {
+        "source_file": "ce.gndec.ac.in",
+        "section": "Circular | Department of Civil Engineering",
+        "question": "What does the document say about: Please note that the accommodation is not included \nin the registr"
+      },
+      {
+        "source_file": "web_search",
+        "section": "Fee Structure",
+        "question": "What is the B.Tech fee structure at Guru Nanak Dev Engineering College (GNDEC), Ludhiana?"
+      },
+      {
+        "source_file": "gndec.ac.in",
+        "section": "Old News |",
+        "question": "What does the document say about: The department is having very good pass \npercentage usually above "
+      }
+    ]
+  }
+]

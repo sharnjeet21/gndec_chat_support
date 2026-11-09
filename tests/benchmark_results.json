@@ -1,0 +1,801 @@
+{
+  "total": 55,
+  "passed": 27,
+  "results": [
+    {
+      "id": 1,
+      "category": "General & Foundation",
+      "prompt": "When was GNDEC established and under which trust?",
+      "passed": true,
+      "elapsed": 5.43,
+      "answer_snippet": "Guru Nanak Dev Engineering College (GNDEC), Ludhiana, was established in **1956** under the aegis of the **Nankana Sahib Education Trust (NSET)** [2: ",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 2,
+      "category": "General & Foundation",
+      "prompt": "Is GNDEC an autonomous college and which university is it affiliated to?",
+      "passed": false,
+      "elapsed": 6.22,
+      "answer_snippet": "**Yes, GNDEC is an autonomous college.**  Guru Nanak Dev Engineering College (GNDEC), Ludhiana, is the **first engineering college in Punjab** to have",
+      "missing_terms": [
+        "ikg"
+      ],
+      "found_negative": [],
+      "sources_count": 8,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 3,
+      "category": "General & Foundation",
+      "prompt": "Where is GNDEC located and how to reach the college?",
+      "passed": false,
+      "elapsed": 9.35,
+      "answer_snippet": "Based on the provided knowledge context, specific details regarding the exact street address, postal code, or step-by-step transportation directions (",
+      "missing_terms": [
+        "gill road",
+        "141006"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 4,
+      "category": "General & Foundation",
+      "prompt": "What is the official contact email and phone number of GNDEC principal?",
+      "passed": false,
+      "elapsed": 6.39,
+      "answer_snippet": "**Official contact details of the GNDEC Principal**  - **Email:** principal@gndec.ac.in   - **Phone:** 0161\u20115064501    These details are listed on the",
+      "missing_terms": [
+        "0161-5064501"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 5,
+      "category": "General & Foundation",
+      "prompt": "What is the NAAC accreditation grade of GNDEC?",
+      "passed": true,
+      "elapsed": 9.9,
+      "answer_snippet": "The Guru\u202fNanak\u202fDev\u202fEngineering\u202fCollege (GNDEC) is accredited with an **\u201cA\u201d grade** by the National Assessment and Accreditation Council (NAAC).    > *",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 8,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 6,
+      "category": "Leadership",
+      "prompt": "Who is the current principal of GNDEC?",
+      "passed": true,
+      "elapsed": 0.9,
+      "answer_snippet": "The current principal of Guru\u202fNanak\u202fDev Engineering College (GNDEC), Ludhiana is **Dr.\u202fSehijpal\u202fSingh\u202fKhangura**.   - **Phone:** 0161\u20115064501   - **Em",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 7,
+      "category": "Leadership",
+      "prompt": "Who was the first principal of GNDEC?",
+      "passed": false,
+      "elapsed": 60.06,
+      "answer_snippet": "",
+      "missing_terms": [
+        "tara",
+        "singh"
+      ],
+      "found_negative": [],
+      "sources_count": 0,
+      "verification": "error",
+      "error": "timed out"
+    },
+    {
+      "id": 8,
+      "category": "Leadership",
+      "prompt": "Give me the list of all principals of GNDEC from foundation till current",
+      "passed": true,
+      "elapsed": 1.89,
+      "answer_snippet": "### Succession List of Principals of GNDEC (1956 \u2013 Present)  Guru Nanak Dev Engineering College (GNDEC), Ludhiana, was established in 1956 under the N",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 9,
+      "category": "Leadership",
+      "prompt": "What are the qualifications of Dr. Sehijpal Singh?",
+      "passed": true,
+      "elapsed": 4.35,
+      "answer_snippet": "**Qualifications of Dr.\u202fSehijpal\u202fSingh (Current Principal of GNDEC)**    - **Doctor of Philosophy (Ph.D.)** \u2013 IIT Roorkee   - **Master of Engineering ",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 10,
+      "category": "Programs & Branches",
+      "prompt": "What B.Tech branches are offered at GNDEC?",
+      "passed": true,
+      "elapsed": 1.16,
+      "answer_snippet": "**B.Tech branches offered at Guru\u202fNanak\u202fDev\u202fEngineering\u202fCollege (GNDEC), Ludhiana**  - Computer Science and Engineering (CSE)   - Information Technolo",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 1,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 11,
+      "category": "Programs & Branches",
+      "prompt": "Does GNDEC offer B.Tech in Biotechnology or Chemical Engineering?",
+      "passed": false,
+      "elapsed": 6.59,
+      "answer_snippet": "GNDEC does **not** offer a B.Tech programme in Biotechnology or Chemical Engineering.   The college\u2019s B.Tech curriculum is limited to the following se",
+      "missing_terms": [
+        "does not offer",
+        "only 7"
+      ],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 12,
+      "category": "Programs & Branches",
+      "prompt": "What is the duration and curriculum structure of B.Tech at GNDEC?",
+      "passed": false,
+      "elapsed": 8.35,
+      "answer_snippet": "**Duration**  - **Regular B.Tech** \u2013 4\u202fyears (8\u202fsemesters)\u202f[1: gndec.ac.in]   - **B.Tech Lateral Entry** \u2013 3\u202fyears (6\u202fsemesters)\u202f[4: gndec.ac.in]   - ",
+      "missing_terms": [
+        "credit",
+        "cbcs"
+      ],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 13,
+      "category": "Programs & Branches",
+      "prompt": "What postgraduate PG degree courses are available at GNDEC?",
+      "passed": false,
+      "elapsed": 60.02,
+      "answer_snippet": "",
+      "missing_terms": [
+        "m.tech",
+        "mba",
+        "mca"
+      ],
+      "found_negative": [],
+      "sources_count": 0,
+      "verification": "error",
+      "error": "timed out"
+    },
+    {
+      "id": 14,
+      "category": "Programs & Branches",
+      "prompt": "Tell me about BCA course at GNDEC",
+      "passed": false,
+      "elapsed": 8.76,
+      "answer_snippet": "Based on the provided knowledge context, here is the information regarding the **BCA (Bachelor of Computer Applications)** course at Guru Nanak Dev En",
+      "missing_terms": [
+        "3-year",
+        "10+2"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 15,
+      "category": "Admissions",
+      "prompt": "What is the complete admission process for B.Tech 1st year at GNDEC?",
+      "passed": true,
+      "elapsed": 5.97,
+      "answer_snippet": "**Complete B.Tech\u202f1st\u2011Year Admission Process at GNDEC, Ludhiana**  1. **Entrance Examination**      - **JEE Main** (National Testing Agency) is mandat",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 16,
+      "category": "Admissions",
+      "prompt": "What is the Rural Quota at GNDEC and what percentage is reserved?",
+      "passed": false,
+      "elapsed": 14.45,
+      "answer_snippet": "## Rural Quota at GNDEC, Ludhiana  GNDEC has a historic and iconic **70% Rural Quota** \u2014 one of the college's founding commitments under the Nankana S",
+      "missing_terms": [
+        "5 years"
+      ],
+      "found_negative": [],
+      "sources_count": 4,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 17,
+      "category": "Admissions",
+      "prompt": "What are the eligibility criteria for claiming Rural Quota at GNDEC?",
+      "passed": false,
+      "elapsed": 12.78,
+      "answer_snippet": "## Eligibility Criteria for Claiming the 70% Rural Quota at GNDEC  Guru Nanak Dev Engineering College (GNDEC), Ludhiana has a historic and iconic **70",
+      "missing_terms": [
+        "tehsildar",
+        "sarpanch"
+      ],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 18,
+      "category": "Admissions",
+      "prompt": "What entrance exam is required for B.Tech admission at GNDEC?",
+      "passed": false,
+      "elapsed": 21.04,
+      "answer_snippet": "What would you like to know about GNDEC?",
+      "missing_terms": [
+        "jee main",
+        "nta"
+      ],
+      "found_negative": [],
+      "sources_count": 3,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 19,
+      "category": "Admissions",
+      "prompt": "How to get lateral entry LEET admission in 2nd year B.Tech at GNDEC?",
+      "passed": true,
+      "elapsed": 12.35,
+      "answer_snippet": "# B.Tech Lateral Entry (LEET) Admission at GNDEC  Admission to the **B.Tech 2nd Year (3rd Semester - Lateral Entry)** at Guru Nanak Dev Engineering Co",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 20,
+      "category": "Admissions",
+      "prompt": "What is the admission procedure for MBA at GNDEC?",
+      "passed": false,
+      "elapsed": 5.85,
+      "answer_snippet": "**MBA Admission Procedure at GNDEC (Ludhiana)**    **1. Eligibility**   - Hold a bachelor\u2019s degree in any discipline (Arts, Science, Commerce, Enginee",
+      "missing_terms": [
+        "50%"
+      ],
+      "found_negative": [],
+      "sources_count": 11,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 21,
+      "category": "Admissions",
+      "prompt": "How to get admission in MCA at GNDEC?",
+      "passed": true,
+      "elapsed": 14.63,
+      "answer_snippet": "## MCA Admission at GNDEC, Ludhiana  Admission to the **MCA (Master of Computer Applications)** program at Guru Nanak Dev Engineering College (GNDEC) ",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 11,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 22,
+      "category": "Admissions",
+      "prompt": "What is Sikh Religion Exam SRE at GNDEC?",
+      "passed": true,
+      "elapsed": 22.88,
+      "answer_snippet": "## Sikh Religion Exam (SRE) at GNDEC  Based on the available GNDEC sources, the **Sikh Religion Exam (SRE)** is an eligibility requirement tied to the",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 9,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 23,
+      "category": "Fee Structure",
+      "prompt": "What is the B.Tech 1st semester fee structure for General category students at GNDEC?",
+      "passed": true,
+      "elapsed": 11.59,
+      "answer_snippet": "## B.Tech 1st Semester Fee Structure \u2014 General Category (GNDEC Ludhiana)  For a **General category** student in **B.Tech. Semester 1**, the official f",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 3,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 24,
+      "category": "Fee Structure",
+      "prompt": "What is the B.Tech fee for TFW Tuition Fee Waiver category in 1st semester?",
+      "passed": false,
+      "elapsed": 60.06,
+      "answer_snippet": "",
+      "missing_terms": [
+        "30929",
+        "tfw"
+      ],
+      "found_negative": [],
+      "sources_count": 0,
+      "verification": "error",
+      "error": "timed out"
+    },
+    {
+      "id": 25,
+      "category": "Fee Structure",
+      "prompt": "What is the Post Matric Scholarship PMS fee for B.Tech 1st sem at GNDEC?",
+      "passed": true,
+      "elapsed": 6.02,
+      "answer_snippet": "**Post Matric Scholarship (PMS) fee for B.Tech\u202f1st semester**  - **PMS (Total) for 1st semester:** **Rs.\u202f21,119**    This amount is the fee payable un",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 8,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 26,
+      "category": "Fee Structure",
+      "prompt": "What is the MBA and MCA 1st semester fee at GNDEC for General category?",
+      "passed": true,
+      "elapsed": 32.1,
+      "answer_snippet": "The **1st-semester fee for General-category students is Rs. 63,339** for both MBA and MCA. With hostel accommodation, the listed total is **Rs. 82,059",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 1,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 27,
+      "category": "Fee Structure",
+      "prompt": "What is the hostel fee for boys and girls in B.Tech 1st semester?",
+      "passed": false,
+      "elapsed": 60.03,
+      "answer_snippet": "",
+      "missing_terms": [
+        "20300",
+        "17900"
+      ],
+      "found_negative": [],
+      "sources_count": 0,
+      "verification": "error",
+      "error": "timed out"
+    },
+    {
+      "id": 28,
+      "category": "Fee Structure",
+      "prompt": "What are the hostel charges for B.Tech semester 2?",
+      "passed": false,
+      "elapsed": 10.71,
+      "answer_snippet": "**Hostel Charges \u2013 B.Tech (2nd Semester)**    | Item | Details | Source | |------|---------|--------| | **Hostel Fee** | Collected together with the a",
+      "missing_terms": [
+        "15300",
+        "12900"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 29,
+      "category": "Faculty",
+      "prompt": "Who is the HoD of Information Technology department at GNDEC?",
+      "passed": false,
+      "elapsed": 5.02,
+      "answer_snippet": "**Head of Department (HOD) \u2013 Information Technology (IT)**   - **Dr.\u202fKulvinder\u202fSingh\u202fMann** (Professor & Head)   - **Email:** mannkulvinder@gndec.ac.i",
+      "missing_terms": [
+        "it@gndec.ac.in"
+      ],
+      "found_negative": [],
+      "sources_count": 11,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 30,
+      "category": "Faculty",
+      "prompt": "Who is Dr. Palwinder Kaur Bhangu at GNDEC?",
+      "passed": false,
+      "elapsed": 60.0,
+      "answer_snippet": "",
+      "missing_terms": [
+        "assistant professor",
+        "information technology",
+        "ph.d"
+      ],
+      "found_negative": [],
+      "sources_count": 0,
+      "verification": "error",
+      "error": "timed out"
+    },
+    {
+      "id": 31,
+      "category": "Faculty",
+      "prompt": "Who is the HoD of Computer Science and Engineering CSE department?",
+      "passed": true,
+      "elapsed": 5.03,
+      "answer_snippet": "The Head of Department (HOD) of the **Computer Science & Engineering (CSE)** department at Guru Nanak Dev Engineering College (GNDEC), Ludhiana, is **",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 11,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 32,
+      "category": "Faculty",
+      "prompt": "Who is the HoD of Civil Engineering at GNDEC?",
+      "passed": true,
+      "elapsed": 4.83,
+      "answer_snippet": "The Head of Department (HOD) of **Civil Engineering** at Guru Nanak Dev Engineering College (GNDEC), Ludhiana, is **Dr. Prashant Garg** (Professor & H",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 33,
+      "category": "Faculty",
+      "prompt": "Who is the HoD of Mechanical Engineering at GNDEC?",
+      "passed": true,
+      "elapsed": 7.86,
+      "answer_snippet": "**Head of Department (HoD) \u2013 Mechanical Engineering:**   **Dr. Harmeet Singh** (Professor & Head) \u2013 Email: hms@gndec.ac.in    [1: faculty.json]  ### S",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 9,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 34,
+      "category": "Faculty",
+      "prompt": "How many faculty members have PhD degrees at GNDEC?",
+      "passed": true,
+      "elapsed": 1.44,
+      "answer_snippet": "GNDEC has **148 faculty members who hold Ph.D. degrees** across its 13 departments.    ### Sources   - [1: faculty.json] \u2014 Faculty Directory \u2013 PhD Fac",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 35,
+      "category": "Faculty",
+      "prompt": "Who is Sharnjeet Singh at GNDEC?",
+      "passed": false,
+      "elapsed": 4.23,
+      "answer_snippet": "Harshveer\u202fSingh\u202fSekhon is a final\u2011year student in the Computer Science & Engineering (CSE) branch at Guru\u202fNanak\u202fDev\u202fEngineering\u202fCollege (GNDEC)\u202fLudhia",
+      "missing_terms": [
+        "not have information",
+        "charnjeet"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 36,
+      "category": "Student Services",
+      "prompt": "How to apply for a bus pass at GNDEC and where to get the form?",
+      "passed": false,
+      "elapsed": 60.06,
+      "answer_snippet": "",
+      "missing_terms": [
+        "prtc",
+        "punjab roadways",
+        "downloads",
+        "student section"
+      ],
+      "found_negative": [],
+      "sources_count": 0,
+      "verification": "error",
+      "error": "timed out"
+    },
+    {
+      "id": 37,
+      "category": "Student Services",
+      "prompt": "Where can students download the PRTC and Punjab Roadways bus pass forms?",
+      "passed": true,
+      "elapsed": 1.09,
+      "answer_snippet": "Students can download the PRTC and Punjab Roadways bus pass forms from the following locations:  1.  **Online (Official Website):**     *   Visit the ",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 2,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 38,
+      "category": "Student Services",
+      "prompt": "How to get a railway concession form at GNDEC?",
+      "passed": true,
+      "elapsed": 1.21,
+      "answer_snippet": "### Railway Concession Procedure at GNDEC  To obtain a railway concession form at Guru Nanak Dev Engineering College (GNDEC), follow the detailed proc",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 3,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 39,
+      "category": "Student Services",
+      "prompt": "What hostel facilities are available for boys and girls at GNDEC?",
+      "passed": true,
+      "elapsed": 1.59,
+      "answer_snippet": "### Hostel Facilities at GNDEC  GNDEC provides separate hostel accommodations for male and female students, ensuring a safe and conducive environment ",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 3,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 40,
+      "category": "Student Services",
+      "prompt": "How can students get a Bonafide or Character certificate at GNDEC?",
+      "passed": true,
+      "elapsed": 4.33,
+      "answer_snippet": "Students can obtain a Bonafide or Character certificate by following these steps:  1. **Download the required form**      - Go to the **Downloads** se",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 41,
+      "category": "Student Services",
+      "prompt": "What is the procedure to reset college internet WiFi login password?",
+      "passed": false,
+      "elapsed": 33.35,
+      "answer_snippet": "I do not have information about that. Please check the official website gndec.ac.in or contact the IT department for instructions on resetting the col",
+      "missing_terms": [
+        "internet",
+        "central computer center",
+        "downloads"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 42,
+      "category": "Academic Rules",
+      "prompt": "What is the minimum attendance requirement to appear in exams at GNDEC?",
+      "passed": false,
+      "elapsed": 3.85,
+      "answer_snippet": "The minimum attendance requirement to appear in end\u2011semester examinations at Guru\u202fNanak\u202fDev Engineering College (GNDEC) is **75\u202f% of the scheduled lec",
+      "missing_terms": [
+        "75%",
+        "end-semester"
+      ],
+      "found_negative": [],
+      "sources_count": 9,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 43,
+      "category": "Academic Rules",
+      "prompt": "Can attendance shortage be condoned at GNDEC and up to how much?",
+      "passed": true,
+      "elapsed": 14.36,
+      "answer_snippet": "Yes \u2014 attendance shortage can be condoned at GNDEC, but only to a limited extent.  **Condonation rules at GNDEC:**  - The **Director may condone an at",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 44,
+      "category": "Academic Rules",
+      "prompt": "What is the internal and external examination weightage at GNDEC?",
+      "passed": false,
+      "elapsed": 9.45,
+      "answer_snippet": "At Guru Nanak Dev Engineering College (GNDEC), Ludhiana, the examination weightage for most theory courses follows a standard **40:60 split** between ",
+      "missing_terms": [
+        "40%"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 45,
+      "category": "Academic Rules",
+      "prompt": "How many Mid-Semester Exams MSEs are conducted per semester?",
+      "passed": false,
+      "elapsed": 18.04,
+      "answer_snippet": "Based on the GNDEC sources available to me, I could not find an explicit statement giving the exact **number** of Mid-Semester Exams (MSEs) conducted ",
+      "missing_terms": [
+        "two"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 46,
+      "category": "Academic Rules",
+      "prompt": "What is the maximum period allowed to complete B.Tech at GNDEC?",
+      "passed": true,
+      "elapsed": 6.87,
+      "answer_snippet": "The maximum period allowed to complete a B.Tech degree at GNDEC is **6 years** from the date of first admission. For students admitted through **later",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 9,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 47,
+      "category": "Training & Placement",
+      "prompt": "Tell me about Training and Placement Cell TPO at GNDEC",
+      "passed": true,
+      "elapsed": 16.16,
+      "answer_snippet": "# Training & Placement Cell (TPO) at GNDEC  Here's what I can tell you about the Training and Placement Cell and the Training & Placement Officer (TPO",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 48,
+      "category": "Training & Placement",
+      "prompt": "Which companies visit GNDEC for campus placements?",
+      "passed": true,
+      "elapsed": 9.53,
+      "answer_snippet": "**Companies that visit GNDEC for campus placements**  - Bajaj Sons\u202fLtd.   - Applied Environmental\u202fInc.   - Honda\u202fSiel\u202fCars\u202fLtd.   - GMOLAM\u202fInc.   - Co",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 7,
+      "verification": "grounded",
+      "error": null
+    },
+    {
+      "id": 49,
+      "category": "Training & Placement",
+      "prompt": "What are the facilities at Central Computer Center CCC at GNDEC?",
+      "passed": false,
+      "elapsed": 5.95,
+      "answer_snippet": "The Central Computer Center (CCC) at Guru\u202fNanak\u202fDev Engineering College (GNDEC) is equipped with the following facilities:  - **30 computer terminals*",
+      "missing_terms": [
+        "internet",
+        "lab"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 50,
+      "category": "Training & Placement",
+      "prompt": "Which FDP is currently live or conducted at GNDEC?",
+      "passed": false,
+      "elapsed": 7.01,
+      "answer_snippet": "I don't see a specific question in your message yet \u2014 it looks like you've shared the rules and the GNDEC knowledge context, but no actual query.  I'm",
+      "missing_terms": [
+        "design thinking",
+        "atal",
+        "generative ai"
+      ],
+      "found_negative": [],
+      "sources_count": 6,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 51,
+      "category": "Guardrail Check",
+      "prompt": "What is the fee structure of IIT Bombay for Computer Science?",
+      "passed": false,
+      "elapsed": 0.0,
+      "answer_snippet": "I am the official information assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana, and only provide assistance with GNDEC college inqui",
+      "missing_terms": [
+        "not provide"
+      ],
+      "found_negative": [],
+      "sources_count": 0,
+      "verification": "unknown",
+      "error": null
+    },
+    {
+      "id": 52,
+      "category": "Guardrail Check",
+      "prompt": "Who is the President of the United States?",
+      "passed": false,
+      "elapsed": 5.58,
+      "answer_snippet": "I do not have information about that. I am the official information assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana, and my knowled",
+      "missing_terms": [
+        "only"
+      ],
+      "found_negative": [],
+      "sources_count": 10,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 53,
+      "category": "Guardrail Check",
+      "prompt": "How to get admission in Harvard University medical school?",
+      "passed": false,
+      "elapsed": 25.01,
+      "answer_snippet": "I don\u2019t have information about Harvard Medical School admissions, so I can\u2019t give you a reliable process. I only have information about GNDEC admissio",
+      "missing_terms": [
+        "college"
+      ],
+      "found_negative": [],
+      "sources_count": 9,
+      "verification": "partially_grounded",
+      "error": null
+    },
+    {
+      "id": 54,
+      "category": "Guardrail Check",
+      "prompt": "Write a python script to sort a list of numbers",
+      "passed": true,
+      "elapsed": 0.0,
+      "answer_snippet": "I am the official information assistant for Guru Nanak Dev Engineering College (GNDEC), Ludhiana, and only provide assistance with GNDEC college inqui",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 0,
+      "verification": "unknown",
+      "error": null
+    },
+    {
+      "id": 55,
+      "category": "Guardrail Check",
+      "prompt": "Tell me about Thapar University Patiala placements",
+      "passed": true,
+      "elapsed": 13.06,
+      "answer_snippet": "It looks like your message contains the rules and reference material, but no actual question. I don't see a specific query to answer.  I'm here to hel",
+      "missing_terms": [],
+      "found_negative": [],
+      "sources_count": 5,
+      "verification": "partially_grounded",
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,199 @@
+[
+  {
+    "question": "My computer is running very slow. What should I do?",
+    "answer": "Check Task Manager for high CPU, RAM, or disk usage. Remove startup apps, update OS, scan for malware, and ensure at least 20% free disk space."
+  },
+  {
+    "question": "Why can't I connect to WiFi?",
+    "answer": "Ensure WiFi is enabled, restart router, forget and reconnect to the network, check password, and verify DHCP is enabled on the router."
+  },
+  {
+    "question": "Internet is connected but no websites load.",
+    "answer": "Flush DNS cache, change DNS to 8.8.8.8, check firewall rules, and verify no proxy is configured."
+  },
+  {
+    "question": "Why is my VPN not connecting?",
+    "answer": "Check credentials, verify network connectivity, ensure ports 500/4500 are open, and confirm Phase 1/2 settings match."
+  },
+  {
+    "question": "My printer is not responding.",
+    "answer": "Restart printer, check physical connections, reinstall drivers, ensure it's set as default, and verify it's on the same network."
+  },
+  {
+    "question": "How do I fix high CPU usage?",
+    "answer": "End unnecessary processes, disable startup programs, update drivers, scan for malware, and check for Windows updates."
+  },
+  {
+    "question": "Why do I keep getting 'Disk Full' warnings?",
+    "answer": "Delete temp files, clear downloads, uninstall unused apps, and move large files to external storage."
+  },
+  {
+    "question": "'Blue screen of death' keeps appearing.",
+    "answer": "Update drivers, test RAM, check disk health using chkdsk, and review minidump logs."
+  },
+  {
+    "question": "My system time keeps resetting.",
+    "answer": "Replace CMOS battery, sync NTP servers, or reset BIOS defaults."
+  },
+  {
+    "question": "How do I fix application crashes?",
+    "answer": "Update the software, reinstall it, check event viewer, and ensure required libraries are installed."
+  },
+  {
+    "question": "Why won't my email send?",
+    "answer": "Check SMTP settings, authentication, attachment size limits, and outgoing firewall rules."
+  },
+  {
+    "question": "I forgot my Windows password.",
+    "answer": "Use password reset disk, online recovery (Microsoft account), or boot into recovery mode to reset."
+  },
+  {
+    "question": "How do I speed up my WiFi?",
+    "answer": "Move closer to router, switch to 5GHz, change WiFi channel, reboot router, and check for interference."
+  },
+  {
+    "question": "Why is my laptop overheating?",
+    "answer": "Clean air vents, check fan operation, use cooling pad, reduce heavy tasks, and repaste CPU if needed."
+  },
+  {
+    "question": "My screen is flickering.",
+    "answer": "Update display drivers, reset refresh rate, check cables, disable adaptive brightness, and test external monitor."
+  },
+  {
+    "question": "Why can't I hear sound on my computer?",
+    "answer": "Check output device, update audio drivers, restart audio service, and ensure volume is not muted."
+  },
+  {
+    "question": "My USB device is not detected.",
+    "answer": "Try another port, reinstall USB drivers, check Device Manager, and test the device on another PC."
+  },
+  {
+    "question": "Why does my system keep restarting?",
+    "answer": "Check PSU, update BIOS, test RAM, scan for viruses, and disable auto-restart on system failure."
+  },
+  {
+    "question": "How do I remove a virus?",
+    "answer": "Run antivirus scan, boot into safe mode, check startup items, and delete suspicious programs."
+  },
+  {
+    "question": "Why can't I access shared network folders?",
+    "answer": "Check SMB settings, verify network discovery is enabled, match workgroup, and confirm correct permissions."
+  },
+  {
+    "question": "How do I fix slow startup?",
+    "answer": "Disable startup apps, enable fast startup, upgrade to SSD, and reduce background services."
+  },
+  {
+    "question": "Why is my microphone not working?",
+    "answer": "Enable mic access, check audio input devices, update drivers, and test using sound recorder."
+  },
+  {
+    "question": "My browser is full of pop-ups.",
+    "answer": "Disable extensions, reset browser settings, clear cookies, and run malware scan."
+  },
+  {
+    "question": "Why is my battery draining fast?",
+    "answer": "Lower brightness, disable background apps, update firmware, replace old battery, and disable Bluetooth when not needed."
+  },
+  {
+    "question": "How do I fix file corruption?",
+    "answer": "Run sfc /scannow, chkdsk, restore from backup, or use file recovery tools."
+  },
+  {
+    "question": "My firewall is blocking applications.",
+    "answer": "Add exceptions, allow specific ports, disable strict mode, or temporarily disable firewall for testing."
+  },
+  {
+    "question": "Why does my system freeze randomly?",
+    "answer": "Check RAM health, update drivers, reduce background load, and check HDD/SSD health."
+  },
+  {
+    "question": "How do I fix DNS issues?",
+    "answer": "Flush DNS, set Google DNS (8.8.8.8), restart router, and verify DNS server availability."
+  },
+  {
+    "question": "Why does my software update fail?",
+    "answer": "Check internet, ensure disk space, disable antivirus temporarily, and retry with administrator permissions."
+  },
+  {
+    "question": "My laptop won't turn on.",
+    "answer": "Check charger, remove battery (if possible), hold power button for 10 seconds, and test with different adapter."
+  },
+  {
+    "question": "What causes random shutdowns?",
+    "answer": "Overheating, faulty PSU, bad RAM, malware, or BIOS issues."
+  },
+  {
+    "question": "How do I fix Bluetooth connection problems?",
+    "answer": "Unpair and re-pair device, restart Bluetooth service, and update wireless drivers."
+  },
+  {
+    "question": "Why does my keyboard type the wrong characters?",
+    "answer": "Change keyboard layout to English (US), disable sticky keys, and update keyboard drivers."
+  },
+  {
+    "question": "My mouse is lagging.",
+    "answer": "Replace batteries, remove interference, update drivers, or try wired mode."
+  },
+  {
+    "question": "Why can't I install applications?",
+    "answer": "Check admin permissions, disable antivirus temporarily, and ensure installer is not blocked."
+  },
+  {
+    "question": "My display is not detected.",
+    "answer": "Reconnect cable, try different port, update GPU drivers, and reset display settings."
+  },
+  {
+    "question": "WiFi drops frequently.",
+    "answer": "Change WiFi channel, update router firmware, reduce interference, and adjust power saving options."
+  },
+  {
+    "question": "Why is my mobile hotspot not working?",
+    "answer": "Disable VPN, reset network settings, check AP band (2.4GHz), and update OS."
+  },
+  {
+    "question": "My apps won't open.",
+    "answer": "Clear cache, reinstall the app, update OS, or check dependency frameworks."
+  },
+  {
+    "question": "How do I fix storage not mounting?",
+    "answer": "Try another cable, run disk check, update drivers, and check for filesystem corruption."
+  },
+  {
+    "question": "CPU temperature too high.",
+    "answer": "Clean dust, improve airflow, replace thermal paste, and reduce overclocking."
+  },
+  {
+    "question": "Why is my email syncing slowly?",
+    "answer": "Reduce mailbox size, disable heavy add-ons, check network, and optimize sync frequency."
+  },
+  {
+    "question": "How do I fix 'No Boot Device Found'?",
+    "answer": "Check BIOS boot order, reconnect SSD/HDD, run startup repair, and test drive health."
+  },
+  {
+    "question": "My WiFi says “Connected – No Internet”.",
+    "answer": "Restart router, renew IP (ipconfig /renew), set static DNS, or disable IPv6 temporarily."
+  },
+  {
+    "question": "Why is my system overheating even at idle?",
+    "answer": "Background tasks, fan failure, malware, dust buildup, or thermal throttling."
+  },
+  {
+    "question": "How do I fix a corrupted user profile?",
+    "answer": "Create a new profile, copy data from old profile, and reset registry profile list entries."
+  },
+  {
+    "question": "My downloads keep failing.",
+    "answer": "Disable antivirus scanning, check disk space, test another browser, and ensure stable internet."
+  },
+  {
+    "question": "Why is my webcam not detected?",
+    "answer": "Enable camera access, reinstall drivers, check privacy settings, and test on another app."
+  },
+  {
+    "question": "How do I fix network packet loss?",
+    "answer": "Check cables, switch ports, router performance, and remove high-latency devices from network."
+  }
+]
+
